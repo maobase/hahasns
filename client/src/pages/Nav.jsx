@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardBody, Spinner, Chip } from '@heroui/react';
+import { Card, CardBody, Spinner, Chip } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Empty } from '../components/States';

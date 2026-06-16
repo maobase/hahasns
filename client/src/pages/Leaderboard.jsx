@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardBody, Tabs, Tab, Spinner } from '@heroui/react';
+import { Card, CardBody, Tabs, Tab, Spinner } from '../components/heroui';
 import Shell from '../components/Shell';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';

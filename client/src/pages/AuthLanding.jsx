@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Input, Button, Tabs, Tab } from '@heroui/react';
+import { Input, Button, Tabs, Tab } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { BrandMark } from '../components/Navbar';

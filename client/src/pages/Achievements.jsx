@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardBody, Button, Spinner, Progress } from '@heroui/react';
+import { Card, CardBody, Button, Spinner, Progress } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Empty } from '../components/States';

@@ -4,7 +4,7 @@ import {
   Card, CardBody, Tabs, Tab, Button, Spinner, Chip,
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter,
   Input, Textarea, Select, SelectItem, useDisclosure,
-} from '@heroui/react';
+} from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Empty } from '../components/States';

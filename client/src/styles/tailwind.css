@@ -1,3 +1,69 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ============================================================
+   Tailwind CSS v4 + HeroUI v3 entry (CSS-first).
+   Replaces the old TW3 `@tailwind base/components/utilities`
+   directives and the `heroui()` tailwind plugin.
+   Import order matters: Tailwind first, then HeroUI styles.
+   ============================================================ */
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* Dark mode is driven by ThemeContext, which toggles `data-theme` on <html>
+   plus a `<skin>` / `<skin>-dark` class. Tailwind's `dark:` variant follows
+   the data attribute so our utility classes match the app theme. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------
+   Theme tokens. The 6 color skins × light/dark live in tokens.css
+   as CSS custom properties (--brand, --ink-*, --surface-*, --line…),
+   switched per [data-skin] / [data-theme]. We expose the HeroUI-style
+   utility names the app still uses (text-default-500, bg-primary-50,
+   rounded-medium, text-small…) and map them onto those variables so
+   every utility automatically follows the active skin + mode.
+   ------------------------------------------------------------ */
+@theme {
+  /* brand / primary ramp → app brand variables (skin-aware) */
+  --color-primary: var(--brand);
+  --color-primary-50: var(--brand-tint);
+  --color-primary-100: var(--brand-soft);
+  --color-primary-200: var(--brand-soft);
+  --color-primary-500: var(--brand);
+  --color-primary-600: var(--brand-strong);
+  --color-primary-foreground: var(--on-brand);
+
+  /* semantic surface / content */
+  --color-foreground: var(--ink);
+  --color-background: var(--page);
+  --color-content1: var(--surface);
+  --color-content2: var(--surface-2);
+  --color-content3: var(--surface-3);
+
+  /* neutral "default" ramp → app ink / surface / line scale */
+  --color-default-50: var(--surface-2);
+  --color-default-100: var(--surface-2);
+  --color-default-200: var(--line);
+  --color-default-300: var(--line-2);
+  --color-default-400: var(--ink-4);
+  --color-default-500: var(--ink-3);
+  --color-default-600: var(--ink-2);
+  --color-default-700: var(--ink-2);
+  --color-default-800: var(--ink);
+  --color-default-900: var(--ink);
+
+  /* status colors used by Chip/Button/etc. */
+  --color-success: var(--good);
+  --color-success-50: var(--good-soft);
+  --color-warning: var(--gold);
+  --color-warning-50: var(--gold-soft);
+  --color-danger: var(--like);
+  --color-danger-50: var(--like-soft);
+  --color-secondary: var(--brand);
+
+  /* radius scale the app references (rounded-medium, etc.) */
+  --radius-small: var(--r-sm);
+  --radius-medium: var(--r-md);
+  --radius-large: var(--r-lg);
+
+  /* HeroUI-style font-size aliases (text-tiny / text-small) */
+  --text-tiny: 0.75rem;
+  --text-small: 0.875rem;
+}

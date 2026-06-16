@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Input, Textarea, Select, SelectItem, Button } from '@heroui/react';
+import { Input, Textarea, Select, SelectItem, Button } from '../components/heroui';
 import Shell from '../components/Shell';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';

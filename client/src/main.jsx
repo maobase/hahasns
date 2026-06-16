@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { HeroUIProvider } from '@heroui/react';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -19,17 +18,17 @@ import './styles/pages.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <HeroUIProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <ComposeProvider>
-                <App />
-              </ComposeProvider>
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </HeroUIProvider>
+      {/* HeroUI v3 needs no Provider — theming is handled by ThemeProvider
+          (data-theme/skin) + @heroui/styles imported in tailwind.css. */}
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <ComposeProvider>
+              <App />
+            </ComposeProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

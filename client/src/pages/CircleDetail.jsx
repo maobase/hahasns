@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Spinner, Chip } from '@heroui/react';
+import { Card, CardBody, Button, Spinner, Chip } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
