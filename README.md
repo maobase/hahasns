@@ -168,6 +168,13 @@ docker compose up -d --build
 # → http://localhost:4000  （app + mariadb + redis 一并起好，app 首启自动建表）
 ```
 
+> **⚠️ 小内存机器（如 2 核 2G）**：容器内要编译前端(vite)+后端(tsc)，峰值内存可能超 2G 把机器打崩。先加 swap 兜底、再顺序构建：
+> ```bash
+> sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+> DOCKER_BUILDKIT=0 docker compose up -d --build   # 老构建器顺序建 stage，峰值内存减半
+> ```
+> Dockerfile 已把构建期 Node 堆封顶到 1024MB；内存充裕的机器可 `docker compose build --build-arg NODE_HEAP_MB=3072` 加速。实在弱就在别的机器 build 好镜像再拉。
+
 > **首个管理员**：全新库为空。在 `.env` 设 `SEED_ADMIN_USER`/`SEED_ADMIN_PASSWORD` 即首启自动建管理员；或注册后用 SQL 把账号提成 `admin`。详见 [DEPLOY.md「首个管理员」](docs/DEPLOY.md)。
 
 详见 [1Panel](docs/INSTALL-1panel.md) / [宝塔](docs/INSTALL-bt.md) 部署教程。
