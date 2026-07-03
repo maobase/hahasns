@@ -44,8 +44,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         else message = (body as any).error || message;
       }
     } else if (exception instanceof Error) {
-      message = exception.message || message;
-      this.logger.error(exception.stack);
+      // 非 HttpException = 未预期的服务器/DB 错误。原始 exception.message 可能含 SQL 片段/
+      // 内部细节（如 "Unknown column 'NaN' in 'WHERE'"），绝不能回给客户端——只记服务端日志，
+      // 对外统一返回通用文案。业务错误请显式 throw HttpException（会走上面分支保留原文）。
+      message = '服务器出错了，请稍后重试';
+      this.logger.error(`${req?.method} ${req?.path} → ${exception.message}`, exception.stack);
     }
 
     // SPA 兜底：未匹配任何路由的 GET（非 /api、非 /uploads）回前端 index.html，
