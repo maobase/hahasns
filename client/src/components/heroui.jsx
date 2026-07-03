@@ -13,7 +13,7 @@
    ModalFooter, useDisclosure, Chip, Spinner, Progress.
    (Avatar/Badge are rendered through the app's own components, not here.)
    ============================================================ */
-import { Children, cloneElement, isValidElement } from 'react';
+import { Children, cloneElement, isValidElement, useId } from 'react';
 import {
   Card as V3Card,
   Tabs as V3Tabs,
@@ -26,7 +26,6 @@ import {
   Spinner as V3Spinner,
   ProgressBar as V3ProgressBar,
   ListBox,
-  Label,
   Description,
   useOverlayState,
 } from '@heroui/react';
@@ -209,11 +208,11 @@ export function Button({
 }
 
 /* ---- Field wrapper (label + description for inputs) ------------------ */
-function Field({ label, labelPlacement, description, className, children }) {
+function Field({ label, labelPlacement, description, className, htmlFor, children }) {
   if (!label && !description) return children;
   return (
     <div className={cx('haha-field', `haha-field-${labelPlacement || 'outside'}`, className)}>
-      {label && <Label className="haha-field-label">{label}</Label>}
+      {label && <label className="haha-field-label" htmlFor={htmlFor}>{label}</label>}
       {children}
       {description && <Description className="haha-field-desc">{description}</Description>}
     </div>
@@ -236,8 +235,11 @@ export function Input({
   onValueChange,
   onChange,
   isRequired,
+  id,
   ...rest
 }) {
+  const autoId = useId();
+  const inputId = id || autoId;
   const handleChange = (e) => {
     onChange?.(e);
     onValueChange?.(e?.target?.value ?? '');
@@ -247,6 +249,7 @@ export function Input({
       {startContent && <span className="haha-input-start">{startContent}</span>}
       <V3Input
         className="haha-input"
+        id={inputId}
         value={value ?? ''}
         onChange={handleChange}
         required={isRequired}
@@ -256,7 +259,7 @@ export function Input({
     </div>
   );
   return (
-    <Field label={label} labelPlacement={labelPlacement} description={description}>
+    <Field label={label} labelPlacement={labelPlacement} description={description} htmlFor={inputId}>
       {field}
     </Field>
   );
@@ -274,8 +277,11 @@ export function Textarea({
   onValueChange,
   onChange,
   minRows,
+  id,
   ...rest
 }) {
+  const autoId = useId();
+  const inputId = id || autoId;
   const handleChange = (e) => {
     onChange?.(e);
     onValueChange?.(e?.target?.value ?? '');
@@ -283,6 +289,7 @@ export function Textarea({
   const field = (
     <V3TextArea
       className={cx('haha-textarea', className)}
+      id={inputId}
       value={value ?? ''}
       onChange={handleChange}
       rows={minRows}
@@ -290,7 +297,7 @@ export function Textarea({
     />
   );
   return (
-    <Field label={label} labelPlacement={labelPlacement} description={description}>
+    <Field label={label} labelPlacement={labelPlacement} description={description} htmlFor={inputId}>
       {field}
     </Field>
   );
