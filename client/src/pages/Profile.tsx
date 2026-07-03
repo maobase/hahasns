@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Shell from '../components/Shell';
+import { useDismiss } from '../lib/useDismiss';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import PostCard from '../components/PostCard';
@@ -57,6 +58,8 @@ export default function Profile() {
   const [tab, setTab] = useState('posts');
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
   const [likedPosts, setLikedPosts] = useState<any>(null);
   const [likedMore, setLikedMore] = useState(false);
   const [likedBusy, setLikedBusy] = useState(false);
@@ -174,10 +177,10 @@ export default function Profile() {
                       : <><Icon name="plus" size={15} /> 关注</>}
                   </button>
                   {me && (
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative' }} ref={menuRef}>
                       <button className="post-menu" onClick={() => setMenuOpen((m) => !m)} aria-label="更多操作"><Icon name="more" size={18} /></button>
                       {menuOpen && (
-                        <div className="ui-card menu-pop" onMouseLeave={() => setMenuOpen(false)}>
+                        <div className="ui-card menu-pop">
                           <button className="menu-item" onClick={reportUser}><Icon name="flag" size={16} /> 举报</button>
                           <button className="menu-item danger" onClick={blockUser}><Icon name="ban" size={16} /> 拉黑</button>
                         </div>

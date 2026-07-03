@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Shell from '../components/Shell';
+import { useDismiss } from '../lib/useDismiss';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import Comments from '../components/Comments';
@@ -27,6 +28,8 @@ export default function ThreadDetail() {
   const [t, setT] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
   const [editOpen, setEditOpen] = useState(false);
   const [edit, setEdit] = useState({ title: '', content: '' });
   const editTaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -121,10 +124,10 @@ export default function ThreadDetail() {
                 <button className="btn btn-ghost btn-sm" onClick={() => moderate('elite')}>{t.elite ? '取消精华' : '加精'}</button>
               </div>
             )}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} ref={menuRef}>
               <button className="post-menu" onClick={() => setMenuOpen((m) => !m)} aria-label="更多操作"><Icon name="more" size={18} /></button>
               {menuOpen && (
-                <div className="ui-card menu-pop" onMouseLeave={() => setMenuOpen(false)}>
+                <div className="ui-card menu-pop">
                   {isOwner && <button className="menu-item" onClick={openEdit}><Icon name="edit" size={16} /> 编辑</button>}
                   {!isOwner && <button className="menu-item" onClick={report}><Icon name="flag" size={16} /> 举报</button>}
                   {(isOwner || t.canModerate) && <button className="menu-item danger" onClick={() => { setMenuOpen(false); moderate('delete'); }}><Icon name="close" size={16} /> 删除</button>}
