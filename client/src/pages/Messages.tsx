@@ -10,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { timeAgo, clockTime } from '../lib/format';
+import { useDismiss } from '../lib/useDismiss';
 
 const CHAT_EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 👍 👏 🙏 💪 🎉 🔥 ❤️ 🌈 ☕ 🎵 🙌 🤝 😅 🥺 😘 🤣 👀 🐶 🌸 ✨'.split(' ');
 
@@ -43,6 +44,8 @@ export default function Messages() {
   const endRef = useRef<HTMLDivElement | null>(null);
   const imageFile = useRef<HTMLInputElement | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
+  const emojiRef = useRef<HTMLDivElement>(null);
+  useDismiss(showEmoji, () => setShowEmoji(false), emojiRef);
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   // 私信输入自增高：长消息换行、撑高（修复 codex#1「单行 input 不换行」）
   useEffect(() => {
@@ -199,7 +202,7 @@ export default function Messages() {
               </div>
               <div className="chat-input">
                 <button className="chat-img-btn" onClick={() => imageFile.current?.click()} aria-label="发送图片"><Icon name="image" size={20} /></button>
-                <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }} ref={emojiRef}>
                   <button className="chat-img-btn" onClick={() => setShowEmoji((s) => !s)} aria-label="表情"><Icon name="smile" size={20} /></button>
                   {showEmoji && (
                     <div className="emoji-pop" style={{ bottom: '46px', top: 'auto', left: 0 }}>

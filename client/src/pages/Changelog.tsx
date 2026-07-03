@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.69', date: '2026-07-04 11:03:52', items: [
+      ['fix', '私信、圈子聊天的表情选择器现在点击外部或按 Esc 也能关闭（此前私信表情面板只能靠再点一次按钮关闭，手机上尤其别扭）。'],
+    ],
+  },
+  {
     ver: 'v4.68', date: '2026-07-04 10:24:16', items: [
       ['feat', '后台「外观」现在可直接上传 Logo 与 Favicon（自动走对象存储 / 本地持久卷，配了 S3/MinIO/rustfs 即进桶），不用再自己找图床粘 URL；新增可自定义浏览器标签 Favicon。'],
     ],

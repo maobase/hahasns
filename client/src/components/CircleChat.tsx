@@ -6,6 +6,7 @@ import Icon from './Icon';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { timeAgo } from '../lib/format';
+import { useDismiss } from '../lib/useDismiss';
 
 const EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 😡 👍 👏 🙏 💪 🎉 🔥 ✨ 💯 ❤️ 💔 🌈 ☕ 🍜 🎵 📷 🌙 ⭐ 🐱 🐶 🌸 🍀 🚀 💎'.split(' ');
 
@@ -18,6 +19,8 @@ export default function CircleChat({ slug, joined, onJoin }: { slug: string; joi
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const emojiRef = useRef<HTMLDivElement>(null);
+  useDismiss(showEmoji, () => setShowEmoji(false), emojiRef);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const lastIdRef = useRef(0);
@@ -120,10 +123,10 @@ export default function CircleChat({ slug, joined, onJoin }: { slug: string; joi
         )}
       </div>
       <div className="cchat-input">
-        <div className="cchat-emoji-wrap">
+        <div className="cchat-emoji-wrap" ref={emojiRef}>
           <button className="tool" type="button" onClick={() => setShowEmoji((s) => !s)} aria-label="表情"><Icon name="smile" size={19} /></button>
           {showEmoji && (
-            <div className="emoji-pop emoji-pop-up" onMouseLeave={() => setShowEmoji(false)}>
+            <div className="emoji-pop emoji-pop-up">
               {EMOJIS.map((em) => <button key={em} type="button" onClick={() => insertEmoji(em)}>{em}</button>)}
             </div>
           )}
