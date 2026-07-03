@@ -201,7 +201,7 @@ export default function Messages() {
                 </div>
                 <textarea ref={textRef} rows={1} value={text} onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-                  placeholder="输入消息…（Enter 发送，Shift+Enter 换行）" />
+                  placeholder="输入消息…" />
                 <button className="btn btn-primary" onClick={send} disabled={!text.trim()}>发送</button>
               </div>
               <input ref={imageFile} type="file" accept="image/*" hidden onChange={sendImage} />
