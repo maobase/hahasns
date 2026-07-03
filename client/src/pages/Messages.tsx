@@ -32,6 +32,14 @@ export default function Messages() {
     setMenuUp(!!list && btn.bottom + 160 > list.bottom);
     setMenuFor(id);
   };
+  // 会话 ⋯ 菜单：点菜单外部或按 Esc 关闭（触摸端无 mouseLeave、键盘也要能关）
+  useEffect(() => {
+    if (menuFor == null) return;
+    const onDown = (e: any) => { if (!e.target.closest?.('.convo-actions')) setMenuFor(null); };
+    const onKey = (e: any) => { if (e.key === 'Escape') setMenuFor(null); };
+    const id = setTimeout(() => { document.addEventListener('pointerdown', onDown); document.addEventListener('keydown', onKey); }, 0);
+    return () => { clearTimeout(id); document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [menuFor]);
   const endRef = useRef<HTMLDivElement | null>(null);
   const imageFile = useRef<HTMLInputElement | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
@@ -147,7 +155,7 @@ export default function Messages() {
                 <div className="convo-actions" onClick={(e) => e.stopPropagation()}>
                   <button className={`convo-menu-btn${menuFor === c.peer.id ? ' open' : ''}`} onClick={(e) => openConvoMenu(e, c.peer.id)} aria-label="会话操作"><Icon name="more" size={16} /></button>
                   {menuFor === c.peer.id && (
-                    <div className={`ui-card menu-pop convo-menu-pop${menuUp ? ' up' : ''}`} onMouseLeave={() => setMenuFor(null)}>
+                    <div className={`ui-card menu-pop convo-menu-pop${menuUp ? ' up' : ''}`}>
                       <button className="menu-item" onClick={() => setPref(c.peer.id, { pinned: !c.pinned })}><Icon name="pin" size={16} /> {c.pinned ? '取消置顶' : '置顶会话'}</button>
                       <button className="menu-item" onClick={() => setPref(c.peer.id, { muted: !c.muted })}><Icon name={c.muted ? 'bell' : 'bellOff'} size={16} /> {c.muted ? '取消免打扰' : '消息免打扰'}</button>
                       <button className="menu-item danger" onClick={(e) => deleteConvo(e, c.peer.id)}><Icon name="close" size={16} /> 删除会话</button>

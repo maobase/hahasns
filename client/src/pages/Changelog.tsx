@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.66', date: '2026-07-03 21:12:40', items: [
+      ['fix', '动态「⋯」菜单、私信会话「⋯」菜单现在点击菜单外部或按 Esc 即可关闭——修复手机上点别处菜单卡着不关的问题（此前仅靠鼠标移出关闭，触摸端无效）。'],
+    ],
+  },
+  {
     ver: 'v4.65', date: '2026-07-03 20:41:18', items: [
       ['fix', '弹窗无障碍加固：补上 dialog 语义（role/aria-modal），打开时焦点移入弹窗、Tab 不再逃到弹窗背后（焦点陷阱）、关闭后焦点归还到原处——键盘与读屏用户体验更完整。'],
     ],

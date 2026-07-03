@@ -11,6 +11,7 @@ import Reactions from './Reactions';
 import Comments from './Comments';
 import Modal from './Modal';
 import CollectModal from './CollectModal';
+import { useDismiss } from '../lib/useDismiss';
 // 懒加载：分享海报用到 html-to-image + qrcode（较重），且仅在点开「分享海报」时才需要，
 // 拆成独立 chunk，从首屏主包移除这两个库。
 const SharePoster = lazy(() => import('./SharePoster'));
@@ -49,6 +50,8 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   const [shareOpen, setShareOpen] = useState(false);
   const [shareText, setShareText] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
   const [pwd, setPwd] = useState('');
   const [bookmarked, setBookmarked] = useState(initial.bookmarked);
   const bmBusy = useRef(false); // 收藏 in-flight 标记（防连点竞态）
@@ -185,10 +188,10 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
           </div>
         </div>
         {!isAnon && (
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative' }} ref={menuRef}>
             <button className="post-menu" onClick={() => setMenuOpen((m) => !m)} aria-label="更多操作"><Icon name="more" size={18} /></button>
             {menuOpen && (
-              <div className="ui-card menu-pop" onMouseLeave={() => setMenuOpen(false)}>
+              <div className="ui-card menu-pop">
                 <button className="menu-item" onClick={copyLink}><Icon name="share" size={16} /> 复制链接</button>
                 <button className="menu-item" onClick={() => { setMenuOpen(false); setPosterOpen(true); }}><Icon name="image" size={16} /> 分享海报</button>
                 <button className="menu-item" onClick={openCollect}><Icon name="grid" size={16} /> 加入专题</button>
