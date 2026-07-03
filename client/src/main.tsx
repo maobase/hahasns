@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <BrowserRouter>
       {/* HeroUI v3 needs no Provider — theming is handled by ThemeProvider
           (data-theme/skin) + @heroui/styles imported in tailwind.css. */}
+      <ErrorBoundary>
       <SiteProvider>
         <ThemeProvider>
           <AuthProvider>
@@ -33,6 +35,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
           </AuthProvider>
         </ThemeProvider>
       </SiteProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   </React.StrictMode>,
 );
