@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.65', date: '2026-07-03 20:41:18', items: [
+      ['fix', '弹窗无障碍加固：补上 dialog 语义（role/aria-modal），打开时焦点移入弹窗、Tab 不再逃到弹窗背后（焦点陷阱）、关闭后焦点归还到原处——键盘与读屏用户体验更完整。'],
+    ],
+  },
+  {
     ver: 'v4.64', date: '2026-07-03 20:14:32', items: [
       ['fix', '表单输入框的文字标签现在与输入框正确关联：点击「昵称」等标签即可聚焦对应输入框，屏幕阅读器也能正确朗读标签（无障碍改进，覆盖全站所有带标签的输入框）。'],
     ],
