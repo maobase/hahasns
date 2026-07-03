@@ -1823,6 +1823,19 @@ function Appearance() {
   const [saving, setSaving] = useState(false);
   useEffect(() => { api.get('/admin/config').then(({ data }) => setCfg(data.config)).catch(() => setCfg({})); }, []);
   const setK = (k: string, v: string) => setCfg((c) => ({ ...(c || {}), [k]: v }));
+  // 品牌图片上传：走通用 /upload（→ StorageService → 配了 S3 就进对象存储，否则本地持久卷），
+  // 拿到 URL 自动填进对应字段。管理员无需自己找图床。
+  const uploadBrand = async (k: string, e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData(); fd.append('files', file);
+    try {
+      const { data } = await api.post('/upload', fd);
+      const url = data.files?.[0]?.url;
+      if (url) { setK(k, url); toast.ok('已上传，别忘了点「保存」'); }
+    } catch (err: any) { toast.err(err.message); }
+    e.target.value = '';
+  };
   const save = async () => {
     setSaving(true);
     try {
@@ -1848,12 +1861,23 @@ function Appearance() {
           </label>
         </div>
         <label className="sec-field" style={{ marginTop: 12 }}>
-          <span className="sec-label">Logo 图片 URL</span>
+          <span className="sec-label">Logo 图片</span>
           <div className="row gap-8" style={{ alignItems: 'center' }}>
             {cfg.site_logo
               ? <img src={cfg.site_logo} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
-            <input className="inp" maxLength={500} value={cfg.site_logo ?? ''} onChange={(e) => setK('site_logo', e.target.value)} placeholder="https://… （留空用内置标记）" style={{ flex: 1 }} />
+            <input className="inp" maxLength={500} value={cfg.site_logo ?? ''} onChange={(e) => setK('site_logo', e.target.value)} placeholder="上传或粘贴 URL（留空用内置标记）" style={{ flex: 1 }} />
+            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_logo', e)} /></label>
+          </div>
+        </label>
+        <label className="sec-field" style={{ marginTop: 12 }}>
+          <span className="sec-label">Favicon（浏览器标签图标）</span>
+          <div className="row gap-8" style={{ alignItems: 'center' }}>
+            {cfg.site_favicon
+              ? <img src={cfg.site_favicon} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+              : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
+            <input className="inp" maxLength={500} value={cfg.site_favicon ?? ''} onChange={(e) => setK('site_favicon', e.target.value)} placeholder="上传或粘贴 URL（留空用内置图标）" style={{ flex: 1 }} />
+            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_favicon', e)} /></label>
           </div>
         </label>
       </div>

@@ -61,6 +61,7 @@ export class SiteService {
       name: cfg.get('site_name') || 'HahaSNS',
       slogan: cfg.get('site_slogan') || '轻社交社区',
       logo: cfg.get('site_logo') || '',
+      favicon: cfg.get('site_favicon') || '',
       customCss: cfg.get('site_custom_css') || '',
       modules,
       layouts,

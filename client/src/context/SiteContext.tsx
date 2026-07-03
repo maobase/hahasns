@@ -8,13 +8,14 @@ export interface SiteConfig {
   name: string;
   slogan: string;
   logo: string;
+  favicon: string;   // 浏览器标签图标 URL（走对象存储 / 图床）；留空用 index.html 内置 SVG
   customCss: string;
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）
 }
 
-const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', customCss: '', modules: {}, layouts: {}, payments: {} };
+const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', modules: {}, layouts: {}, payments: {} };
 
 // 模块是否开启：只有显式 false 才隐藏（取不到配置时默认全开，绝不误伤导航）
 export function moduleOn(modules: Record<string, boolean> | undefined, key?: string) {
@@ -48,6 +49,14 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     if (!el) { el = document.createElement('style'); el.id = id; document.head.appendChild(el); }
     el.textContent = site.customCss;
   }, [site.customCss]);
+
+  // 自定义 favicon：站长设了就把 <link rel=icon> 的 href 换成对象存储 URL；留空则保留 index.html 内置 SVG。
+  useEffect(() => {
+    if (!site.favicon) return;
+    let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+    link.href = site.favicon;
+  }, [site.favicon]);
 
   return <SiteContext.Provider value={site}>{children}</SiteContext.Provider>;
 }
