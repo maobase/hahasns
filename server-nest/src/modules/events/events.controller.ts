@@ -4,6 +4,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { EventsService } from './events.service';
+import { CreateEventDto } from './dto/event.dto';
 
 /** /api/events — 社区活动. Mirrors server/src/routes/events.js. */
 @Controller('api/events')
@@ -30,7 +31,7 @@ export class EventsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@CurrentUser() user: User, @Body() body: any) {
+  create(@CurrentUser() user: User, @Body() body: CreateEventDto) {
     return this.events.create(user, body);
   }
 

@@ -4,6 +4,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { OptionalAuthGuard } from '../../common/guards/optional-auth.guard';
 import { ArticlesService } from './articles.service';
+import { CreateArticleDto } from './dto/article.dto';
 
 /** /api/articles — 专栏. Mirrors server/src/routes/articles.js. */
 @Controller('api/articles')
@@ -36,7 +37,7 @@ export class ArticlesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@CurrentUser() user: User, @Body() body: any) {
+  create(@CurrentUser() user: User, @Body() body: CreateArticleDto) {
     return this.articles.create(user, body);
   }
 
