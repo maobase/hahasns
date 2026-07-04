@@ -9,6 +9,7 @@ import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { timeAgo } from '../lib/format';
+import { copyText } from '../lib/clipboard';
 
 // Pre-fill prompts for the empty state. Restrained, real copy.
 const SUGGESTIONS = [
@@ -226,11 +227,10 @@ export default function AIChat() {
   };
 
   const copyMsg = async (m: any) => {
-    try {
-      await navigator.clipboard.writeText(m.content);
+    if (await copyText(m.content)) {
       setCopiedId(m.id);
       setTimeout(() => setCopiedId((c: any) => (c === m.id ? null : c)), 1600);
-    } catch { toast.err('复制失败，请手动选择文本'); }
+    } else { toast.err('复制失败，请手动选择文本'); }
   };
 
   if (authLoading) return <Shell right={false}><Loading /></Shell>;

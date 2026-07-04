@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.81', date: '2026-07-04 18:07:52', items: [
+      ['fix', '复制链接/邀请码/AI 回复现在在 HTTP 环境（未上 HTTPS 的自托管站点）也能用了——加了兼容旧接口的复制兜底，不再依赖仅 HTTPS 才有的剪贴板 API。'],
+    ],
+  },
+  {
     ver: 'v4.80', date: '2026-07-04 17:31:24', items: [
       ['fix', '评论区加载失败时显示「评论加载失败 + 重试」，不再误报「还没有评论」——至此全站列表/详情/评论的加载失败提示全部到位。'],
     ],

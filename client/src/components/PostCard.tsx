@@ -13,6 +13,7 @@ import Modal from './Modal';
 import CollectModal from './CollectModal';
 import { useDismiss } from '../lib/useDismiss';
 import { onImgError } from '../lib/img';
+import { copyText } from '../lib/clipboard';
 // 懒加载：分享海报用到 html-to-image + qrcode（较重），且仅在点开「分享海报」时才需要，
 // 拆成独立 chunk，从首屏主包移除这两个库。
 const SharePoster = lazy(() => import('./SharePoster'));
@@ -152,8 +153,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   const copyLink = async () => {
     setMenuOpen(false);
     const url = `${window.location.origin}/post/${post.id}`;
-    try { await navigator.clipboard.writeText(url); toast.ok('链接已复制'); }
-    catch { toast.show(url); }
+    if (await copyText(url)) toast.ok('链接已复制'); else toast.show(url);
   };
 
   const pin = async () => {

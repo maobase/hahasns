@@ -12,6 +12,7 @@ import { useLayout } from '../context/SiteContext';
 import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { fmtNum } from '../lib/format';
+import { copyText } from '../lib/clipboard';
 import { VIP_TIERS, vipTier, type VipTier } from '../lib/vip';
 
 export default function Member() {
@@ -31,8 +32,7 @@ export default function Member() {
 
   const inviteLink = user ? `${window.location.origin}/?invite=${encodeURIComponent(user.username)}` : '';
   const copyInvite = async () => {
-    try { await navigator.clipboard.writeText(inviteLink); toast.ok('邀请链接已复制 🔗'); }
-    catch { toast.err('复制失败，请手动复制'); }
+    if (await copyText(inviteLink)) toast.ok('邀请链接已复制 🔗'); else toast.err('复制失败，请手动复制');
   };
 
   if (authLoading) return <Shell wide><Loading /></Shell>;
