@@ -22,6 +22,8 @@ export default function Messages() {
   const [convos, setConvos] = useState<any[]>([]);
   const [active, setActive] = useState<any>(null); // { peer, messages }
   const [text, setText] = useState('');
+  const [sending, setSending] = useState(false); // 仅用于按钮 disabled 的视觉反馈
+  const sendingRef = useRef(false);               // 同步守卫：连按 Enter（React 尚未重渲染）也拦得住
   const [loadingList, setLoadingList] = useState(true);
   const [menuFor, setMenuFor] = useState<any>(null);
   const [menuUp, setMenuUp] = useState(false);
@@ -113,12 +115,14 @@ export default function Messages() {
   };
 
   const send = async () => {
-    if (!text.trim() || !active) return;
+    if (!text.trim() || !active || sendingRef.current) return; // 慢网下连按 Enter/连点发送不会重复发同一条
+    sendingRef.current = true; setSending(true);
     try {
       const { data } = await api.post(`/messages/${active.peer.id}`, { content: text });
       pushMessage(data.message);
       setText('');
     } catch (e: any) { toast.err(e.message); }
+    finally { sendingRef.current = false; setSending(false); }
   };
 
   if (authLoading) return <Shell right={false}><Loading /></Shell>;
@@ -213,7 +217,7 @@ export default function Messages() {
                 <textarea ref={textRef} rows={1} value={text} onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="输入消息…" />
-                <button className="btn btn-primary" onClick={send} disabled={!text.trim()}>发送</button>
+                <button className="btn btn-primary" onClick={send} disabled={!text.trim() || sending}>发送</button>
               </div>
               <input ref={imageFile} type="file" accept="image/*" hidden onChange={sendImage} />
             </>

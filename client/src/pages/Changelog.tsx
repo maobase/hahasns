@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.75', date: '2026-07-04 14:33:12', items: [
+      ['fix', '私信发送增加防连击：慢网络下连按 Enter 或连点「发送」不会再重复发出同一条消息。'],
+    ],
+  },
+  {
     ver: 'v4.74', date: '2026-07-04 13:58:30', items: [
       ['fix', '动态/帖子详情页加载失败时，能区分「内容不存在」与「网络出错」：网络出错显示「加载失败 + 重试」，不再一律误报「不存在或已删除」。'],
     ],
