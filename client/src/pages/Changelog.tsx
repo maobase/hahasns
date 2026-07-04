@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.78', date: '2026-07-04 16:22:36', items: [
+      ['feat', '补上社交分享预览（Open Graph / Twitter Card）：把 HahaSNS 链接分享到微信/微博/Telegram 等，现在会显示站点标题与简介卡片，而不是一条光秃秃的网址。'],
+    ],
+  },
+  {
     ver: 'v4.77', date: '2026-07-04 15:44:18', items: [
       ['fix', '私信里的图片、转发引用卡里的缩略图，若图片失效（被删/URL 挂了）现在显示灰底占位而不是浏览器的破图图标（feed 大图/头像/封面本就已优雅降级）。'],
     ],
