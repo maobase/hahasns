@@ -6,7 +6,7 @@ import Avatar from '../components/Avatar';
 import RichBody from '../components/RichBody';
 import Comments from '../components/Comments';
 import CollectModal from '../components/CollectModal';
-import { DetailSkeleton } from '../components/States';
+import { DetailSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -26,15 +26,16 @@ export default function ArticleDetail() {
   const [article, setArticle] = useState<Article | null>(null);
   const [related, setRelated] = useState<Article[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);
   const [coverErr, setCoverErr] = useState(false); // 封面外链加载失败时不显示破图
   const [collectOpen, setCollectOpen] = useState(false);
   usePageTitle(article?.title); // 标签页显示文章真实标题（覆盖 Layout 的通用「文章」）
 
   const load = useCallback(() => {
-    setArticle(null); setNotFound(false);
+    setArticle(null); setNotFound(false); setError(false);
     api.get<ArticleDetailResponse>(`/articles/${id}`)
       .then(({ data }) => { setArticle(data.article); setRelated(data.related); })
-      .catch(() => setNotFound(true));
+      .catch((e: any) => { if (e?.status === 404) setNotFound(true); else setError(true); });
   }, [id]);
   useEffect(() => { load(); window.scrollTo(0, 0); }, [load]);
 
@@ -53,6 +54,7 @@ export default function ArticleDetail() {
     catch (err) { toast.err((err as Error).message); }
   };
 
+  if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
   if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>文章不存在或已删除。<br /><Link to="/articles" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>返回专栏</Link></div></Shell>;
   if (!article) return <Shell right={false}><DetailSkeleton /></Shell>;
 

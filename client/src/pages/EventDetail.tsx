@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
 import RichBody from '../components/RichBody';
-import { DetailSkeleton } from '../components/States';
+import { DetailSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -26,15 +26,16 @@ export default function EventDetail() {
   const [ev, setEv] = useState<CommunityEvent | null>(null);
   const [attendees, setAttendees] = useState<PublicUser[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
   const [coverErr, setCoverErr] = useState(false); // 封面外链加载失败时优雅降级为分类色占位
   usePageTitle(ev?.title); // 标签页显示活动真实标题（覆盖通用「活动详情」）
 
   const load = useCallback(() => {
-    setEv(null); setNotFound(false);
+    setEv(null); setNotFound(false); setError(false);
     api.get<EventDetailResponse>(`/events/${id}`)
       .then(({ data }) => { setEv(data.event); setAttendees(data.attendees); })
-      .catch(() => setNotFound(true));
+      .catch((e: any) => { if (e?.status === 404) setNotFound(true); else setError(true); });
   }, [id]);
   useEffect(() => { load(); window.scrollTo(0, 0); }, [load]);
 
@@ -56,6 +57,7 @@ export default function EventDetail() {
     catch (err) { toast.err((err as Error).message); }
   };
 
+  if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
   if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>活动不存在或已取消。<br /><Link to="/events" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>返回活动</Link></div></Shell>;
   if (!ev) return <Shell right={false}><DetailSkeleton media={false} /></Shell>;
 

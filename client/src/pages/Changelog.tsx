@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.79', date: '2026-07-04 16:58:10', items: [
+      ['fix', '专栏文章、活动、圈子详情页加载失败时，也能区分「内容不存在」与「网络出错」：网络出错显示「加载失败 + 重试」，不再一律误报「不存在」（延续上一版详情页修复）。'],
+    ],
+  },
+  {
     ver: 'v4.78', date: '2026-07-04 16:22:36', items: [
       ['feat', '补上社交分享预览（Open Graph / Twitter Card）：把 HahaSNS 链接分享到微信/微博/Telegram 等，现在会显示站点标题与简介卡片，而不是一条光秃秃的网址。'],
     ],

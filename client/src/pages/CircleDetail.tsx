@@ -7,7 +7,7 @@ import Avatar from '../components/Avatar';
 import Composer from '../components/Composer';
 import PostCard from '../components/PostCard';
 import CircleChat from '../components/CircleChat';
-import { PostSkeleton, Empty } from '../components/States';
+import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -41,13 +41,14 @@ export default function CircleDetail() {
   const [members, setMembers] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[] | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);
   const [tab, setTab] = useState<'posts' | 'chat'>('posts');
 
   const load = useCallback(() => {
-    setCircle(null); setNotFound(false);
+    setCircle(null); setNotFound(false); setError(false);
     api.get(`/circles/${encodeURIComponent(slug!)}`)
       .then(({ data }) => { setCircle(data.circle); setMembers(data.members); })
-      .catch(() => setNotFound(true));
+      .catch((e: any) => { if (e?.status === 404) setNotFound(true); else setError(true); });
     setPosts(null);
     api.get(`/circles/${encodeURIComponent(slug!)}/posts`)
       .then(({ data }) => setPosts(data.posts)).catch(() => setPosts([]));
@@ -67,6 +68,7 @@ export default function CircleDetail() {
     } catch (err: any) { setCircle(prev); toast.err(err.message); }
   };
 
+  if (error) return <Shell><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
   if (notFound) return <Shell><div className="ui-card"><Empty icon="🧭" text="圈子不存在，它可能已被解散" /></div></Shell>;
   if (!circle) return <Shell><div className="flex justify-center py-10"><Spinner color="primary" /></div></Shell>;
 
