@@ -9,7 +9,7 @@ import MediaGrid from '../components/MediaGrid';
 import Modal from '../components/Modal';
 import MarkdownToolbar from '../components/MarkdownToolbar';
 import { UserName } from '../components/Identity';
-import { Loading, Empty, DetailSkeleton } from '../components/States';
+import { Loading, Empty, DetailSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout } from '../context/SiteContext';
@@ -27,6 +27,8 @@ export default function ThreadDetail() {
   const toast = useToast();
   const [t, setT] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
@@ -36,11 +38,12 @@ export default function ThreadDetail() {
   const layout = useLayout('thread', 'narrow');
 
   useEffect(() => {
-    setLoading(true);
-    api.get(`/forum/threads/${id}`).then(({ data }) => setT(data.thread)).catch(() => setT(null)).finally(() => setLoading(false));
-  }, [id]);
+    setLoading(true); setError(false);
+    api.get(`/forum/threads/${id}`).then(({ data }) => setT(data.thread)).catch((e: any) => { setT(null); if (e?.status !== 404) setError(true); }).finally(() => setLoading(false));
+  }, [id, reloadKey]);
 
   if (loading) return <Shell layout={layout}><DetailSkeleton /></Shell>;
+  if (error) return <Shell layout={layout}><div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div></Shell>;
   if (!t) return <Shell layout={layout}><div className="ui-card"><Empty icon="🔍" text="帖子不存在或已删除" /></div></Shell>;
   if (t.paywalled) return (
     <Shell layout={layout}>

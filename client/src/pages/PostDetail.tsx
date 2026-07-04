@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import PostCard from '../components/PostCard';
 import Avatar from '../components/Avatar';
-import { Loading, Empty, DetailSkeleton } from '../components/States';
+import { Loading, Empty, DetailSkeleton, LoadError } from '../components/States';
 import { useSmartBack } from '../hooks/useSmartBack';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
@@ -35,13 +35,15 @@ export default function PostDetail() {
   const [related, setRelated] = useState<any[]>([]);
   const [siblings, setSiblings] = useState<{ prev: any; next: any }>({ prev: null, next: null });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    setLoading(true); setRelated([]); setSiblings({ prev: null, next: null });
-    api.get(`/posts/${id}`).then(({ data }) => setPost(data.post)).catch(() => setPost(null)).finally(() => setLoading(false));
+    setLoading(true); setError(false); setRelated([]); setSiblings({ prev: null, next: null });
+    api.get(`/posts/${id}`).then(({ data }) => setPost(data.post)).catch((e: any) => { setPost(null); if (e?.status !== 404) setError(true); }).finally(() => setLoading(false));
     api.get(`/posts/${id}/related`).then(({ data }) => setRelated(data.posts)).catch(() => {});
     api.get(`/posts/${id}/siblings`).then(({ data }) => setSiblings(data)).catch(() => {});
-  }, [id]);
+  }, [id, reloadKey]);
 
   return (
     <Shell right={related.length ? <RelatedCard posts={related} /> : undefined}>
@@ -49,7 +51,8 @@ export default function PostDetail() {
         <button className="back-btn" onClick={back} aria-label="返回"><Icon name="back" size={20} /></button>
         动态详情
       </div>
-      {loading ? <DetailSkeleton /> : !post ? <div className="ui-card"><Empty icon="🔍" text="动态不存在或已删除" /></div>
+      {loading ? <DetailSkeleton /> : error ? <div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div>
+        : !post ? <div className="ui-card"><Empty icon="🔍" text="动态不存在或已删除" /></div>
         : (
           <>
             <PostCard post={post} defaultOpenComments />
