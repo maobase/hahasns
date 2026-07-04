@@ -11,6 +11,7 @@ import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { timeAgo, clockTime } from '../lib/format';
 import { useDismiss } from '../lib/useDismiss';
+import { onImgError } from '../lib/img';
 
 const CHAT_EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 👍 👏 🙏 💪 🎉 🔥 ❤️ 🌈 ☕ 🎵 🙌 🤝 😅 🥺 😘 🤣 👀 🐶 🌸 ✨'.split(' ');
 
@@ -194,7 +195,7 @@ export default function Messages() {
                       <div className={`bubble-row ${mine ? 'me' : 'them'}`}>
                         {!mine && <Avatar user={active.peer} size={32} />}
                         {m.type === 'image'
-                          ? <a className="bubble bubble-img" href={m.content} target="_blank" rel="noreferrer"><img src={m.content} alt="" /></a>
+                          ? <a className="bubble bubble-img" href={m.content} target="_blank" rel="noreferrer"><img src={m.content} alt="" onError={onImgError} /></a>
                           : <div className="bubble">{m.content}</div>}
                         <span className="bubble-time">{clockTime(m.created_at)}</span>
                       </div>

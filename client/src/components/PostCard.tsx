@@ -12,6 +12,7 @@ import Comments from './Comments';
 import Modal from './Modal';
 import CollectModal from './CollectModal';
 import { useDismiss } from '../lib/useDismiss';
+import { onImgError } from '../lib/img';
 // 懒加载：分享海报用到 html-to-image + qrcode（较重），且仅在点开「分享海报」时才需要，
 // 拆成独立 chunk，从首屏主包移除这两个库。
 const SharePoster = lazy(() => import('./SharePoster'));
@@ -226,7 +227,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
             <div className="repost-media">
               {post.shared.media.slice(0, 3).map((m: any, i: number) => (
                 m.type === 'image'
-                  ? <img key={i} src={m.url} alt="" loading="lazy" />
+                  ? <img key={i} src={m.url} alt="" loading="lazy" onError={onImgError} />
                   : <span key={i} className="repost-media-ph"><Icon name={m.type === 'video' ? 'video' : 'music'} size={18} /></span>
               ))}
               {post.shared.media.length > 3 && <span className="repost-media-more">+{post.shared.media.length - 3}</span>}
