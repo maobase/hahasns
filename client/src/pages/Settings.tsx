@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout } from '../context/SiteContext';
 import api from '../api/client';
+import { shrinkImage } from '../lib/resizeImage';
 
 const EMOJIS = '🦊 🐼 🐯 🦁 🐸 🐙 🦄 🐧 🐳 🦉 🐝 🦋 🐱 🐶 🐰 🐻 🐨 🐵'.split(' ');
 const COLORS = ['#7c5cff', '#22b8cf', '#ff922b', '#f06595', '#4c6ef5', '#20c997', '#fab005', '#e8590c', '#15aabf', '#cc5de8'];
@@ -81,8 +82,9 @@ function SettingsForm() {
   };
 
   const upload = (kind: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+    const file = await shrinkImage(raw, kind === 'avatar' ? 512 : 1600); // 头像显示很小，缩到 512 足够
     const fd = new FormData(); fd.append('files', file);
     try {
       const { data } = await api.post('/upload', fd);

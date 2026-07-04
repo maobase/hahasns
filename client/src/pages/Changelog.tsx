@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.82', date: '2026-07-04 19:02:10', items: [
+      ['feat', '上传图片自动压缩：发帖/头像/封面/私信里的大图会在上传前等比缩到合适尺寸再上传，省流量、feed 加载更快、少占存储（尊重照片方向，动图/小图原样不动）。'],
+    ],
+  },
+  {
     ver: 'v4.81', date: '2026-07-04 18:07:52', items: [
       ['fix', '复制链接/邀请码/AI 回复现在在 HTTP 环境（未上 HTTPS 的自托管站点）也能用了——加了兼容旧接口的复制兜底，不再依赖仅 HTTPS 才有的剪贴板 API。'],
     ],

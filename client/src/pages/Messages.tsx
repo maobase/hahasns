@@ -12,6 +12,7 @@ import { confirmDialog } from '../components/confirm';
 import { timeAgo, clockTime } from '../lib/format';
 import { useDismiss } from '../lib/useDismiss';
 import { onImgError } from '../lib/img';
+import { shrinkImage } from '../lib/resizeImage';
 
 const CHAT_EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 👍 👏 🙏 💪 🎉 🔥 ❤️ 🌈 ☕ 🎵 🙌 🤝 😅 🥺 😘 🤣 👀 🐶 🌸 ✨'.split(' ');
 
@@ -103,8 +104,9 @@ export default function Messages() {
   };
 
   const sendImage = async (e: any) => {
-    const file = e.target.files?.[0];
-    if (!file || !active) return;
+    const raw = e.target.files?.[0];
+    if (!raw || !active) return;
+    const file = await shrinkImage(raw);
     const fd = new FormData(); fd.append('files', file);
     try {
       const up = await api.post('/upload', fd);

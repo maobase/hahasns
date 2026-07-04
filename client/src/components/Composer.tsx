@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 import { VIS_LABELS } from '../lib/format';
+import { shrinkImage } from '../lib/resizeImage';
 import { loadDraft, saveDraft, clearDraft as clearDraftStore, hasDraft } from '../lib/draft';
 import useMention from '../hooks/useMention';
 import { onCtrlEnter } from '../lib/kbd';
@@ -74,7 +75,8 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
     const files = [...(e.target.files as any)];
     if (!files.length) return;
     const fd = new FormData();
-    files.slice(0, 9 - media.length).forEach((f) => fd.append('files', f));
+    const picked = await Promise.all(files.slice(0, 9 - media.length).map((f) => shrinkImage(f)));
+    picked.forEach((f) => fd.append('files', f));
     try {
       const { data } = await api.post('/upload', fd);
       setMedia((m) => [...m, ...data.files].slice(0, 9));
@@ -188,8 +190,9 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
 
   // 上传一张图片并在正文光标处插入 ![](url)，实现正文内联配图
   const uploadInline = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-    const file = (ev.target.files || [])[0];
-    if (!file) return;
+    const raw = (ev.target.files || [])[0];
+    if (!raw) return;
+    const file = await shrinkImage(raw);
     const fd = new FormData();
     fd.append('files', file);
     try {
