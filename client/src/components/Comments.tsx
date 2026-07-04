@@ -6,7 +6,7 @@ import Reactions from './Reactions';
 import useMention from '../hooks/useMention';
 import UserHoverCard from './UserHoverCard';
 import { UserName } from './Identity';
-import { CommentSkeleton } from './States';
+import { CommentSkeleton, LoadError } from './States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -88,6 +88,7 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
   const toast = useToast();
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [sort, setSort] = useState('latest');
   const [text, setText] = useState('');
@@ -104,11 +105,11 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
   const params = postId ? { postId } : threadId ? { threadId } : { articleId };
 
   const load = async () => {
-    setLoading(true);
+    setLoading(true); setError(false);
     try {
       const { data } = await api.get('/comments', { params: { ...params, sort } });
       setComments(data.comments);
-    } finally { setLoading(false); }
+    } catch { setError(true); } finally { setLoading(false); }
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [postId, threadId, articleId, sort]);
 
@@ -189,6 +190,8 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
 
       {loading ? (
         <CommentSkeleton />
+      ) : error ? (
+        <LoadError onRetry={load} text="评论加载失败" />
       ) : total === 0 ? (
         <div className="empty" style={{ padding: '28px 0' }}>
           <div className="e-text">还没有评论，来抢个沙发吧</div>
