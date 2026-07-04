@@ -31,6 +31,18 @@ export function Empty({ icon = '🍃', text = '这里空空如也', children }: 
   );
 }
 
+// 加载失败态：区别于「空态」——初始请求出错时展示，避免把「加载失败」误显示成「暂无内容」，并提供重试。
+export function LoadError({ onRetry, text = '加载失败' }: { onRetry?: () => void; text?: ReactNode }) {
+  return (
+    <div className="empty">
+      <div className="e-ico">📡</div>
+      <div className="e-text">{text}</div>
+      <div className="faint" style={{ fontSize: 13, marginTop: 2 }}>网络或服务器开小差了，稍后再试</div>
+      {onRetry && <div className="e-action"><button className="btn btn-primary btn-sm" onClick={onRetry}>重试</button></div>}
+    </div>
+  );
+}
+
 const sk = (w: number | string, h: number | string, extra: CSSProperties = {}) =>
   <div className="skeleton" style={{ width: w, height: h, ...extra }} />;
 

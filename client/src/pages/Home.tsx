@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import Composer from '../components/Composer';
 import SiteNotice from '../components/SiteNotice';
 import PostCard from '../components/PostCard';
-import { PostSkeleton, Empty } from '../components/States';
+import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { WhoToFollow } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
@@ -24,6 +24,8 @@ export default function Home() {
   const [filter, setFilter] = useState('recommend');
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const composerRef = useRef<HTMLDivElement | null>(null);
@@ -34,12 +36,13 @@ export default function Home() {
   // (re)load from the top when the filter or viewer changes
   useEffect(() => {
     let alive = true;
-    setLoading(true); setPosts([]); offsetRef.current = 0;
+    setLoading(true); setError(false); setPosts([]); offsetRef.current = 0;
     api.get('/posts', { params: { filter, limit: PAGE, offset: 0 } })
       .then(({ data }) => { if (!alive) return; setPosts(data.posts); setHasMore(data.hasMore); offsetRef.current = data.posts.length; })
+      .catch(() => { if (alive) setError(true); })
       .finally(() => alive && setLoading(false));
     return () => { alive = false; };
-  }, [filter, user?.id]);
+  }, [filter, user?.id, reloadKey]);
 
   const loadMore = useCallback(async () => {
     if (busyRef.current || !hasMore) return;
@@ -91,6 +94,8 @@ export default function Home() {
 
       {loading ? (
         <>{[1, 2, 3].map((i) => <PostSkeleton key={i} />)}</>
+      ) : error ? (
+        <div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div>
       ) : posts.length === 0 ? (
         <>
           <div className="ui-card"><Empty icon={filter === 'following' ? '👀' : '🍃'} text={
