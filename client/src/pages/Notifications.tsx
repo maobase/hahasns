@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
 import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
-import { Loading, Empty, RowSkeleton } from '../components/States';
+import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import { timeAgo } from '../lib/format';
@@ -70,7 +70,8 @@ export default function Notifications() {
     load();
     api.get('/messages/unread').then(({ data }) => setMsgUnread(data.unread)).catch(() => {});
   }, [authLoading, user]);
-  const load = () => api.get('/notifications').then(({ data }) => setItems(data.notifications)).finally(() => setLoading(false));
+  const [error, setError] = useState(false);
+  const load = () => { setLoading(true); setError(false); return api.get('/notifications').then(({ data }) => setItems(data.notifications)).catch(() => setError(true)).finally(() => setLoading(false)); };
   const markAll = async () => { await api.post('/notifications/read'); setItems((xs) => xs.map((x) => ({ ...x, read: true }))); };
 
   // open a (possibly aggregated) group: mark all its unread notifications read, then jump to the target
@@ -128,7 +129,9 @@ export default function Notifications() {
           );
         })}
       </div>
-      {loading ? <RowSkeleton rows={6} /> : (
+      {loading ? <RowSkeleton rows={6} /> : error ? (
+        <div className="ui-card"><LoadError onRetry={load} /></div>
+      ) : (
         <div className="ui-card" style={{ overflow: 'hidden' }}>
           {shown.length === 0 ? <Empty icon="🔔" text="这里还没有通知" /> :
           shown.map((g, i) => {

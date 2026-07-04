@@ -8,7 +8,7 @@ import PostCard from '../components/PostCard';
 import FollowButton from '../components/FollowButton';
 import ThreadRow from '../components/ThreadRow';
 import { Badges } from '../components/Identity';
-import { Loading, Empty, ProfileSkeleton, PostSkeleton } from '../components/States';
+import { Loading, Empty, ProfileSkeleton, PostSkeleton, LoadError } from '../components/States';
 import { CheckinRank, TrendingSearch, Footer } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -52,6 +52,8 @@ export default function Profile() {
   const toast = useToast();
   const { openCompose } = useCompose();
   const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [posts, setPosts] = useState<any[]>([]);
   const [postsMore, setPostsMore] = useState(false);
   const [moreBusy, setMoreBusy] = useState(false);
@@ -69,7 +71,7 @@ export default function Profile() {
   const [followBusy, setFollowBusy] = useState(false);
   const [visitorTotal, setVisitorTotal] = useState(0);
 
-  const loadProfile = () => api.get(`/users/${username}`).then(({ data }) => setUser(data.user)).catch(() => setUser(null));
+  const loadProfile = () => api.get(`/users/${username}`).then(({ data }) => setUser(data.user)).catch((e: any) => { setUser(null); if (e?.status !== 404) setError(true); });
   const loadMoreLiked = () => {
     setLikedBusy(true);
     api.get(`/posts/liked/${username}`, { params: { limit: 20, offset: (likedPosts || []).length } })
@@ -85,10 +87,10 @@ export default function Profile() {
       .finally(() => setMoreBusy(false));
   };
   useEffect(() => {
-    setLoading(true); setTab('posts'); setLikedPosts(null); setThreads(null); setPostsMore(false);
+    setLoading(true); setError(false); setTab('posts'); setLikedPosts(null); setThreads(null); setPostsMore(false);
     Promise.all([loadProfile(), api.get(`/posts/user/${username}`, { params: { limit: 20 } }).then(({ data }) => { setPosts(data.posts); setPostsMore(!!data.hasMore); }).catch(() => setPosts([]))])
       .finally(() => setLoading(false));
-  }, [username]);
+  }, [username, reloadKey]);
 
   useEffect(() => {
     if (tab === 'liked' && likedPosts === null)
@@ -115,6 +117,7 @@ export default function Profile() {
   }, [user?.id, me?.id, user?.username]);
 
   if (loading) return <Shell right={false}><ProfileSkeleton /><PostSkeleton /><PostSkeleton /></Shell>;
+  if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div></Shell>;
   if (!user) return <Shell right={false}><div className="ui-card"><Empty icon="🔍" text="用户不存在" /></div></Shell>;
 
   const isMe = me?.id === user.id;
