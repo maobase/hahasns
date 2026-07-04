@@ -1859,6 +1859,14 @@ function Appearance() {
             <span className="sec-label">副标题 / Slogan</span>
             <input className="inp" maxLength={60} value={cfg.site_slogan ?? ''} onChange={(e) => setK('site_slogan', e.target.value)} placeholder="轻社交社区" />
           </label>
+          <label className="sec-field">
+            <span className="sec-label">页脚版权文案</span>
+            <input className="inp" maxLength={200} value={cfg.footer_text ?? ''} onChange={(e) => setK('footer_text', e.target.value)} placeholder="© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区（留空用默认）" />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">ICP 备案号（页脚显示，链到工信部）</span>
+            <input className="inp" maxLength={100} value={cfg.icp_beian ?? ''} onChange={(e) => setK('icp_beian', e.target.value)} placeholder="如：京ICP备12345678号（留空不显示）" />
+          </label>
         </div>
         <label className="sec-field" style={{ marginTop: 12 }}>
           <span className="sec-label">Logo 图片</span>

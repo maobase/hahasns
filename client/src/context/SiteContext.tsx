@@ -10,12 +10,14 @@ export interface SiteConfig {
   logo: string;
   favicon: string;   // 浏览器标签图标 URL（走对象存储 / 图床）；留空用 index.html 内置 SVG
   customCss: string;
+  footerText: string; // 页脚版权文案；空 = 用内置默认
+  icpBeian: string;   // ICP 备案号；空 = 不显示
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）
 }
 
-const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', modules: {}, layouts: {}, payments: {} };
+const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', modules: {}, layouts: {}, payments: {} };
 
 // 模块是否开启：只有显式 false 才隐藏（取不到配置时默认全开，绝不误伤导航）
 export function moduleOn(modules: Record<string, boolean> | undefined, key?: string) {

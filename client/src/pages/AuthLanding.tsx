@@ -106,8 +106,9 @@ export default function AuthLanding() {
           </form>
         </div>
         <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 18 }}>
-          <Link to="/about" className="auth-about-link">了解功能</Link> · © 2026 HahaSNS · 轻社交社区 · <span className="num">{APP_VERSION}</span>
+          <Link to="/about" className="auth-about-link">了解功能</Link> · {site.footerText || '© 2026 HahaSNS · 轻社交社区'} · <span className="num">{APP_VERSION}</span>
         </div>
+        {site.icpBeian && <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 6 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'inherit' }}>{site.icpBeian}</a></div>}
       </div>
     </div>
   );

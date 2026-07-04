@@ -7,6 +7,7 @@ import Icon from './Icon';
 import FollowButton from './FollowButton';
 import { Badges } from './Identity';
 import { useAuth } from '../context/AuthContext';
+import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -163,6 +164,7 @@ export function QAWidget() {
 }
 
 export function Footer() {
+  const site = useSite();
   return (
     <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--ink-4)', lineHeight: 1.8 }}>
       <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
@@ -171,7 +173,8 @@ export function Footer() {
         <Link to="/changelog" style={{ color: 'var(--ink-3)' }}>问题反馈</Link><span>·</span>
         <Link to="/about" style={{ color: 'var(--ink-3)' }}>关于</Link><span>·</span><span>隐私</span>
       </div>
-      <div style={{ marginTop: 6 }}>© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区 · <Link to="/changelog" className="num" style={{ color: 'var(--ink-3)' }}>{APP_VERSION}</Link></div>
+      <div style={{ marginTop: 6 }}>{site.footerText || '© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区'} · <Link to="/changelog" className="num" style={{ color: 'var(--ink-3)' }}>{APP_VERSION}</Link></div>
+      {site.icpBeian && <div style={{ marginTop: 4 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'var(--ink-4)' }}>{site.icpBeian}</a></div>}
     </div>
   );
 }

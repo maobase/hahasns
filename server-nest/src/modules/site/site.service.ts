@@ -63,6 +63,8 @@ export class SiteService {
       logo: cfg.get('site_logo') || '',
       favicon: cfg.get('site_favicon') || '',
       customCss: cfg.get('site_custom_css') || '',
+      footerText: cfg.get('footer_text') || '',
+      icpBeian: cfg.get('icp_beian') || '',
       modules,
       layouts,
       payments,
