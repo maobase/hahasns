@@ -7,7 +7,7 @@ import Avatar from '../components/Avatar';
 import RichBody from '../components/RichBody';
 import MarkdownToolbar from '../components/MarkdownToolbar';
 import { UserName } from '../components/Identity';
-import { Empty, DetailSkeleton } from '../components/States';
+import { Empty, DetailSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -48,6 +48,7 @@ export default function QADetail() {
   const [question, setQuestion] = useState<any>(null);
   const [answers, setAnswers] = useState<any[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState(false);
   const [reply, setReply] = useState('');
   const [busy, setBusy] = useState(false);
   const answerTaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -68,10 +69,10 @@ export default function QADetail() {
   }, [reply]);
 
   const load = useCallback(() => {
-    setQuestion(null); setNotFound(false);
+    setQuestion(null); setNotFound(false); setError(false);
     api.get(`/qa/${id}`)
       .then(({ data }) => { setQuestion(data.question); setAnswers(data.answers); })
-      .catch(() => setNotFound(true));
+      .catch((e: any) => { if (e?.status === 404) setNotFound(true); else setError(true); });
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -108,6 +109,7 @@ export default function QADetail() {
     } catch (err: any) { toast.err(err.message); }
   };
 
+  if (error) return <Shell><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
   if (notFound) return <Shell><div className="ui-card"><Empty icon="🔍" text="问题不存在或已删除" /></div></Shell>;
   if (!question) return <Shell><DetailSkeleton /></Shell>;
 
