@@ -122,8 +122,12 @@ async function bootstrap() {
     app.useStaticAssets(uploadsDir, {
       prefix: '/uploads',
       maxAge: '7d',
-      setHeaders: (res) =>
-        res.setHeader('Cache-Control', 'public, max-age=604800'),
+      setHeaders: (res, p: string) => {
+        res.setHeader('Cache-Control', 'public, max-age=604800');
+        // 纵深防御：历史遗留/绕过的 svg/html/xml 强制下载，绝不同源内联执行脚本
+        if (/\.(svgz?|html?|xhtml|xml)$/i.test(p))
+          res.setHeader('Content-Disposition', 'attachment');
+      },
     });
   }
   const clientDist =
