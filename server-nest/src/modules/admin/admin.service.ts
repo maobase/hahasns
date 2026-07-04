@@ -38,6 +38,7 @@ const TOGGLE_KEYS = [
   'perm_enabled', 'perm_comment_require_vip', 'perm_dm_require_vip', 'perm_upload_require_vip',
   'perm_post_require_vip', 'perm_thread_require_vip',
   'sensitive_enabled',
+  'registration_enabled', 'invite_required', // 注册开关（默认开）+ 邀请码必填（默认关）
   'pay_alipay_enabled', 'pay_wechat_enabled', 'pay_epay_enabled', // 支付网关开关
   'demo_recharge_enabled', // 演示充值开关：开=可模拟充值/开通会员（免真实支付，默认开，未配置视为开）；关=必须走真实支付渠道
   ...MODULE_KEYS.map((k) => `module_${k}`), // 模块市场 (C)：各可选模块开关

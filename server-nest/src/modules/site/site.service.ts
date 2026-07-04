@@ -67,6 +67,8 @@ export class SiteService {
       icpBeian: cfg.get('icp_beian') || '',
       rechargeTiers: cfg.get('recharge_tiers') || '',
       reportReasons: cfg.get('report_reasons') || '',
+      registrationEnabled: (cfg.get('registration_enabled') ?? '1') !== '0',
+      inviteRequired: cfg.get('invite_required') === '1',
       modules,
       layouts,
       payments,

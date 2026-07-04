@@ -18,7 +18,7 @@ export default function AuthLanding() {
   const { login, register } = useAuth();
   const toast = useToast();
   const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ username: '', password: '', nickname: '' });
+  const [form, setForm] = useState({ username: '', password: '', nickname: '', inviteCode: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -33,7 +33,7 @@ export default function AuthLanding() {
         const u = await login(form.username.trim(), form.password);
         toast.ok(`欢迎回来，${u.nickname}`);
       } else {
-        const u = await register({ username: form.username.trim(), password: form.password, nickname: form.nickname.trim() });
+        const u = await register({ username: form.username.trim(), password: form.password, nickname: form.nickname.trim(), inviteCode: form.inviteCode.trim() || undefined });
         toast.ok(`注册成功，欢迎加入，${u.nickname}！`);
       }
     } catch (e: any) { setErr(e.message); }
@@ -100,7 +100,14 @@ export default function AuthLanding() {
                   <Icon name="eye" size={18} />
                 </button>
               } />
-            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy} style={{ marginTop: 4, fontWeight: 700 }}>
+            {mode === 'register' && (
+              <Input label={site.inviteRequired ? '邀请码（必填）' : '邀请码（可选）'} labelPlacement="outside" variant="bordered" radius="md"
+                value={form.inviteCode} onValueChange={set('inviteCode')} maxLength={64} placeholder={site.inviteRequired ? '本站需要邀请码，填邀请人用户名' : '填邀请人用户名，双方得积分'} />
+            )}
+            {mode === 'register' && !site.registrationEnabled && (
+              <div className="faint" style={{ fontSize: 13, textAlign: 'center', color: 'var(--ink-3)' }}>本站暂未开放注册</div>
+            )}
+            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy || (mode === 'register' && !site.registrationEnabled)} style={{ marginTop: 4, fontWeight: 700 }}>
               {busy ? <span className="ui-spinner" style={{ width: 18, height: 18, borderWidth: 2, borderTopColor: '#fff' }} /> : (mode === 'login' ? '登录' : '注册')}
             </button>
           </form>

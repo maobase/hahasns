@@ -932,6 +932,19 @@ function Security() {
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>注册控制</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>关闭注册后新用户无法注册（现有用户不受影响）；开启「邀请码必填」后，注册必须填写有效邀请人用户名。</div>
+        <label className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+          <span className="sec-label">开放注册</span>
+          <Toggle on={(cfg.registration_enabled ?? '1') !== '0'} onChange={(v) => setK('registration_enabled', v ? '1' : '0')} />
+        </label>
+        <label className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+          <span className="sec-label">邀请码必填</span>
+          <Toggle on={cfg.invite_required === '1'} onChange={(v) => setK('invite_required', v ? '1' : '0')} />
+        </label>
+      </div>
+
+      <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>举报理由</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户举报内容时可选的理由列表（每行一个，留空用内置默认）。含「其他」项时允许填写补充说明。</div>
         <textarea className="inp" value={cfg.report_reasons ?? ''} onChange={(e) => setK('report_reasons', e.target.value)} rows={5}

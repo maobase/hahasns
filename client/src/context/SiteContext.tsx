@@ -14,12 +14,14 @@ export interface SiteConfig {
   icpBeian: string;   // ICP 备案号；空 = 不显示
   rechargeTiers: string; // 充值档位 CSV（分）；空 = 用内置默认
   reportReasons: string; // 举报理由（换行分隔）；空 = 用内置默认
+  registrationEnabled: boolean; // 注册开关；默认 true
+  inviteRequired: boolean;      // 邀请码必填；默认 false
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）
 }
 
-const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '', modules: {}, layouts: {}, payments: {} };
+const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '', registrationEnabled: true, inviteRequired: false, modules: {}, layouts: {}, payments: {} };
 
 // 模块是否开启：只有显式 false 才隐藏（取不到配置时默认全开，绝不误伤导航）
 export function moduleOn(modules: Record<string, boolean> | undefined, key?: string) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSite } from '../context/SiteContext';
 
 interface AuthForm {
   username: string;
@@ -13,6 +14,8 @@ interface AuthForm {
 export default function AuthModal() {
   const { authOpen, setAuthOpen, login, register } = useAuth();
   const toast = useToast();
+  const site = useSite();
+  const regClosed = !site.registrationEnabled;
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [form, setForm] = useState<AuthForm>({ username: '', password: '', nickname: '', inviteCode: '' });
   const [err, setErr] = useState('');
@@ -70,11 +73,14 @@ export default function AuthModal() {
           </div>
           {mode === 'register' && (
             <div className="field">
-              <label>邀请码（可选）</label>
-              <input value={form.inviteCode} onChange={set('inviteCode')} placeholder="填邀请人用户名，双方得积分" maxLength={64} />
+              <label>邀请码{site.inviteRequired ? '（必填）' : '（可选）'}</label>
+              <input value={form.inviteCode} onChange={set('inviteCode')} placeholder={site.inviteRequired ? '本站需要邀请码，填邀请人用户名' : '填邀请人用户名，双方得积分'} maxLength={64} />
             </div>
           )}
-          <button className="btn btn-primary btn-lg btn-block" disabled={busy}>
+          {mode === 'register' && regClosed && (
+            <div className="faint" style={{ fontSize: 13, textAlign: 'center', margin: '4px 0 10px', color: 'var(--ink-3)' }}>本站暂未开放注册</div>
+          )}
+          <button className="btn btn-primary btn-lg btn-block" disabled={busy || (mode === 'register' && regClosed)}>
             {busy ? '请稍候…' : mode === 'login' ? '登录' : '注册'}
           </button>
         </form>

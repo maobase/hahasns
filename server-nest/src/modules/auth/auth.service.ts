@@ -109,6 +109,9 @@ export class AuthService implements OnApplicationBootstrap {
 
   async register(dto: RegisterDto, ip?: string) {
     await this.rateLimit.enforceRegistration(ip); // 防批量注册：按 IP 限每日数/最小间隔（开关关或无 IP 则放行）
+    // 注册开关（默认开=未配置视为开，行为与现状一致）
+    if ((await this.site.getConfig('registration_enabled', '1')) === '0')
+      throw new ForbiddenException('本站暂未开放注册');
     const { username, password, nickname, inviteCode } = dto || {};
     if (!username || !password)
       throw new BadRequestException('用户名和密码必填');
@@ -130,6 +133,9 @@ export class AuthService implements OnApplicationBootstrap {
       inviter = await this.users.findOne({ where: { username: code } });
       // 邀请人无效就静默忽略（不挡注册）；自己邀请自己不可能(用户名尚未存在)
     }
+    // 邀请码必填（默认关）：开启后必须有有效邀请人才能注册
+    if ((await this.site.getConfig('invite_required', '0')) === '1' && !inviter)
+      throw new BadRequestException('本站需要有效邀请码才能注册');
 
     const hash = bcrypt.hashSync(password, 10);
     const avatar = defaultAvatar(username);
