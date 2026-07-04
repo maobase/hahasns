@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Modal from '../components/Modal';
-import { Empty, EventListSkeleton } from '../components/States';
+import { Empty, EventListSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -93,13 +93,15 @@ export default function Events() {
   const [filter, setFilter] = useState('upcoming');
   const [cat, setCat] = useState<string | null>(null);
   const [data, setData] = useState<EventListResponse | null>(null);
+  const [error, setError] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(() => {
     setData(null);
+    setError(false);
     const params: Record<string, string> = { filter };
     if (cat) params.category = cat;
-    api.get<EventListResponse>('/events', { params }).then(({ data }) => setData(data)).catch(() => setData({ events: [], categories: CATS, counts: { upcoming: 0 } }));
+    api.get<EventListResponse>('/events', { params }).then(({ data }) => setData(data)).catch(() => { setData({ events: [], categories: CATS, counts: { upcoming: 0 } }); setError(true); });
   }, [filter, cat]);
   useEffect(() => { load(); }, [load]);
 
@@ -150,7 +152,9 @@ export default function Events() {
         </div>
       </div>
 
-      {!data ? <EventListSkeleton /> : data.events.length === 0 ? (
+      {!data ? <EventListSkeleton /> : error ? (
+        <div className="ui-card"><LoadError onRetry={load} /></div>
+      ) : data.events.length === 0 ? (
         <div className="ui-card"><Empty icon="📅" text={filter === 'mine' ? '你还没有参加任何活动' : '这里还没有活动'}>
           {user && <button className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={() => setCreating(true)}><Icon name="plus" size={14} /> 发起一个</button>}
         </Empty></div>
