@@ -931,6 +931,13 @@ function Security() {
         )}
       </div>
 
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>举报理由</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户举报内容时可选的理由列表（每行一个，留空用内置默认）。含「其他」项时允许填写补充说明。</div>
+        <textarea className="inp" value={cfg.report_reasons ?? ''} onChange={(e) => setK('report_reasons', e.target.value)} rows={5}
+          placeholder="每行一个，例如：&#10;垃圾广告或营销&#10;色情低俗内容&#10;其他" style={{ width: '100%', marginTop: 10, lineHeight: 1.6 }} maxLength={500} />
+      </div>
+
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存设置'}</button>
       </div>
@@ -1386,6 +1393,11 @@ function PaymentAdmin() {
           </div>
         );
       })()}
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>充值档位</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>会员中心充值页展示的金额按钮（单位：分，逗号分隔，最多 8 档；留空用内置默认 1000,3000,6800,19800）。例如 1000 显示为 ¥10。</div>
+        <input className="inp" value={cfg.recharge_tiers ?? ''} onChange={(e) => setK('recharge_tiers', e.target.value)} placeholder="1000,3000,6800,19800" maxLength={200} style={{ marginTop: 10 }} />
+      </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>
       </div>

@@ -65,6 +65,8 @@ export class SiteService {
       customCss: cfg.get('site_custom_css') || '',
       footerText: cfg.get('footer_text') || '',
       icpBeian: cfg.get('icp_beian') || '',
+      rechargeTiers: cfg.get('recharge_tiers') || '',
+      reportReasons: cfg.get('report_reasons') || '',
       modules,
       layouts,
       payments,

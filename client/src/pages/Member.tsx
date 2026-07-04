@@ -8,21 +8,33 @@ import { Badges } from '../components/Identity';
 import { Empty, Loading } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { useLayout } from '../context/SiteContext';
+import { useLayout, useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { fmtNum } from '../lib/format';
 import { copyText } from '../lib/clipboard';
 import { VIP_TIERS, vipTier, type VipTier } from '../lib/vip';
 
+// 充值档位（分）：后台 recharge_tiers CSV 覆盖，空则用此默认
+const RECHARGE_DEFAULT = [1000, 3000, 6800, 19800];
+function parseTiers(csv: string): number[] {
+  const t = (csv || '').split(/[,，\s]+/).map((x) => parseInt(x, 10)).filter((n) => n > 0 && n <= 10000000);
+  return t.length ? t.slice(0, 8) : RECHARGE_DEFAULT;
+}
+
 export default function Member() {
   const { user, loading: authLoading, setAuthOpen, patchUser } = useAuth();
   const toast = useToast();
   const layout = useLayout('member', 'wide');
+  const rawTiers = useSite().rechargeTiers;
+  const tiers = parseTiers(rawTiers);
   const [rechargeOpen, setRechargeOpen] = useState(false);
-  const [amount, setAmount] = useState(3000);
+  const [amount, setAmount] = useState(tiers[1] ?? tiers[0]);
   const [stats, setStats] = useState<any>(null);
   const [invites, setInvites] = useState<any>(null);
+
+  // 后台改档位后，若当前选中额不在新档位里，自动落到第一档，避免确认按钮显示不存在的金额
+  useEffect(() => { setAmount((a) => (tiers.includes(a) ? a : tiers[0])); /* eslint-disable-next-line */ }, [rawTiers]);
 
   useEffect(() => {
     if (!user) return;
@@ -189,7 +201,7 @@ export default function Member() {
           <div className="field">
             <label>选择充值金额</label>
             <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-              {[1000, 3000, 6800, 19800].map((a) => (
+              {tiers.map((a) => (
                 <button key={a} className={`btn ${amount === a ? 'btn-primary' : 'btn-outline'} btn-sm`} onClick={() => setAmount(a)}>¥{(a/100).toFixed(0)}</button>
               ))}
             </div>
