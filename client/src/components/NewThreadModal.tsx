@@ -5,6 +5,7 @@ import MarkdownToolbar from './MarkdownToolbar';
 import RichBody from './RichBody';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { onCtrlEnter } from '../lib/kbd';
 import { shrinkImage } from '../lib/resizeImage';
@@ -39,6 +40,7 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<any[]>([]);
+  const maxImages = useSite().uploadMaxImages;
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -65,9 +67,9 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
     const files = [...(e.target.files as FileList)];
     if (!files.length) return;
     const fd = new FormData();
-    const picked = await Promise.all(files.slice(0, 9 - media.length).map((f) => shrinkImage(f)));
+    const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
     picked.forEach((f) => fd.append('files', f));
-    try { const { data } = await api.post('/upload', fd); setMedia((m) => [...m, ...data.files].slice(0, 9)); }
+    try { const { data } = await api.post('/upload', fd); setMedia((m) => [...m, ...data.files].slice(0, maxImages)); }
     catch (err: any) { toast.err(err.message); }
     e.target.value = '';
   };

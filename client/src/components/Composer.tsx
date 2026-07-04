@@ -3,6 +3,7 @@ import Avatar from './Avatar';
 import Icon from './Icon';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { VIS_LABELS } from '../lib/format';
 import { shrinkImage } from '../lib/resizeImage';
@@ -28,6 +29,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const initialDraft = useMemo(() => (prefill ? null : loadDraft()), [prefill]);
   const [content, setContent] = useState<string>(() => initialDraft?.content ?? prefill ?? '');
   const [media, setMedia] = useState<any[]>(() => initialDraft?.media ?? []);
+  const maxImages = useSite().uploadMaxImages;
   const [vis, setVis] = useState(() => initialDraft?.vis ?? 'public');
   const [price, setPrice] = useState<any>(50);
   const [password, setPassword] = useState('');
@@ -75,11 +77,11 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
     const files = [...(e.target.files as any)];
     if (!files.length) return;
     const fd = new FormData();
-    const picked = await Promise.all(files.slice(0, 9 - media.length).map((f) => shrinkImage(f)));
+    const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
     picked.forEach((f) => fd.append('files', f));
     try {
       const { data } = await api.post('/upload', fd);
-      setMedia((m) => [...m, ...data.files].slice(0, 9));
+      setMedia((m) => [...m, ...data.files].slice(0, maxImages));
     } catch (err: any) { toast.err(err.message); }
     e.target.value = '';
   };

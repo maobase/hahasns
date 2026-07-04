@@ -52,6 +52,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   checkin_base_points: [0, 1000], checkin_streak_cap: [0, 60], checkin_makeup_cost: [0, 100000],
   // 抽奖：单次消耗积分 / 每日免费次数
   lottery_cost: [0, 100000], lottery_free_daily: [0, 10],
+  // 上传限制：单文件大小(MB, 上限=multer 硬顶 25) / 单次张数(上限=multer 硬顶 9)
+  upload_max_size_mb: [1, 25], upload_max_images: [1, 9],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

@@ -10,6 +10,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { StorageService } from './storage.service';
+import { SiteService } from '../site/site.service';
 
 /**
  * Uploads — POST /api/upload (multipart field "files", up to 9).
@@ -19,7 +20,20 @@ import { StorageService } from './storage.service';
  */
 @Controller('api/upload')
 export class UploadsController {
-  constructor(private readonly storage: StorageService) {}
+  constructor(
+    private readonly storage: StorageService,
+    private readonly site: SiteService,
+  ) {}
+
+  // 上传限制（后台可配，未配置用默认；multer 硬顶 25MB/9 张仍在，配置只能收紧不能放宽）
+  private async uploadLimits() {
+    const num = async (k: string, def: number) => {
+      const v = await this.site.getConfig(k);
+      const n = v === null || v === '' ? def : Number(v);
+      return Number.isFinite(n) && n > 0 ? n : def;
+    };
+    return { maxImages: await num('upload_max_images', 9), maxSizeMb: await num('upload_max_size_mb', 25) };
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -49,6 +63,11 @@ export class UploadsController {
     if (!files || files.length === 0) {
       throw new BadRequestException('请选择要上传的文件');
     }
+    const { maxImages, maxSizeMb } = await this.uploadLimits();
+    if (files.length > maxImages)
+      throw new BadRequestException(`一次最多上传 ${maxImages} 个文件`);
+    if (files.some((f) => f.size > maxSizeMb * 1024 * 1024))
+      throw new BadRequestException(`单个文件不能超过 ${maxSizeMb}MB`);
     const uploaded = await this.storage.uploadMany(
       files.map((f) => ({
         buffer: f.buffer,

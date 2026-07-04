@@ -951,6 +951,15 @@ function Security() {
           placeholder="每行一个，例如：&#10;垃圾广告或营销&#10;色情低俗内容&#10;其他" style={{ width: '100%', marginTop: 10, lineHeight: 1.6 }} maxLength={500} />
       </div>
 
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>上传限制</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>单个文件最大体积、单次最多上传张数（留空用默认 25MB / 9 张；仅可在系统硬顶 25MB/9 张内收紧）。</div>
+        <div className="sec-grid" style={{ marginTop: 12 }}>
+          <label className="sec-field"><span className="sec-label">单文件最大</span><span className="sec-num"><input type="number" min={1} max={25} value={cfg.upload_max_size_mb ?? ''} placeholder="25" onChange={(e) => setK('upload_max_size_mb', e.target.value)} /><i>MB</i></span></label>
+          <label className="sec-field"><span className="sec-label">单次最多张数</span><span className="sec-num"><input type="number" min={1} max={9} value={cfg.upload_max_images ?? ''} placeholder="9" onChange={(e) => setK('upload_max_images', e.target.value)} /><i>张</i></span></label>
+        </div>
+      </div>
+
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存设置'}</button>
       </div>

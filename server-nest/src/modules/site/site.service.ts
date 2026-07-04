@@ -69,6 +69,8 @@ export class SiteService {
       reportReasons: cfg.get('report_reasons') || '',
       registrationEnabled: (cfg.get('registration_enabled') ?? '1') !== '0',
       inviteRequired: cfg.get('invite_required') === '1',
+      uploadMaxImages: Number(cfg.get('upload_max_images')) || 9,
+      uploadMaxSizeMb: Number(cfg.get('upload_max_size_mb')) || 25,
       modules,
       layouts,
       payments,
