@@ -96,6 +96,13 @@ async function bootstrap() {
   // CORS open like the Express server
   app.enableCors();
 
+  // gzip 压缩所有可压缩响应（静态 JS/CSS/HTML + API JSON）。43.226 无前置反代 → 必须本进程压。
+  // 实测主 JS 729KB→226KB、CSS 564KB→67KB，首屏传输 ~1.3MB→~293KB，慢网/移动端首载快很多。
+  // 置于静态中间件之前，才能压到 useStaticAssets 的产物。
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const compression = require('compression');
+  app.use(compression());
+
   // 安全响应头（零依赖手写；覆盖 API + 静态 SPA + /uploads，故置于静态中间件之前）。
   // 不设 CSP——本站大量内联样式 + SPA，贸然加 CSP 会破页面；CSP/HSTS 交给前置反代按部署环境配置。
   app.use((_req: any, res: any, next: any) => {
