@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateThreadDto {
   @IsOptional()
@@ -6,10 +6,12 @@ export class CreateThreadDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   title?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   content?: string;
 
   @IsOptional()
@@ -20,10 +22,12 @@ export class CreateThreadDto {
 export class UpdateThreadDto {
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   title?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   content?: string;
 }
 
