@@ -235,6 +235,9 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
           )}
         </div>
       )}
+      {post.sharedDeleted && (
+        <div className="repost" style={{ color: 'var(--ink-4)', fontStyle: 'italic', cursor: 'default' }}>原动态已删除</div>
+      )}
 
       {shown && (
         <div className="post-body">

@@ -208,9 +208,11 @@ export class PostsService {
     }
 
     let shared = null;
+    let sharedDeleted = false; // 转发帖：原帖已被删（share_of 还在但取不到源）→ 前端显「原动态已删除」占位而非凭空少一块
     if (row.share_of && deep) {
       const src = await this.posts.findOne({ where: { id: row.share_of } });
       if (src) shared = await this.serializePost(src, viewerId, { deep: false });
+      else sharedDeleted = true;
     }
 
     const now = this.helpers.nowSql();
@@ -253,6 +255,7 @@ export class PostsService {
       poll: unlocked ? await this.buildPoll(row.id, viewerId) : null,
       redPacket: unlocked ? await this.buildRedPacket(row.id, viewerId) : null,
       shared,
+      sharedDeleted,
       author:
         anon && !isOwner
           ? {
