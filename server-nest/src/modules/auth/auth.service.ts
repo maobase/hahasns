@@ -176,11 +176,15 @@ export class AuthService implements OnApplicationBootstrap {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip?: string) {
+    await this.rateLimit.enforceLogin(ip); // 防爆破：同 IP 连续失败过多→429（fail-open，绝不误伤正常登录）
     const { username, password } = dto || {};
     const user = await this.users.findOne({ where: { username } });
-    if (!user || !bcrypt.compareSync(password || '', user.password_hash))
+    if (!user || !bcrypt.compareSync(password || '', user.password_hash)) {
+      await this.rateLimit.noteLoginFailure(ip); // 记一次失败
       throw new UnauthorizedException('用户名或密码错误');
+    }
+    await this.rateLimit.clearLoginFailures(ip); // 密码正确即清零，避免共享 IP 累积误伤
     if (user.banned)
       throw new ForbiddenException('账号已被封禁，如有疑问请联系管理员');
     return {

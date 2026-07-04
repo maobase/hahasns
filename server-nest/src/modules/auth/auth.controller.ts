@@ -24,8 +24,8 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    return this.auth.login(dto);
+  login(@Body() dto: LoginDto, @Ip() ip: string) {
+    return this.auth.login(dto, ip);
   }
 
   @Get('me')

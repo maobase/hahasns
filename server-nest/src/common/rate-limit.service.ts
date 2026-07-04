@@ -79,6 +79,44 @@ export class RateLimitService {
     if (blocked) throw new HttpException(blocked, HttpStatus.TOO_MANY_REQUESTS);
   }
 
+  // ── 登录防爆破/撞库：只按 IP 计「失败」次数（成功清零、成功不计）；全程 fail-open。
+  //    合法用户极少失败→即便 sns 共享隧道 IP 也不误伤；持续失败(爆破)才触发 429。 ──
+  async enforceLogin(ip: string | null | undefined): Promise<void> {
+    let blocked = false;
+    try {
+      if (!ip) return;
+      const fails = Number(await this.cache.get(`rl:login:fail:${ip}`)) || 0;
+      if (fails >= 20) blocked = true;
+    } catch (e: any) {
+      this.logger.warn(`login rate-limit skipped (fail-open): ${e?.message || e}`);
+      return;
+    }
+    if (blocked)
+      throw new HttpException(
+        '登录尝试过于频繁，请 15 分钟后再试',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+  }
+
+  async noteLoginFailure(ip: string | null | undefined): Promise<void> {
+    try {
+      if (!ip) return;
+      const key = `rl:login:fail:${ip}`;
+      const fails = Number(await this.cache.get(key)) || 0;
+      await this.cache.set(key, fails + 1, 15 * 60 * 1000);
+    } catch {
+      /* fail-open：记账失败不影响登录流程 */
+    }
+  }
+
+  async clearLoginFailures(ip: string | null | undefined): Promise<void> {
+    try {
+      if (ip) await this.cache.del(`rl:login:fail:${ip}`);
+    } catch {
+      /* ignore */
+    }
+  }
+
   /** 超限抛 429；放行则静默返回。读配置/计数异常一律放行（fail-open）。 */
   async enforce(action: Action, user: User | null | undefined): Promise<void> {
     let blocked = false;
