@@ -13,7 +13,7 @@ const PRIZES = [
 ];
 const COST = 88;
 
-function setup({ prizes = PRIZES, drawsToday = 0, points = 200 } = {}) {
+function setup({ prizes = PRIZES, drawsToday = 0, points = 200, lotteryCost = null as string | null, lotteryFree = null as string | null } = {}) {
   const state: any = { updatePatch: null, savedDraws: [] };
   const svc = new LotteryService(
     { find: async () => prizes } as any,
@@ -29,6 +29,8 @@ function setup({ prizes = PRIZES, drawsToday = 0, points = 200 } = {}) {
       nowSql: () => '2026-07-02 00:00:00',
       publicUser: async (u: any) => ({ id: u.id, points: u.points }),
     } as any,
+    // 5th: SiteService mock — 后台配置 lottery_cost / lottery_free_daily（null=未配置用默认）
+    { getConfig: async (k: string) => (k === 'lottery_cost' ? lotteryCost : k === 'lottery_free_daily' ? lotteryFree : null) } as any,
   );
   return { svc, state, user: { id: 7 } as any };
 }
@@ -81,6 +83,21 @@ describe('LotteryService.draw — 加权随机 + 积分收支', () => {
     await expect(svc.draw(user)).rejects.toThrow();
     expect(state.updatePatch).toBeNull();
     expect(state.savedDraws).toHaveLength(0);
+  });
+
+  test('后台配置 lottery_cost=200 → 付费抽扣 200（覆盖默认 88）', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.25); // → B: +50
+    const { svc, state, user } = setup({ drawsToday: 1, points: 300, lotteryCost: '200' });
+    await svc.draw(user);
+    expect(state.updatePatch.points).toBe(300 - 200 + 50); // 150
+  });
+
+  test('后台配置 lottery_free_daily=0 → 无免费额，首抽即扣费', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    const { svc, state, user } = setup({ drawsToday: 0, points: 300, lotteryFree: '0' });
+    const res: any = await svc.draw(user);
+    expect(res.wasFree).toBe(false);
+    expect(state.updatePatch.points).toBe(300 - COST + 50); // 262
   });
 
   test('奖品类型结算：title→写 title；frame→写 avatar_frame；thanks→仅计费不发物', async () => {

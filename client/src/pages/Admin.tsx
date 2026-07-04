@@ -1476,8 +1476,12 @@ function LotteryDraws() {
 function LotteryAdmin() {
   const toast = useToast();
   const [list, setList] = useState<any[] | null>(null);
+  const [cfg, setCfg] = useState<Record<string, string> | null>(null);
+  const [savingCfg, setSavingCfg] = useState(false);
   const load = () => api.get('/lottery/prizes').then(({ data }) => setList(data.prizes)).catch(() => setList([]));
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); api.get('/admin/config').then(({ data }) => setCfg(data.config)).catch(() => setCfg({})); }, []);
+  const setKcfg = (k: string, v: string) => setCfg((c) => ({ ...(c || {}), [k]: v }));
+  const saveCfg = async () => { setSavingCfg(true); try { await api.put('/admin/config', { config: cfg }); toast.ok('抽奖配置已保存'); } catch (e: any) { toast.err(e.message); } finally { setSavingCfg(false); } };
   const setField = (i: number, k: string, v: any) => setList((l) => (l || []).map((p, j) => (j === i ? { ...p, [k]: v } : p)));
   const save = async (p: any) => {
     if (!p.name?.trim()) return toast.err('奖品名必填');
@@ -1495,6 +1499,19 @@ function LotteryAdmin() {
   return (
     <div className="flex flex-col gap-4">
       <div className="faint" style={{ fontSize: 12.5, lineHeight: 1.6 }}>配置转盘奖品。<b>权重</b>越大越容易抽中（前台不展示）；类型：积分=自动加分、头衔/头像框=发放对应物品、谢谢参与=不发奖。建议保留 8 个奖品。</div>
+      {cfg && (
+        <div className="ui-card" style={{ padding: 18 }}>
+          <div style={{ fontWeight: 700, fontSize: 14.5 }}>抽奖规则</div>
+          <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>每次抽奖消耗的积分，以及每人每天的免费抽奖次数（留空用默认：88 积分 / 每日 1 次）。</div>
+          <div className="sec-grid" style={{ marginTop: 12 }}>
+            <label className="sec-field"><span className="sec-label">单次消耗</span><span className="sec-num"><input type="number" min={0} value={cfg.lottery_cost ?? ''} placeholder="88" onChange={(e) => setKcfg('lottery_cost', e.target.value)} /><i>积分</i></span></label>
+            <label className="sec-field"><span className="sec-label">每日免费次数</span><span className="sec-num"><input type="number" min={0} value={cfg.lottery_free_daily ?? ''} placeholder="1" onChange={(e) => setKcfg('lottery_free_daily', e.target.value)} /><i>次</i></span></label>
+          </div>
+          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
+            <button className="btn btn-primary btn-sm" onClick={saveCfg} disabled={savingCfg}>{savingCfg ? '保存中…' : '保存规则'}</button>
+          </div>
+        </div>
+      )}
       {list.map((p, i) => (
         <div className="ui-card" style={{ padding: 14 }} key={p.id ?? 'new' + i}>
           <div className="sec-grid">

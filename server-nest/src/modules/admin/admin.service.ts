@@ -50,6 +50,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   perm_comment_min_level: [0, 60], perm_dm_min_level: [0, 60], perm_upload_min_level: [0, 60], perm_post_min_level: [0, 60], perm_thread_min_level: [0, 60],
   // 签到配置：基础分 / 连签加成上限(天) / 补签成本(积分)
   checkin_base_points: [0, 1000], checkin_streak_cap: [0, 60], checkin_makeup_cost: [0, 100000],
+  // 抽奖：单次消耗积分 / 每日免费次数
+  lottery_cost: [0, 100000], lottery_free_daily: [0, 10],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

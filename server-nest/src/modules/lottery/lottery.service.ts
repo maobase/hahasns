@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { LotteryDraw, LotteryPrize, User } from '../../database/entities';
 import { HelpersService } from '../../common/helpers.service';
+import { SiteService } from '../site/site.service';
 
-const COST = 88; // points per paid draw
-const FREE_PER_DAY = 1;
+const COST = 88; // 单次消耗默认值（后台 lottery_cost 覆盖）
+const FREE_PER_DAY = 1; // 每日免费次数默认值（后台 lottery_free_daily 覆盖）
 
 /** Ported from server/src/routes/lottery.js — 幸运抽奖(8 格转盘, 加权随机). */
 @Injectable()
@@ -15,7 +16,17 @@ export class LotteryService {
     @InjectRepository(LotteryDraw) private readonly draws: Repository<LotteryDraw>,
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly helpers: HelpersService,
+    private readonly site: SiteService,
   ) {}
+
+  // 抽奖消耗/免费次数：后台可配，未配置用默认（行为与现状一致）
+  private async lotteryCfg() {
+    const num = async (k: string, def: number) => {
+      const v = await this.site.getConfig(k);
+      return v === null || v === '' ? def : Number(v);
+    };
+    return { cost: await num('lottery_cost', COST), freePerDay: await num('lottery_free_daily', FREE_PER_DAY) };
+  }
 
   private serialize(p: LotteryPrize) {
     return { id: p.id, name: p.name, type: p.type, value: p.value, icon: p.icon, color: p.color, position: p.position };
@@ -41,12 +52,13 @@ export class LotteryService {
         })
       : [];
     const fresh = uid ? await this.helpers.getUser(uid) : null;
+    const { cost, freePerDay } = await this.lotteryCfg();
     return {
       prizes: list.map((p) => this.serialize(p)),
-      cost: COST,
-      freePerDay: FREE_PER_DAY,
+      cost,
+      freePerDay,
       drawsToday,
-      freeLeft: Math.max(0, FREE_PER_DAY - drawsToday),
+      freeLeft: Math.max(0, freePerDay - drawsToday),
       points: fresh ? fresh.points : 0,
       myRecent,
     };
@@ -149,8 +161,9 @@ export class LotteryService {
     if (!list.length) throw new BadRequestException('奖池未配置');
 
     const u = (await this.helpers.getUser(user.id))!;
-    const isFree = (await this.drawsTodayCount(user.id)) < FREE_PER_DAY;
-    if (!isFree && u.points < COST) throw new BadRequestException(`积分不足，每次抽奖需 ${COST} 积分`);
+    const { cost, freePerDay } = await this.lotteryCfg();
+    const isFree = (await this.drawsTodayCount(user.id)) < freePerDay;
+    if (!isFree && u.points < cost) throw new BadRequestException(`积分不足，每次抽奖需 ${cost} 积分`);
 
     const total = list.reduce((s, p) => s + Math.max(0, p.weight), 0);
     let r = Math.random() * total;
@@ -158,7 +171,7 @@ export class LotteryService {
     for (const p of list) { r -= Math.max(0, p.weight); if (r <= 0) { picked = p; break; } }
 
     // 扣费 + 发奖（顺序执行；演示规模无需强事务）
-    let points = u.points - (isFree ? 0 : COST);
+    let points = u.points - (isFree ? 0 : cost);
     const patch: Partial<User> = {};
     if (picked.type === 'points') points += Number(picked.value) || 0;
     else if (picked.type === 'title') patch.title = picked.value;
