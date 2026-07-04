@@ -4,6 +4,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 
 /** A 红包 payload attached at post creation time. */
@@ -37,6 +38,7 @@ export class PollInputDto {
 export class CreatePostDto {
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   content?: string;
 
   @IsOptional()
@@ -83,6 +85,7 @@ export class CreatePostDto {
 export class UpdatePostDto {
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   content?: string;
 
   @IsOptional()
@@ -109,6 +112,7 @@ export class VoteDto {
 export class ShareDto {
   @IsOptional()
   @IsString()
+  @MaxLength(20000)
   content?: string;
 }
 

@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateCommentDto {
   @IsOptional()
@@ -18,5 +18,6 @@ export class CreateCommentDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   content?: string;
 }
