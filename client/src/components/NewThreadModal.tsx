@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 import { onCtrlEnter } from '../lib/kbd';
+import { shrinkImage } from '../lib/resizeImage';
 import { loadDraft, saveDraft, clearDraft } from '../lib/draft';
 
 const THREAD_DRAFT = 'thread'; // 帖子草稿槽（独立于动态 Composer 的默认草稿）
@@ -64,7 +65,8 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
     const files = [...(e.target.files as FileList)];
     if (!files.length) return;
     const fd = new FormData();
-    files.slice(0, 9 - media.length).forEach((f) => fd.append('files', f));
+    const picked = await Promise.all(files.slice(0, 9 - media.length).map((f) => shrinkImage(f)));
+    picked.forEach((f) => fd.append('files', f));
     try { const { data } = await api.post('/upload', fd); setMedia((m) => [...m, ...data.files].slice(0, 9)); }
     catch (err: any) { toast.err(err.message); }
     e.target.value = '';
