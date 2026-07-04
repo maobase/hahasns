@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import PostCard from '../components/PostCard';
 import FollowButton from '../components/FollowButton';
 import { Badges } from '../components/Identity';
-import { Loading, Empty, RowSkeleton } from '../components/States';
+import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
@@ -21,6 +21,8 @@ export default function Search() {
   const [input, setInput] = useState(q);
   const [res, setRes] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [tab, setTab] = useState('all');
   const [history, setHistory] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('haha_search_history') || '[]'); } catch { return []; } });
   const [trending, setTrending] = useState<any[]>([]);
@@ -31,11 +33,11 @@ export default function Search() {
   // 空态发现内容：热门话题，填充无搜索词时的空白区，让搜索页始终有可逛内容
   useEffect(() => { api.get('/topics', { params: { limit: 8 } }).then(({ data }) => setHotTopics(data.topics || [])).catch(() => {}); }, []);
   useEffect(() => {
-    if (!q) { setRes(null); setLoading(false); return; }
-    setLoading(true);
+    if (!q) { setRes(null); setError(false); setLoading(false); return; }
+    setLoading(true); setError(false);
     setHistory((h) => { const next = [q, ...h.filter((x) => x !== q)].slice(0, 10); try { localStorage.setItem('haha_search_history', JSON.stringify(next)); } catch {} return next; });
-    api.get('/search', { params: { q } }).then(({ data }) => setRes(data)).finally(() => setLoading(false));
-  }, [q]);
+    api.get('/search', { params: { q } }).then(({ data }) => setRes(data)).catch(() => setError(true)).finally(() => setLoading(false));
+  }, [q, reloadKey]);
 
   const has = (k: string) => res && res[k]?.length > 0;
   const submit = (e: React.FormEvent) => { e.preventDefault(); if (input.trim()) nav(`/search?q=${encodeURIComponent(input.trim())}`); };
@@ -88,7 +90,7 @@ export default function Search() {
           )}
           {history.length === 0 && trending.length === 0 && hotTopics.length === 0 && <div className="ui-card"><Empty icon="🔍" text="输入关键词搜索" /></div>}
         </>
-      ) : loading ? <RowSkeleton /> : !res ? <div className="ui-card"><Empty text="输入关键词搜索" /></div> : (
+      ) : loading ? <RowSkeleton /> : error ? <div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div> : !res ? <div className="ui-card"><Empty text="输入关键词搜索" /></div> : (
         <>
           {(tab === 'all' || tab === 'users') && has('users') && (
             <div className="ui-card" style={{ padding: '8px 18px' }}>

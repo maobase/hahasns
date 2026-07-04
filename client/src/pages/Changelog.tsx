@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v4.84', date: '2026-07-04 20:19:06', items: [
+      ['fix', '搜索请求失败时显示「加载失败 + 重试」，不再误报「输入关键词搜索」（搜到没结果仍正常提示「没有找到相关结果」）。'],
+    ],
+  },
+  {
     ver: 'v4.83', date: '2026-07-04 19:38:44', items: [
       ['fix', '论坛发帖上传的图片也自动压缩了（延续上一版，覆盖全部用户图片上传入口）。'],
     ],
