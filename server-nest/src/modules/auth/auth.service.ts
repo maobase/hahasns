@@ -138,7 +138,8 @@ export class AuthService implements OnApplicationBootstrap {
       throw new BadRequestException('本站需要有效邀请码才能注册');
 
     const hash = bcrypt.hashSync(password, 10);
-    const avatar = defaultAvatar(username);
+    // 后台可设新用户默认头像（default_avatar）；空则沿用按昵称渲染的本地渐变头像
+    const avatar = (await this.site.getConfig('default_avatar', '')) || defaultAvatar(username);
     const inserted = this.users.create({
       username,
       nickname: nickname?.trim() || username,

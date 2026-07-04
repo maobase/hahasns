@@ -1939,6 +1939,16 @@ function Appearance() {
             <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_favicon', e)} /></label>
           </div>
         </label>
+        <label className="sec-field" style={{ marginTop: 12 }}>
+          <span className="sec-label">新用户默认头像</span>
+          <div className="row gap-8" style={{ alignItems: 'center' }}>
+            {cfg.default_avatar && /^(https?:|\/uploads)/.test(cfg.default_avatar)
+              ? <img src={cfg.default_avatar} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+              : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
+            <input className="inp" maxLength={500} value={cfg.default_avatar ?? ''} onChange={(e) => setK('default_avatar', e.target.value)} placeholder="上传/粘贴 URL（留空按昵称生成渐变头像）" style={{ flex: 1 }} />
+            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('default_avatar', e)} /></label>
+          </div>
+        </label>
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
