@@ -36,7 +36,12 @@ export class UploadsController {
         const ext = (file.originalname.match(/\.[a-z0-9]+$/i)?.[0] || '').toLowerCase();
         const badExt = /^\.(svgz?|html?|xhtml|xml|js|mjs)$/.test(ext);
         const ok = okMime && !badExt;
-        cb(ok ? null : new Error('仅支持图片、视频、音频（不含 SVG/HTML）'), ok);
+        // 用 BadRequestException（非普通 Error）→ 全局过滤器保留 400 + 原文案，
+        // 而不是被当作未预期错误兜底成 500「服务器出错了」。
+        cb(
+          ok ? null : new BadRequestException('仅支持图片、视频、音频（不含 SVG/HTML）'),
+          ok,
+        );
       },
     }),
   )
