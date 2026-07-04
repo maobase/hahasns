@@ -217,7 +217,7 @@ export default function Messages() {
                     </div>
                   )}
                 </div>
-                <textarea ref={textRef} rows={1} value={text} onChange={(e) => setText(e.target.value)}
+                <textarea ref={textRef} maxLength={5000} rows={1} value={text} onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="输入消息…" />
                 <button className="btn btn-primary" onClick={send} disabled={!text.trim() || sending}>发送</button>

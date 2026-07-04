@@ -112,7 +112,7 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
               {content.trim() ? <RichBody text={content} /> : <span className="faint">这里预览 Markdown 渲染效果…</span>}
             </div>
           ) : (
-            <textarea ref={taRef} value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={onCtrlEnter(submit)} placeholder="详细说说吧…支持 Markdown（加粗 / 标题 / 列表 / 引用 / 代码 / 链接）、@提及、#话题#" style={{ minHeight: 130 }} />
+            <textarea ref={taRef} maxLength={20000} value={content} onChange={(e) => setContent(e.target.value)} onKeyDown={onCtrlEnter(submit)} placeholder="详细说说吧…支持 Markdown（加粗 / 标题 / 列表 / 引用 / 代码 / 链接）、@提及、#话题#" style={{ minHeight: 130 }} />
           )}
         </div>
         {media.length > 0 && (

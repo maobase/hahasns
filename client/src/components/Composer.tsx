@@ -216,6 +216,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
           )}
           <textarea
             ref={taRef}
+            maxLength={20000}
             value={content}
             onChange={grow}
             onKeyDown={onCtrlEnter(submit, mention.onKeyDown)}

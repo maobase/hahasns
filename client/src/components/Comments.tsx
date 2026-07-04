@@ -172,6 +172,7 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
         <div style={{ flex: 1, position: 'relative' }}>
           <textarea
             ref={inputRef}
+            maxLength={5000}
             value={text}
             rows={1}
             onChange={(e) => { setText(e.target.value); mention.scan(e.target.value, e.target.selectionStart ?? 0); }}
