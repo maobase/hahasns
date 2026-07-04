@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import ThreadRow from '../components/ThreadRow';
 import NewThreadModal from '../components/NewThreadModal';
-import { Empty, RowSkeleton, ListEnd } from '../components/States';
+import { Empty, RowSkeleton, ListEnd, LoadError } from '../components/States';
 import { HotTopics, TrendingSearch, Footer } from '../components/Widgets';
 import { BoardTile, BoardMini } from '../components/BoardIcon';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,7 @@ export default function Forum() {
   const [composeOpen, setComposeOpen] = useState(false);
   const [myBoards, setMyBoards] = useState<any[]>([]);
 
-  const { items: threads, loading, hasMore, sentinelRef, setItems: setThreads } = useInfiniteScroll<any>(
+  const { items: threads, loading, error, hasMore, sentinelRef, setItems: setThreads, reload } = useInfiniteScroll<any>(
     (offset, limit) => api.get('/forum/threads', { params: { sort, offset, limit } })
       .then(({ data }) => ({ items: data.threads, hasMore: !!data.hasMore })),
     [sort],
@@ -102,7 +102,7 @@ export default function Forum() {
       {loading ? <RowSkeleton /> : (
       <>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
-        {threads.length === 0 ? <Empty text="还没有帖子" /> :
+        {error ? <LoadError onRetry={reload} /> : threads.length === 0 ? <Empty text="还没有帖子" /> :
           threads.map((t, i) => (
             <div key={t.id}>
               {i > 0 && <div className="divider" />}

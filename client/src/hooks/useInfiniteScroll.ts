@@ -21,6 +21,8 @@ export default function useInfiniteScroll<T>(
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);       // 首屏拉取失败（区别于「拉到空」），供页面显示重试
+  const [reloadKey, setReloadKey] = useState(0);    // reload() 递增以重跑首屏 effect
   const [hasMore, setHasMore] = useState(false);
   const offsetRef = useRef(0);
   const busyRef = useRef(false);
@@ -33,6 +35,7 @@ export default function useInfiniteScroll<T>(
   useEffect(() => {
     const myGen = ++genRef.current;
     setLoading(true);
+    setError(false);
     setItems([]);
     offsetRef.current = 0;
     busyRef.current = false;
@@ -46,10 +49,10 @@ export default function useInfiniteScroll<T>(
         // the next offset must still skip the full window to avoid overlap.
         offsetRef.current = limit;
       })
-      .catch(() => { if (myGen === genRef.current) { setItems([]); setHasMore(false); } })
+      .catch(() => { if (myGen === genRef.current) { setItems([]); setHasMore(false); setError(true); } })
       .finally(() => { if (myGen === genRef.current) setLoading(false); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, reloadKey]);
 
   const loadMore = useCallback(async () => {
     if (busyRef.current || !hasMore) return;
@@ -81,5 +84,7 @@ export default function useInfiniteScroll<T>(
     return () => io.disconnect();
   }, [loadMore]);
 
-  return { items, loading, hasMore, sentinelRef, setItems };
+  const reload = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  return { items, loading, error, hasMore, sentinelRef, setItems, reload };
 }

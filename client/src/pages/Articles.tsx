@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
-import { Empty, ArticleListSkeleton, ListEnd } from '../components/States';
+import { Empty, ArticleListSkeleton, ListEnd, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import api from '../api/client';
@@ -57,7 +57,7 @@ export default function Articles() {
   const [meta, setMeta] = useState<{ featured: Article | null; categories: ArticleCategoryCount[] }>({ featured: null, categories: [] });
   const [trending, setTrending] = useState<{ id: number; title: string; category: string; views: number; likeCount: number }[]>([]);
 
-  const { items: articles, loading, hasMore, sentinelRef } = useInfiniteScroll<Article>(
+  const { items: articles, loading, error, hasMore, sentinelRef, reload } = useInfiniteScroll<Article>(
     (offset, limit) => {
       const params: Record<string, any> = { sort, offset, limit };
       if (cat !== '全部') params.category = cat;
@@ -125,7 +125,9 @@ export default function Articles() {
         </div>
       </div>
 
-      {loading ? <ArticleListSkeleton /> : (articles.length === 0 && !featured) ? (
+      {loading ? <ArticleListSkeleton /> : error ? (
+        <div className="ui-card"><LoadError onRetry={reload} /></div>
+      ) : (articles.length === 0 && !featured) ? (
         <div className="ui-card"><Empty icon="📝" text="这个分类还没有文章" >
           {user && <Link to="/write" className="btn btn-primary btn-sm" style={{ marginTop: 10 }}><Icon name="edit" size={14} /> 写第一篇</Link>}
         </Empty></div>
