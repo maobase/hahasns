@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Input, Tabs, Tab } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,8 @@ export default function AuthLanding() {
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const site = useSite();
+  // 登出落地页也把标签标题设成配置的品牌（否则显示 index.html 写死的「HahaSNS」）
+  useEffect(() => { document.title = `${site.name} · ${site.slogan}`; }, [site.name, site.slogan]);
   const set = (k: string) => (v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e: any) => {

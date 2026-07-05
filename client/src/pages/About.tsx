@@ -3,6 +3,7 @@ import { BrandMark } from '../components/Navbar';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { APP_VERSION } from '../version';
 
 const HIGHLIGHTS: [string, string, string][] = [
@@ -44,6 +45,7 @@ const SPONSOR: [string, string, string][] = [
 export default function About() {
   const { user } = useAuth();
   const { skins } = useTheme();
+  usePageTitle('关于');
   return (
     <div className="about">
       <header className="about-nav">
