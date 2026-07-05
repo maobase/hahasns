@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.29', date: '2026-07-06 19:31:40', items: [
+      ['fix', '隐私修复：账户余额（钱包）此前会随用户资料 / 帖子作者 / 评论作者 / 排行榜返回给他人，现改为仅本人可见，避免财务信息泄露。'],
+    ],
+  },
+  {
     ver: 'v5.28', date: '2026-07-06 18:47:15', items: [
       ['fix', '修复评论编辑：此前前端「编辑评论」对应的后端接口缺失（编辑无效）；现补齐 PUT /comments/:id（仅作者或管理员可改，含空值与敏感词校验）。'],
     ],

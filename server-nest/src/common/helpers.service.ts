@@ -241,7 +241,8 @@ export class HelpersService {
       avatarFrame: u.avatar_frame || '',
       points: u.points,
       experience: u.experience,
-      balance: u.balance,
+      // 账户余额（钱包，可充值/提现）属私密财务信息，仅本人可见；他人视角（帖子/评论作者、他人主页）不返回，防泄露。
+      balance: viewerId === u.id ? u.balance : undefined,
       level: lp.level,
       levelProgress: lp,
       checkinStreak: u.checkin_streak,
