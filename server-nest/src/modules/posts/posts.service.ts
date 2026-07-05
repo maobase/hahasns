@@ -25,7 +25,7 @@ import {
   TopicFollow,
   User,
 } from '../../database/entities';
-import { HelpersService } from '../../common/helpers.service';
+import { HelpersService, rewardNum } from '../../common/helpers.service';
 import { RateLimitService } from '../../common/rate-limit.service';
 import { SiteService } from '../site/site.service';
 import { checkSensitive } from '../../common/sensitive';
@@ -646,7 +646,10 @@ export class PostsService {
       );
     }
 
-    await this.helpers.award(user.id, { exp: 5, points: 2 });
+    await this.helpers.award(user.id, {
+      exp: rewardNum(await this.site.getConfig('reward_post_exp'), 5),
+      points: rewardNum(await this.site.getConfig('reward_post_points'), 2),
+    });
 
     // @mentions
     const mentionedIds = new Set<number>();

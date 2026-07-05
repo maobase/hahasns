@@ -4,6 +4,19 @@ import { Repository } from 'typeorm';
 import { AdminLog, Follow, Notification, Post, User, ViewHistory } from '../database/entities';
 
 /**
+ * 解析后台配置的奖励数值（经验/积分）。空/非法回退到内置默认；**允许 0**
+ * （站长可把某项奖励设为 0），故用 Number.isFinite + >=0 判定而非 `Number(x) || def`
+ * （后者会把合法的 0 误判成 falsy 回退到默认）。
+ */
+export function rewardNum(raw: string | null | undefined, fallback: number): number {
+  // 未配置（null/undefined/空串）→ 用默认。注意 Number(null)、Number('') 都等于 0，
+  // 若不先挡掉，未配置的站点会被误判成「奖励 0」而非默认值——必须显式 return fallback。
+  if (raw === null || raw === undefined || raw === '') return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
+/**
  * Ported from server/src/helpers.js. Centralizes the level curve, the public
  * user shape (never leaks password_hash), notifications, exp/points awards,
  * and the @mention / #topic# parsers. Response shapes are byte-for-byte

@@ -1878,6 +1878,22 @@ function CheckinAdmin() {
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>内容奖励配置</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>发帖、邀请注册时给作者 / 邀请人的经验与积分奖励（设 0 = 关闭该项奖励）。</div>
+        <div className="sec-grid">
+          {([['reward_post_exp', '发帖经验', '经验', 5], ['reward_post_points', '发帖积分', '积分', 2], ['reward_invite_exp', '邀请经验', '经验', 10], ['reward_invite_points', '邀请积分', '积分', 50]] as [string, string, string, number][]).map(([k, label, unit, def]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <span className="sec-num">
+                <input type="number" min={0} value={cfg[k] ?? ''} placeholder={String(def)} onChange={(e) => setK(k, e.target.value)} />
+                <i>{unit}</i>
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>7 日奖励预览</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, marginBottom: 12, lineHeight: 1.5 }}>按当前配置，连续签到第 1–7 天的基础积分（未含会员加成）。</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>

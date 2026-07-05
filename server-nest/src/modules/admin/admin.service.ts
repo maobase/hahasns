@@ -58,6 +58,9 @@ const NUM_KEYS: Record<string, [number, number]> = {
   upload_max_size_mb: [1, 25], upload_max_images: [1, 9],
   // 付费内容价格上限（积分）
   paid_price_max: [1, 1000000],
+  // 积分/经验奖励（波B 经济）：发帖奖励 / 邀请注册奖励；设 0 = 关闭该奖励
+  reward_post_exp: [0, 1000], reward_post_points: [0, 100000],
+  reward_invite_exp: [0, 10000], reward_invite_points: [0, 1000000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {
