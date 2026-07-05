@@ -810,9 +810,10 @@ function Products() {
   );
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <button type="button" role="switch" aria-checked={on} className={`ui-toggle${on ? ' on' : ''}`} onClick={() => onChange(!on)}>
+    <button type="button" role="switch" aria-checked={on} disabled={disabled} className={`ui-toggle${on ? ' on' : ''}`}
+      style={disabled ? { opacity: 0.45, cursor: 'not-allowed' } : undefined} onClick={() => onChange(!on)}>
       <span className="ui-toggle-dot" />
     </button>
   );
@@ -823,7 +824,7 @@ const PERM_ACTIONS: [string, string][] = [
 ];
 // section 用于在「安全」tab 内按主题分组（注册验证此前被埋在中间，用户反馈找不到 → 提到最前并加分组标题）。
 const SEC_GROUPS: any[] = [
-  { section: '注册与登录安全', title: '邮箱验证注册', desc: '需先配置邮件服务（SMTP）后再开启，否则验证码无法送达。', toggles: [
+  { section: '注册与登录安全', title: '邮箱验证注册', planned: true, desc: '需邮件服务（SMTP）支持发送验证码。当前版本尚未内置邮件服务，此为预留项、暂不可用，将在后续版本支持。', toggles: [
     ['email_verify_enabled', '启用邮箱验证码功能'], ['require_email_verify', '注册时强制邮箱验证'],
   ] },
   { section: '注册与登录安全', title: '防批量注册', desc: '限制同一 IP 的注册行为，拦截批量刷号。', toggle: 'anti_bulk_reg_enabled', nums: [
@@ -861,7 +862,7 @@ function Security() {
           <div className="ui-card" style={{ padding: 18 }}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14.5 }}>{g.title}</div>
+                <div style={{ fontWeight: 700, fontSize: 14.5 }}>{g.title}{g.planned && <span className="ui-badge" style={{ marginLeft: 8, fontSize: 11, fontWeight: 600 }}>规划中</span>}</div>
                 <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>{g.desc}</div>
               </div>
               {g.toggle && <Toggle on={isOn(g.toggle)} onChange={(v) => setK(g.toggle, v ? '1' : '0')} />}
@@ -884,7 +885,7 @@ function Security() {
                 {g.toggles.map(([k, label]: any) => (
                   <div className="row" style={{ justifyContent: 'space-between', gap: 12 }} key={k}>
                     <span style={{ fontSize: 13.5 }}>{label}</span>
-                    <Toggle on={isOn(k)} onChange={(v) => setK(k, v ? '1' : '0')} />
+                    <Toggle on={g.planned ? false : isOn(k)} onChange={(v) => setK(k, v ? '1' : '0')} disabled={g.planned} />
                   </div>
                 ))}
               </div>
