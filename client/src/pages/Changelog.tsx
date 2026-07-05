@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.11', date: '2026-07-05 17:29:41', items: [
+      ['feat', '后台可配置等级曲线（每级经验系数与最高等级），自由调整成长速度与等级上限；改动约 1 分钟内全站生效。'],
+    ],
+  },
+  {
     ver: 'v5.10', date: '2026-07-05 16:47:20', items: [
       ['feat', '各 VIP 等级的签到积分加成百分比可后台配置（默认 VIP1 +20% / VIP2 +50% / VIP3 +100%），设 0 关闭该等级加成。'],
     ],

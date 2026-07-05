@@ -70,6 +70,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   reward_invite_exp: [0, 10000], reward_invite_points: [0, 1000000],
   // VIP 签到积分加成（百分比，波B）：默认 VIP1=20 / VIP2=50 / VIP3=100（即 ×1.2 / ×1.5 / ×2）
   vip1_bonus_pct: [0, 1000], vip2_bonus_pct: [0, 1000], vip3_bonus_pct: [0, 1000],
+  // 等级曲线（波B）：base=每级经验系数(默认30，越大升级越慢) / max=最高等级(默认60)。所需经验=base*(L-1)^1.7
+  level_base: [1, 100000], level_max: [1, 200],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

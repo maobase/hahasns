@@ -1920,6 +1920,22 @@ function CheckinAdmin() {
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>等级曲线</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>升到第 L 级所需累计经验 = 系数 × (L−1)^1.7。系数越大升级越慢；可设最高等级上限。改动约 1 分钟内全站生效。</div>
+        <div className="sec-grid">
+          {([['level_base', '经验系数', '', 30], ['level_max', '最高等级', '级', 60]] as [string, string, string, number][]).map(([k, label, unit, def]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <span className="sec-num">
+                <input type="number" min={1} value={cfg[k] ?? ''} placeholder={String(def)} onChange={(e) => setK(k, e.target.value)} />
+                {unit ? <i>{unit}</i> : null}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>7 日奖励预览</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, marginBottom: 12, lineHeight: 1.5 }}>按当前配置，连续签到第 1–7 天的基础积分（未含会员加成）。</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>

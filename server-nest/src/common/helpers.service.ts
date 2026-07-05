@@ -25,6 +25,11 @@ export function vipMultiplier(vipLevel: number, v1pct: number, v2pct: number, v3
   return 1 + Math.max(0, pct) / 100;
 }
 
+/** 升到某等级所需累计经验：base * (level-1)^1.7。base 后台可配（默认 30）。 */
+export function expForLevelPure(base: number, level: number): number {
+  return Math.round(base * Math.pow(level - 1, 1.7));
+}
+
 /**
  * Ported from server/src/helpers.js. Centralizes the level curve, the public
  * user shape (never leaks password_hash), notifications, exp/points awards,
@@ -88,14 +93,30 @@ export class HelpersService {
     );
   }
 
-  // ---- Level curve (experience needed for level L is 30 * (L-1)^1.7) ----
+  // 等级曲线参数缓存（后台可配 level_base/level_max）。expForLevel 在 publicUser 热路径高频调用，
+  // 故用 stale-while-revalidate：读内存字段（同步、零查询），过期(60s)时触发一次后台异步刷新、不阻塞。
+  // 未配置时 = 内置默认 30/60，行为与硬编码完全一致（零回归）。
+  private levelBase = 30;
+  private levelMax = 60;
+  private levelCfgAt = 0;
+
+  private maybeRefreshLevel(): void {
+    const now = Date.now();
+    if (now - this.levelCfgAt < 60000) return;
+    this.levelCfgAt = now; // 先占位，防同一窗口并发重复刷新
+    this.cfg('level_base').then((v) => { this.levelBase = Math.max(1, rewardNum(v, 30)); }).catch(() => {});
+    this.cfg('level_max').then((v) => { this.levelMax = Math.max(1, rewardNum(v, 60)); }).catch(() => {});
+  }
+
+  // ---- Level curve (experience needed for level L is base * (L-1)^1.7；base/max 后台可配) ----
   expForLevel(level: number): number {
-    return Math.round(30 * Math.pow(level - 1, 1.7));
+    return expForLevelPure(this.levelBase, level);
   }
 
   levelFromExp(exp: number): number {
+    this.maybeRefreshLevel();
     let lvl = 1;
-    while (lvl < 60 && exp >= this.expForLevel(lvl + 1)) lvl++;
+    while (lvl < this.levelMax && exp >= this.expForLevel(lvl + 1)) lvl++;
     return lvl;
   }
 
