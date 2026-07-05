@@ -94,7 +94,14 @@ export default function WriteArticle() {
         </label>
 
         <div className="art-ed-footer">
-          <span className="art-ed-count">{content.length} 字</span>
+          <span className="art-ed-count">
+            {content.length} 字
+            {!canPublish && (title.trim() !== '' || content.trim() !== '') && (
+              <span style={{ marginLeft: 10, color: 'var(--danger, #d64545)', fontWeight: 600 }}>
+                · {title.trim().length < 2 ? '标题至少 2 个字' : '正文至少 10 个字'}
+              </span>
+            )}
+          </span>
           <div className="row gap-8">
             <Link to="/articles" className="btn btn-ghost">取消</Link>
             <button className="btn btn-primary" onClick={publish} disabled={!canPublish || busy}>

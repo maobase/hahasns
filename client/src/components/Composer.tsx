@@ -287,6 +287,9 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
                   )}
                 </div>
               ))}
+              {poll.options.filter((o: any) => (o || '').trim()).length < 2 && (
+                <div style={{ fontSize: 12, color: 'var(--danger, #d64545)', padding: '2px 2px 6px' }}>至少填写 2 个选项才能发起投票</div>
+              )}
               <div className="poll-editor-foot">
                 {poll.options.length < 6 && (
                   <button className="poll-add" onClick={() => setPoll((p: any) => ({ ...p, options: [...p.options, ''] }))}>
