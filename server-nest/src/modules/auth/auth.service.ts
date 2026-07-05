@@ -199,7 +199,12 @@ export class AuthService implements OnApplicationBootstrap {
   async login(dto: LoginDto, ip?: string) {
     await this.rateLimit.enforceLogin(ip); // 防爆破：同 IP 连续失败过多→429（fail-open，绝不误伤正常登录）
     const { username, password } = dto || {};
-    const user = await this.users.findOne({ where: { username } });
+    // password_hash 是 select:false，登录比对需显式 addSelect 取回（其余列默认全带）。
+    const user = await this.users
+      .createQueryBuilder('u')
+      .addSelect('u.password_hash')
+      .where('u.username = :username', { username })
+      .getOne();
     if (!user || !bcrypt.compareSync(password || '', user.password_hash)) {
       await this.rateLimit.noteLoginFailure(ip); // 记一次失败
       throw new UnauthorizedException('用户名或密码错误');
@@ -219,7 +224,13 @@ export class AuthService implements OnApplicationBootstrap {
 
   async changePassword(user: User, dto: ChangePasswordDto) {
     const { oldPassword, newPassword } = dto || {};
-    if (!bcrypt.compareSync(oldPassword || '', user.password_hash))
+    // @CurrentUser 的实体因 select:false 不含 password_hash，改密比对需显式取回。
+    const fresh = await this.users
+      .createQueryBuilder('u')
+      .addSelect('u.password_hash')
+      .where('u.id = :id', { id: user.id })
+      .getOne();
+    if (!fresh || !bcrypt.compareSync(oldPassword || '', fresh.password_hash))
       throw new ForbiddenException('原密码不正确');
     if (!newPassword || newPassword.length < 6)
       throw new BadRequestException('新密码至少 6 位');

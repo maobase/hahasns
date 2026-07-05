@@ -17,7 +17,9 @@ export class User {
   @Column({ type: 'varchar', length: 64 })
   nickname: string;
 
-  @Column({ name: 'password_hash', type: 'varchar', length: 255 })
+  // select:false —— 默认查询绝不带出密码哈希（safe-by-construction 防泄露）；
+  // 需要比对的登录/改密处用 addSelect('password_hash') 显式取。纯查询层设置，不改表结构。
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, select: false })
   password_hash: string;
 
   @Column({ type: 'varchar', length: 128, nullable: true })
