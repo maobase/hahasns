@@ -28,8 +28,11 @@ export default function Member() {
   const layout = useLayout('member', 'wide');
   const rawTiers = useSite().rechargeTiers;
   const vipPrices = useSite().vipPrices;
-  // VIP 档位月价：后台配置优先，未配置回退到内置默认（lib/vip 常量）
+  const vipTiers = useSite().vipTiers;
+  // VIP 档位月价/名称/标语：后台配置优先，未配置回退到内置默认（lib/vip 常量）
   const priceOf = (t: VipTier) => vipPrices[String(t.level)] ?? t.price;
+  const nameOf = (t: VipTier) => vipTiers[String(t.level)]?.name || t.name;
+  const taglineOf = (t: VipTier) => vipTiers[String(t.level)]?.tagline || t.tagline;
   const tiers = parseTiers(rawTiers);
   const [rechargeOpen, setRechargeOpen] = useState(false);
   const [amount, setAmount] = useState(tiers[1] ?? tiers[0]);
@@ -66,8 +69,8 @@ export default function Member() {
   const myTier = vipTier(myLevel);
   const buyVip = async (t: VipTier) => {
     const action = myLevel === 0 ? '开通' : t.level > myLevel ? '升级到' : '切换到';
-    if (!(await confirmDialog('演示环境为模拟开通，不会产生真实扣费', { title: `确认${action} ${t.name}（¥${(priceOf(t) / 100).toFixed(0)}/月）？`, confirmText: `确认${action}`, danger: false }))) return;
-    try { const { data } = await api.post('/users/me/recharge', { amount: 0, vipLevel: t.level }); patchUser(data.user); toast.ok(`已开通${t.name} 🎉`); }
+    if (!(await confirmDialog('演示环境为模拟开通，不会产生真实扣费', { title: `确认${action} ${nameOf(t)}（¥${(priceOf(t) / 100).toFixed(0)}/月）？`, confirmText: `确认${action}`, danger: false }))) return;
+    try { const { data } = await api.post('/users/me/recharge', { amount: 0, vipLevel: t.level }); patchUser(data.user); toast.ok(`已开通${nameOf(t)} 🎉`); }
     catch (e: any) { toast.err(e.message); }
   };
 
@@ -118,8 +121,8 @@ export default function Member() {
                   <span className="vip-tier-badge" style={{ background: t.color, color: t.ink }}>{t.short}</span>
                   {owned && <span className="vip-tier-cur"><Icon name="check" size={12} /> 当前</span>}
                 </div>
-                <div className="vip-tier-name">{t.name}</div>
-                <div className="vip-tier-tag">{t.tagline}</div>
+                <div className="vip-tier-name">{nameOf(t)}</div>
+                <div className="vip-tier-tag">{taglineOf(t)}</div>
                 <div className="vip-tier-price"><b>¥{(priceOf(t) / 100).toFixed(0)}</b><span> / 月</span></div>
                 <ul className="vip-tier-perks">
                   {t.perks.map((p) => <li key={p}><Icon name="check" size={13} /> <span>{p}</span></li>)}

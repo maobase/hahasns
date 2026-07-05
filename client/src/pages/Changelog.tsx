@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.13', date: '2026-07-05 18:53:29', items: [
+      ['feat', '后台可自定义各 VIP 档位的名称与标语（留空用内置默认「青铜 / 黄金 / 黑钻会员」），配合月价与积分加成实现会员体系整体品牌化。'],
+    ],
+  },
+  {
     ver: 'v5.12', date: '2026-07-05 18:11:07', items: [
       ['feat', '后台可配置各 VIP 档位在会员页展示的月价（青铜 / 黄金 / 黑钻，单位分，留空用内置默认 ¥12 / 36 / 98）。'],
     ],

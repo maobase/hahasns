@@ -385,11 +385,12 @@ export class UsersService {
     );
     if (reqLevel > 0) {
       const NAMES: Record<number, string> = { 1: '青铜会员', 2: '黄金会员', 3: '黑钻会员' };
+      const vipName = (await this.site.getConfig(`vip${reqLevel}_name`)) || NAMES[reqLevel];
       await this.helpers.notify({
         userId: user.id,
         actorId: null,
         type: 'system',
-        preview: `你已开通${NAMES[reqLevel]}，尊享专属特权 🎉`,
+        preview: `你已开通${vipName}，尊享专属特权 🎉`,
       });
     }
     const fresh = await this.helpers.getUser(user.id);

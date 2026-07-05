@@ -1465,6 +1465,16 @@ function PaymentAdmin() {
             </label>
           ))}
         </div>
+        <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>VIP 档位名称与标语</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>自定义各档位显示名称与一句话标语（留空用内置默认：青铜 / 黄金 / 黑钻会员）。</div>
+        <div className="sec-grid" style={{ marginTop: 10 }}>
+          {([['vip1_name', 'VIP1 名称', '青铜会员'], ['vip1_tagline', 'VIP1 标语', '入门尊享，畅快互动'], ['vip2_name', 'VIP2 名称', '黄金会员'], ['vip2_tagline', 'VIP2 标语', '高频活跃用户之选'], ['vip3_name', 'VIP3 名称', '黑钻会员'], ['vip3_tagline', 'VIP3 标语', '至尊体验，全部解锁']] as [string, string, string][]).map(([k, label, ph]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <input className="inp" value={cfg[k] ?? ''} placeholder={ph} onChange={(e) => setK(k, e.target.value)} maxLength={k.includes('tagline') ? 60 : 40} />
+            </label>
+          ))}
+        </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>
