@@ -77,6 +77,12 @@ export class SiteService {
       defaultSkin: cfg.get('default_skin') || '',
       defaultMode: cfg.get('default_mode') || '',
       defaultStyle: cfg.get('default_style') || '',
+      // 首页信息流可选 tab 开关（默认开：未配置或非 '0' 视为显示）
+      homeTabs: {
+        video: cfg.get('home_tab_video') !== '0',
+        samecity: cfg.get('home_tab_samecity') !== '0',
+        following: cfg.get('home_tab_following') !== '0',
+      },
       modules,
       layouts,
       payments,

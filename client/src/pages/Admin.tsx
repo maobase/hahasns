@@ -1064,6 +1064,18 @@ function Layouts() {
           ))}
         </div>
       </div>
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>首页信息流标签</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>隐藏不需要的可选信息流标签（「推荐 / 最新」为核心，始终显示）。</div>
+        <div className="sec-toggles" style={{ marginTop: 14 }}>
+          {([['home_tab_following', '关注'], ['home_tab_video', '视频'], ['home_tab_samecity', '同城']] as [string, string][]).map(([k, label]) => (
+            <div className="row" style={{ justifyContent: 'space-between', gap: 12 }} key={k}>
+              <span style={{ fontSize: 13.5 }}>{label}</span>
+              <Toggle on={(cfg[k] ?? '1') !== '0'} onChange={(v) => setK(k, v ? '1' : '0')} />
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存布局'}</button>
       </div>

@@ -7,6 +7,7 @@ import PostCard from '../components/PostCard';
 import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { WhoToFollow } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
+import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 
 const FILTERS = [
@@ -20,7 +21,10 @@ const PAGE = 12;
 
 export default function Home() {
   const { user, setAuthOpen } = useAuth();
+  const { homeTabs } = useSite();
   const loc = useLocation();
+  // 站长可在后台隐藏可选信息流 tab（视频/同城/关注）；核心 tab（推荐/最新）恒显
+  const tabs = FILTERS.filter((f) => homeTabs[f.key] !== false);
   const [filter, setFilter] = useState('recommend');
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +89,7 @@ export default function Home() {
       <div ref={composerRef}><Composer onPosted={onPosted} /></div>
 
       <div className="ui-card feed-tabs">
-        {FILTERS.map((f) => (
+        {tabs.map((f) => (
           <button key={f.key} className={`feed-tab${filter === f.key ? ' active' : ''}`} onClick={() => onFilter(f)}>
             {f.label}
           </button>
