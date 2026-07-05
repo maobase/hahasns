@@ -20,5 +20,8 @@ export function shouldBlockForUninitializedDb(
 /** fail-fast 错误文案（缺表且未开 synchronize 时打印）。 */
 export const DB_UNINITIALIZED_MESSAGE =
   '[FATAL] 数据库未初始化：核心表 users 不存在，且 DB_SYNCHRONIZE 未开启。\n' +
-  '        首次部署请设 DB_SYNCHRONIZE=true 让 TypeORM 自动建表，启动成功后可改回 false。\n' +
-  '        （Docker compose 默认已设 true；裸机手动配 env 时最容易漏掉这一步。）';
+  '        首次部署请任选其一初始化数据库：\n' +
+  '          · 推荐：在 server-nest 目录运行  npm run migration:run  （按版本化迁移建好全部表）；\n' +
+  '          · Docker：在 compose 的 app 服务 env 设 DB_MIGRATIONS_RUN=true 让容器启动自动迁移；\n' +
+  '          · 或临时设 DB_SYNCHRONIZE=true 让 TypeORM 自动建表，启动成功后改回 false。\n' +
+  '        （生产环境请保持 DB_SYNCHRONIZE=false 走迁移。详见仓库 UPGRADE.md。）';
