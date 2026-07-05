@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { CheckinLog, Order, Product, User } from '../../database/entities';
 import { defaultAvatar } from '../../common/default-avatar';
-import { HelpersService } from '../../common/helpers.service';
+import { HelpersService, vipMultiplier } from '../../common/helpers.service';
 import { RateLimitService } from '../../common/rate-limit.service';
 import { SiteService } from '../site/site.service';
 import { checkSensitive } from '../../common/sensitive';
@@ -247,9 +247,14 @@ export class AuthService implements OnApplicationBootstrap {
     const base = await cfgNum('checkin_base_points', 5);
     const cap = await cfgNum('checkin_streak_cap', 7);
     const bonus = Math.min(streak, cap);
-    // VIP 多等级积分加成（落地 v2.73 权益）：VIP1 +20% / VIP2 +50% / VIP3 翻倍
+    // VIP 多等级积分加成（落地 v2.73 权益）：默认 VIP1 +20% / VIP2 +50% / VIP3 翻倍，后台可配（百分比）
     const vipLevel = user.vip_level || (user.vip ? 1 : 0);
-    const vipMult = vipLevel === 3 ? 2 : vipLevel === 2 ? 1.5 : vipLevel === 1 ? 1.2 : 1;
+    const vipMult = vipMultiplier(
+      vipLevel,
+      await cfgNum('vip1_bonus_pct', 20),
+      await cfgNum('vip2_bonus_pct', 50),
+      await cfgNum('vip3_bonus_pct', 100),
+    );
     const points = Math.round((base + bonus) * vipMult);
     const exp = 5;
     const best = Math.max(streak, user.best_checkin_streak || 0);

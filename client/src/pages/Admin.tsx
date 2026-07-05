@@ -1904,6 +1904,22 @@ function CheckinAdmin() {
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>VIP 签到积分加成</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>各 VIP 等级的签到积分加成百分比（默认 VIP1 +20% / VIP2 +50% / VIP3 +100%）。设 0 = 该等级无加成。</div>
+        <div className="sec-grid">
+          {([['vip1_bonus_pct', 'VIP1 加成', '%', 20], ['vip2_bonus_pct', 'VIP2 加成', '%', 50], ['vip3_bonus_pct', 'VIP3 加成', '%', 100]] as [string, string, string, number][]).map(([k, label, unit, def]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <span className="sec-num">
+                <input type="number" min={0} value={cfg[k] ?? ''} placeholder={String(def)} onChange={(e) => setK(k, e.target.value)} />
+                <i>{unit}</i>
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>7 日奖励预览</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, marginBottom: 12, lineHeight: 1.5 }}>按当前配置，连续签到第 1–7 天的基础积分（未含会员加成）。</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>

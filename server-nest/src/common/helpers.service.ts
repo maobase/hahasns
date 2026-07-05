@@ -17,6 +17,15 @@ export function rewardNum(raw: string | null | undefined, fallback: number): num
 }
 
 /**
+ * VIP 等级积分加成倍率。vipN_bonus_pct 为百分比（默认 VIP1=20 / VIP2=50 / VIP3=100，
+ * 即 ×1.2 / ×1.5 / ×2）；非 VIP（0）无加成。负百分比按 0 处理，保证倍率 >= 1。
+ */
+export function vipMultiplier(vipLevel: number, v1pct: number, v2pct: number, v3pct: number): number {
+  const pct = vipLevel >= 3 ? v3pct : vipLevel === 2 ? v2pct : vipLevel === 1 ? v1pct : 0;
+  return 1 + Math.max(0, pct) / 100;
+}
+
+/**
  * Ported from server/src/helpers.js. Centralizes the level curve, the public
  * user shape (never leaks password_hash), notifications, exp/points awards,
  * and the @mention / #topic# parsers. Response shapes are byte-for-byte

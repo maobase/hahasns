@@ -68,6 +68,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   reward_answer_accepted_exp: [0, 10000], reward_answer_accepted_points: [0, 1000000],
   reward_event_exp: [0, 10000], reward_event_points: [0, 1000000],
   reward_invite_exp: [0, 10000], reward_invite_points: [0, 1000000],
+  // VIP 签到积分加成（百分比，波B）：默认 VIP1=20 / VIP2=50 / VIP3=100（即 ×1.2 / ×1.5 / ×2）
+  vip1_bonus_pct: [0, 1000], vip2_bonus_pct: [0, 1000], vip3_bonus_pct: [0, 1000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {
