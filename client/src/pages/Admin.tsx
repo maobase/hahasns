@@ -2208,7 +2208,7 @@ function SystemAdmin() {
   useEffect(() => {
     if (!st?.upgrading) return;
     const t = setInterval(async () => {
-      try { const { data } = await api.get('/admin/system/status'); setSt(data); if (!data.upgrading && !data.updateAvailable) toast.ok('升级完成 🎉 已是最新版'); } catch { /* 重启中短暂不可达，忽略 */ }
+      try { const { data } = await api.get('/admin/system/status'); setSt(data); if (!data.upgrading) { toast.ok('升级已完成，请刷新页面加载新版本 🎉'); clearInterval(t); } } catch { /* 重启中短暂不可达，忽略 */ }
     }, 12000);
     return () => clearInterval(t);
     /* eslint-disable-next-line */
@@ -2219,7 +2219,7 @@ function SystemAdmin() {
     catch (e: any) { toast.err(e.message); }
   };
   if (!st) return <RowSkeleton rows={4} />;
-  const up = st.updateAvailable;
+  const up = !!(st.latestVersion && st.latestVersion !== APP_VERSION);
   return (
     <div className="flex flex-col gap-4">
       <div className="ui-card" style={{ padding: 18 }}>
@@ -2228,7 +2228,7 @@ function SystemAdmin() {
             <div style={{ fontWeight: 700, fontSize: 15 }}>版本信息</div>
             <div className="faint" style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.7 }}>
               当前版本：<b className="num">{APP_VERSION}</b>{st.currentCommit && <> · commit <span className="num">{st.currentCommit}</span></>}<br />
-              最新版本：{st.canCheck ? <span className="num">{st.latestCommit || '—'}</span> : <span className="faint">（GitHub 检测暂不可用）</span>}
+              最新版本：{st.canCheck ? <span className="num">{st.latestVersion || '—'}</span> : <span className="faint">（GitHub 检测暂不可用）</span>}
             </div>
           </div>
           <button className="btn btn-ghost btn-sm" disabled={checking} onClick={() => load(true)}><Icon name="rocket" size={14} /> {checking ? '检查中…' : '检查更新'}</button>
@@ -2239,7 +2239,7 @@ function SystemAdmin() {
           ) : up ? (
             <div className="row gap-8" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--like)', fontWeight: 700 }}>● 有新版本可用</span>
-              {st.upgradeEnabled && st.isGitRepo
+              {st.upgradeEnabled
                 ? <button className="btn btn-primary" onClick={doUpgrade}><Icon name="rocket" size={15} /> 一键升级</button>
                 : <span className="faint" style={{ fontSize: 12.5 }}>（后台升级未启用，见下方说明）</span>}
               <a className="btn btn-ghost btn-sm" href="/changelog" target="_blank" rel="noreferrer">查看更新日志</a>
@@ -2252,9 +2252,8 @@ function SystemAdmin() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>升级说明</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.85 }}>
-          {!st.isGitRepo && <>⚠️ 当前非 git 部署，无法自动升级；请改用 <code>git clone</code> 部署后即可一键升级。<br /></>}
-          {!st.upgradeEnabled && <>后台一键升级默认关闭（安全）。启用：在服务器给运行 app 的账号配好执行 <code>upgrade.sh</code> 的权限后，设环境变量 <code>ALLOW_ADMIN_UPGRADE=true</code> 并重启服务。<br /></>}
-          任何时候都可在服务器仓库根目录手动运行 <code>./upgrade.sh</code>（自动备份 → 拉取 → 迁移 → 重建 → 重启）。完整说明见仓库 <code>UPGRADE.md</code>。
+          {!st.upgradeEnabled && <>后台一键升级默认关闭（安全，且仅适用于宿主机直跑的部署）。启用：给运行 app 的账号配好执行 <code>upgrade.sh</code> 的权限后，设环境变量 <code>ALLOW_ADMIN_UPGRADE=true</code> 并重启服务。<br /></>}
+          任何部署形态都可在服务器仓库根目录手动运行 <code>./upgrade.sh</code>（自动备份 → 拉取 → 迁移 → 重建 → 重启；Docker 部署设 <code>DEPLOY_MODE=docker</code>）。完整说明见仓库 <code>UPGRADE.md</code>。
         </div>
       </div>
     </div>

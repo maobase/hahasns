@@ -22,7 +22,9 @@ const UPGRADE_ENABLED = process.env.ALLOW_ADMIN_UPGRADE === 'true';
 @Injectable()
 export class SystemService {
   private readonly logger = new Logger('System');
-  private cache: { at: number; latest: string | null } = { at: 0, latest: null };
+  // 缓存 GitHub 上的最新版本号（从 raw version.ts 解析）。按版本号比对，docker/裸机通用（不依赖容器内 .git）。
+  private cache: { at: number; version: string | null } = { at: 0, version: null };
+  private refreshing = false;
   private upgrading = false;
 
   private async localCommit(): Promise<string | null> {
@@ -34,53 +36,42 @@ export class SystemService {
     }
   }
 
-  private localVersion(): string | null {
-    try {
-      const txt = fs.readFileSync(join(REPO_DIR, 'client', 'src', 'version.ts'), 'utf8');
-      return (txt.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/) || [])[1] || null;
-    } catch {
-      return null;
-    }
-  }
-
-  private refreshing = false;
-
-  /** 非阻塞取最新 commit：立即返回缓存（可能 null），缓存空/过期时后台异步刷新（GitHub 不可达也不卡住页面）。 */
-  private latestCommitCached(): string | null {
-    if (!this.cache.latest || Date.now() - this.cache.at > 5 * 60 * 1000) void this.refreshLatest();
-    return this.cache.latest;
+  /** 非阻塞取最新版本号：立即返回缓存（可能 null），空/过期时后台异步刷新，GitHub 不可达也不卡住页面。 */
+  private latestVersionCached(): string | null {
+    if (!this.cache.version || Date.now() - this.cache.at > 5 * 60 * 1000) void this.refreshLatest();
+    return this.cache.version;
   }
 
   private async refreshLatest(): Promise<void> {
     if (this.refreshing) return;
     this.refreshing = true;
     try {
-      const resp = await fetch(`https://api.github.com/repos/${REPO}/commits/${BRANCH}`, {
-        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'hahasns-selfhost' },
+      // 拉最新 client/src/version.ts 解析 APP_VERSION —— 按版本号比对（不依赖 git，docker 容器内也可用）。
+      const resp = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/client/src/version.ts`, {
+        headers: { 'User-Agent': 'hahasns-selfhost' },
         signal: AbortSignal.timeout(6000),
       });
       if (resp.ok) {
-        const data: any = await resp.json();
-        if (typeof data?.sha === 'string') this.cache = { at: Date.now(), latest: data.sha.slice(0, 7) };
+        const txt = await resp.text();
+        const v = (txt.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/) || [])[1];
+        if (v) this.cache = { at: Date.now(), version: v };
       }
     } catch {
-      // 网络不通（如服务器无法访问 GitHub）→ 保持 latest=null，页面显示"检测暂不可用"
+      // 网络不通（如服务器无法访问 GitHub）→ 保持 version=null，页面显示"检测暂不可用"
     } finally {
       this.refreshing = false;
     }
   }
 
   async status() {
-    const current = await this.localCommit();
-    const latest = this.latestCommitCached();
-    const updateAvailable = !!(current && latest && current !== latest);
+    const currentCommit = await this.localCommit();
+    const latestVersion = this.latestVersionCached();
     return {
-      currentVersion: this.localVersion(),
-      currentCommit: current,
-      latestCommit: latest,
-      updateAvailable,
-      canCheck: !!latest, // GitHub 是否可达
-      isGitRepo: !!current, // 是否 git 部署（能升级的前提）
+      // 当前运行版本以前端 bundle 内的 APP_VERSION 为准（前端展示）；此处仅给 commit 用于判断是否 git 部署。
+      currentCommit,
+      latestVersion,
+      canCheck: !!latestVersion, // GitHub 是否可达（能否检测新版）
+      isGitRepo: !!currentCommit, // 是否 git 部署（后台一键升级/手动 git pull 的前提）
       upgradeEnabled: UPGRADE_ENABLED,
       upgrading: this.upgrading,
       repo: REPO,
