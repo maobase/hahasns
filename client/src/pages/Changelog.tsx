@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.23', date: '2026-07-06 14:36:20', items: [
+      ['feat', '升级方案：引入版本化数据库迁移（替代 synchronize 自动建表）+ upgrade.sh 一键升级脚本 + 后台「系统更新」页（检测新版、半自动一键升级），让自托管用户安全升级不丢数据。见 UPGRADE.md。'],
+    ],
+  },
+  {
     ver: 'v5.22', date: '2026-07-06 10:41:05', items: [
       ['fix', '后台各创建表单（板块 / 话题 / 公告 / 商品 / 分类）在必填项未填时禁用创建按钮，避免无效提交，配合表单字段一目了然。'],
     ],

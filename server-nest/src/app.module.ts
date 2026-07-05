@@ -24,6 +24,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AiModule } from './modules/ai/ai.module';
+import { SystemModule } from './modules/system/system.module';
 import { SiteModule } from './modules/site/site.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { CheckinModule } from './modules/checkin/checkin.module';
@@ -71,6 +72,7 @@ import { AppController } from './app.controller';
     FeedbackModule,
     AdminModule,
     AiModule,
+    SystemModule,
     SiteModule,
     NoticesModule,
     CheckinModule,

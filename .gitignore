@@ -20,3 +20,8 @@ spec/
 .claude/
 skills-lock.json
 deploy-nest.sh
+
+# upgrade.sh 运行时产物 / 本地配置
+upgrade.env
+upgrade.log
+.upgrade-backups/

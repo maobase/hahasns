@@ -12,6 +12,7 @@ import { SKINS, STYLES } from '../context/ThemeContext';
 import api from '../api/client';
 import { fmtNum, timeAgo } from '../lib/format';
 import { confirmDialog } from '../components/confirm';
+import { APP_VERSION } from '../version';
 import { promptDialog } from '../components/prompt';
 // 品牌化二次确认已抽到 ../components/confirm（全站共用，<ConfirmHost/> 挂在 App 根）。
 
@@ -47,6 +48,7 @@ const TABS = [
   { k: 'layout', l: '布局', icon: 'compass', d: '各页面布局（三栏 / 宽屏 / 居中）' },
   { k: 'appearance', l: '外观', icon: 'image', d: '站点品牌、Logo 与自定义 CSS' },
   { k: 'audit', l: '日志', icon: 'book', d: '管理操作审计记录' },
+  { k: 'system', l: '系统更新', icon: 'rocket', d: '版本检测与一键升级' },
 ];
 // 侧边导航分组（design.md B 端高密度 nav 分区）：21 个 tab 按职能归到 5 组，桌面侧栏显示分组小标题；移动端横向 nav 隐藏标题。
 const NAV_GROUPS: { l: string; keys: string[] }[] = [
@@ -54,7 +56,7 @@ const NAV_GROUPS: { l: string; keys: string[] }[] = [
   { l: '内容', keys: ['boards', 'topics', 'articles', 'flash', 'events', 'circles', 'qa', 'nav'] },
   { l: '运营', keys: ['notices', 'mall', 'payment', 'lottery', 'checkin'] },
   { l: '用户', keys: ['users', 'reports'] },
-  { l: '系统', keys: ['security', 'modules', 'layout', 'appearance', 'audit'] },
+  { l: '系统', keys: ['security', 'modules', 'layout', 'appearance', 'audit', 'system'] },
 ];
 const TAB_BY_K = Object.fromEntries(TABS.map((t) => [t.k, t]));
 // tab key → 所属分组名（顶栏面包屑用）
@@ -2185,6 +2187,80 @@ function AdminLogin() {
   );
 }
 
+// 系统更新：检测新版 + 半自动一键升级（详见 UPGRADE.md）。
+function SystemAdmin() {
+  const toast = useToast();
+  const [st, setSt] = useState<any>(null);
+  const [checking, setChecking] = useState(false);
+  const load = async (manual?: boolean) => {
+    if (manual) setChecking(true);
+    try { const { data } = await api.get('/admin/system/status'); setSt(data); }
+    catch { setSt({ error: true }); }
+    finally { if (manual) setChecking(false); }
+  };
+  useEffect(() => {
+    load();
+    // GitHub 最新版检测在后端后台异步刷新，首拉可能未就绪 → 3.5s 后自动再拉一次拿到结果
+    const t = setTimeout(() => load(), 3500);
+    return () => clearTimeout(t);
+    /* eslint-disable-next-line */
+  }, []);
+  useEffect(() => {
+    if (!st?.upgrading) return;
+    const t = setInterval(async () => {
+      try { const { data } = await api.get('/admin/system/status'); setSt(data); if (!data.upgrading && !data.updateAvailable) toast.ok('升级完成 🎉 已是最新版'); } catch { /* 重启中短暂不可达，忽略 */ }
+    }, 12000);
+    return () => clearInterval(t);
+    /* eslint-disable-next-line */
+  }, [st?.upgrading]);
+  const doUpgrade = async () => {
+    if (!(await confirmDialog('升级会拉取最新代码、迁移数据库并重启服务（约数分钟，其间可能短暂不可用）。建议先确认已备份数据库。确定现在升级？', { title: '一键升级到最新版', confirmText: '开始升级', danger: true }))) return;
+    try { const { data } = await api.post('/admin/system/upgrade'); if (data.started) { toast.ok(data.message); load(); } else toast.err(data.message); }
+    catch (e: any) { toast.err(e.message); }
+  };
+  if (!st) return <RowSkeleton rows={4} />;
+  const up = st.updateAvailable;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>版本信息</div>
+            <div className="faint" style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.7 }}>
+              当前版本：<b className="num">{APP_VERSION}</b>{st.currentCommit && <> · commit <span className="num">{st.currentCommit}</span></>}<br />
+              最新版本：{st.canCheck ? <span className="num">{st.latestCommit || '—'}</span> : <span className="faint">（GitHub 检测暂不可用）</span>}
+            </div>
+          </div>
+          <button className="btn btn-ghost btn-sm" disabled={checking} onClick={() => load(true)}><Icon name="rocket" size={14} /> {checking ? '检查中…' : '检查更新'}</button>
+        </div>
+        <div style={{ marginTop: 14 }}>
+          {st.upgrading ? (
+            <div className="row gap-8" style={{ alignItems: 'center', color: 'var(--brand)', fontWeight: 600 }}><div className="ui-spinner" style={{ width: 16, height: 16 }} /> 升级进行中，完成后服务会自动重启，请稍候…</div>
+          ) : up ? (
+            <div className="row gap-8" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ color: 'var(--like)', fontWeight: 700 }}>● 有新版本可用</span>
+              {st.upgradeEnabled && st.isGitRepo
+                ? <button className="btn btn-primary" onClick={doUpgrade}><Icon name="rocket" size={15} /> 一键升级</button>
+                : <span className="faint" style={{ fontSize: 12.5 }}>（后台升级未启用，见下方说明）</span>}
+              <a className="btn btn-ghost btn-sm" href="/changelog" target="_blank" rel="noreferrer">查看更新日志</a>
+            </div>
+          ) : (
+            <span style={{ color: 'var(--ok, #16a34a)', fontWeight: 700 }}>✓ 已是最新版本</span>
+          )}
+        </div>
+      </div>
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>升级说明</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.85 }}>
+          {!st.isGitRepo && <>⚠️ 当前非 git 部署，无法自动升级；请改用 <code>git clone</code> 部署后即可一键升级。<br /></>}
+          {!st.upgradeEnabled && <>后台一键升级默认关闭（安全）。启用：在服务器给运行 app 的账号配好执行 <code>upgrade.sh</code> 的权限后，设环境变量 <code>ALLOW_ADMIN_UPGRADE=true</code> 并重启服务。<br /></>}
+          任何时候都可在服务器仓库根目录手动运行 <code>./upgrade.sh</code>（自动备份 → 拉取 → 迁移 → 重建 → 重启）。完整说明见仓库 <code>UPGRADE.md</code>。
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
@@ -2285,6 +2361,7 @@ export default function Admin() {
           {tab === 'layout' && <Layouts />}
           {tab === 'appearance' && <Appearance />}
           {tab === 'audit' && <AuditLog />}
+          {tab === 'system' && <SystemAdmin />}
         </div>
       </main>
     </div>
