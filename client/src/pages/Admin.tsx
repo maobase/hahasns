@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Modal from '../components/Modal';
 import Shell from '../components/Shell';
 import Avatar from '../components/Avatar';
@@ -2020,7 +2020,12 @@ function AdminLogin() {
 
 export default function Admin() {
   const { user, loading, logout } = useAuth();
-  const [tab, setTab] = useState('overview');
+  const navigate = useNavigate();
+  const location = useLocation();
+  // tab 以 URL 为准（/admin/<tab>）→ 可深链 + 浏览器前进/后退；非法 tab 回退 overview
+  const rawTab = location.pathname.replace(/^\/admin\/?/, '').split('/')[0];
+  const tab = TAB_BY_K[rawTab] ? rawTab : 'overview';
+  const setTab = (k: string) => navigate('/admin/' + k);
   // 后台独立的浅/深主题（与前台主题互不影响），持久化到 localStorage。design.md 深色变体。
   const [adminTheme, setAdminTheme] = useState<string>(() => {
     try { return localStorage.getItem('haha_admin_theme') || 'light'; } catch { return 'light'; }

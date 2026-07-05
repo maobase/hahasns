@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.04', date: '2026-07-05 12:19:55', items: [
+      ['feat', '管理后台的各分区改为独立网址（/admin/&lt;分区&gt;），支持深链直达、收藏与浏览器前进/后退。'],
+    ],
+  },
+  {
     ver: 'v5.03', date: '2026-07-05 11:38:20', items: [
       ['fix', '登录页与关于页的浏览器标签标题现在也跟随站点名称显示（此前登出状态下会显示写死的默认站名）。'],
     ],
