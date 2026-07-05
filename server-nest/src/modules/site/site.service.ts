@@ -83,11 +83,11 @@ export class SiteService {
         '2': cfg.get('vip2_price') ? Number(cfg.get('vip2_price')) : null,
         '3': cfg.get('vip3_price') ? Number(cfg.get('vip3_price')) : null,
       },
-      // VIP 各档位名称/标语：已配置→字符串，未配置→null（前端回退到内置默认）
+      // VIP 各档位名称/标语/权益：已配置→字符串，未配置→null（前端回退到内置默认）；perks 为每行一条
       vipTiers: {
-        '1': { name: cfg.get('vip1_name') || null, tagline: cfg.get('vip1_tagline') || null },
-        '2': { name: cfg.get('vip2_name') || null, tagline: cfg.get('vip2_tagline') || null },
-        '3': { name: cfg.get('vip3_name') || null, tagline: cfg.get('vip3_tagline') || null },
+        '1': { name: cfg.get('vip1_name') || null, tagline: cfg.get('vip1_tagline') || null, perks: cfg.get('vip1_perks') || null },
+        '2': { name: cfg.get('vip2_name') || null, tagline: cfg.get('vip2_tagline') || null, perks: cfg.get('vip2_perks') || null },
+        '3': { name: cfg.get('vip3_name') || null, tagline: cfg.get('vip3_tagline') || null, perks: cfg.get('vip3_perks') || null },
       },
       // 首页信息流可选 tab 开关（默认开：未配置或非 '0' 视为显示）
       homeTabs: {

@@ -33,6 +33,7 @@ export default function Member() {
   const priceOf = (t: VipTier) => vipPrices[String(t.level)] ?? t.price;
   const nameOf = (t: VipTier) => vipTiers[String(t.level)]?.name || t.name;
   const taglineOf = (t: VipTier) => vipTiers[String(t.level)]?.tagline || t.tagline;
+  const perksOf = (t: VipTier) => { const p = vipTiers[String(t.level)]?.perks; return p ? p.split('\n').map((s) => s.trim()).filter(Boolean) : t.perks; };
   const tiers = parseTiers(rawTiers);
   const [rechargeOpen, setRechargeOpen] = useState(false);
   const [amount, setAmount] = useState(tiers[1] ?? tiers[0]);
@@ -125,7 +126,7 @@ export default function Member() {
                 <div className="vip-tier-tag">{taglineOf(t)}</div>
                 <div className="vip-tier-price"><b>¥{(priceOf(t) / 100).toFixed(0)}</b><span> / 月</span></div>
                 <ul className="vip-tier-perks">
-                  {t.perks.map((p) => <li key={p}><Icon name="check" size={13} /> <span>{p}</span></li>)}
+                  {perksOf(t).map((p) => <li key={p}><Icon name="check" size={13} /> <span>{p}</span></li>)}
                 </ul>
                 <button className={`btn ${owned ? 'btn-ghost' : 'btn-primary'} btn-block`} disabled={owned} onClick={() => buyVip(t)}>
                   {owned ? '已开通' : upgrade ? '升级' : '开通'}

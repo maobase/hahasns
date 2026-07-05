@@ -27,7 +27,7 @@ export interface SiteConfig {
   homeTabs: Record<string, boolean>; // 首页信息流可选 tab 开关；缺省=显示
   widgets: Record<string, boolean>;  // 右栏挂件开关；缺省=显示
   vipPrices: Record<string, number | null>; // VIP 各档位月价（分）；null=用内置默认
-  vipTiers: Record<string, { name: string | null; tagline: string | null }>; // VIP 档位名称/标语；null=用内置默认
+  vipTiers: Record<string, { name: string | null; tagline: string | null; perks: string | null }>; // VIP 档位名称/标语/权益(每行一条)；null=用内置默认
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）

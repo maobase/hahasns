@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.14', date: '2026-07-05 19:36:12', items: [
+      ['feat', '后台可自定义各 VIP 档位的权益清单（每行一条，留空用内置默认）；至此 VIP 档位的名称 / 标语 / 权益 / 月价 / 积分加成全部可配置。'],
+    ],
+  },
+  {
     ver: 'v5.13', date: '2026-07-05 18:53:29', items: [
       ['feat', '后台可自定义各 VIP 档位的名称与标语（留空用内置默认「青铜 / 黄金 / 黑钻会员」），配合月价与积分加成实现会员体系整体品牌化。'],
     ],

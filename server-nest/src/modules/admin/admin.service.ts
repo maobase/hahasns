@@ -85,6 +85,7 @@ const STR_KEYS: Record<string, number> = {
   landing_title: 80, landing_subtitle: 60, // 登录落地页主标题/副标题；空=用内置默认
   vip1_name: 40, vip2_name: 40, vip3_name: 40, // VIP 各档位名称；空=用内置默认（青铜/黄金/黑钻会员）
   vip1_tagline: 60, vip2_tagline: 60, vip3_tagline: 60, // VIP 各档位标语；空=用内置默认
+  vip1_perks: 600, vip2_perks: 600, vip3_perks: 600, // VIP 各档位权益（每行一条）；空=用内置默认
   default_skin: 16, default_mode: 16, default_style: 16, // 新访客默认皮肤/亮暗/风格；空=内置默认，仅对无本地偏好者生效
   // 支付配置（凭据为敏感串，仅 admin 可读写；公开 /api/site 只暴露「是否启用」不含密钥）
   pay_alipay_appid: 64, pay_alipay_key: 4000, pay_alipay_public_key: 2000, pay_alipay_gateway: 200,

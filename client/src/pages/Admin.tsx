@@ -1475,6 +1475,16 @@ function PaymentAdmin() {
             </label>
           ))}
         </div>
+        <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>VIP 档位权益</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>各档位权益清单，每行一条（留空用内置默认）。建议与上方积分加成等实际配置保持一致。</div>
+        <div className="flex flex-col gap-3" style={{ marginTop: 10 }}>
+          {([['vip1_perks', '青铜 VIP1 权益'], ['vip2_perks', '黄金 VIP2 权益'], ['vip3_perks', '黑钻 VIP3 权益']] as [string, string][]).map(([k, label]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <textarea className="inp" rows={4} value={cfg[k] ?? ''} maxLength={600} onChange={(e) => setK(k, e.target.value)} placeholder="每行一条权益" style={{ lineHeight: 1.6 }} />
+            </label>
+          ))}
+        </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>
