@@ -369,6 +369,21 @@ export class CommentsService {
   }
 
   // ---- DELETE /api/comments/:id ----
+  // 编辑评论：仅作者或管理员；同 create 的空值 + 敏感词校验。（前端 Comments.tsx editComment 依赖此路由）
+  async update(user: User, id: number, content: string) {
+    const text = (content || '').trim();
+    if (!text) throw new BadRequestException('评论内容不能为空');
+    if (checkSensitive(text))
+      throw new BadRequestException('评论包含敏感信息，请修改后重试');
+    const c = await this.comments.findOne({ where: { id } });
+    if (!c) throw new NotFoundException('评论不存在');
+    if (c.user_id !== user.id && user.role !== 'admin')
+      throw new ForbiddenException('无权编辑');
+    c.content = text;
+    await this.comments.save(c);
+    return { comment: { id: c.id, content: c.content } };
+  }
+
   async remove(id: number, user: User) {
     const c = await this.comments.findOne({ where: { id } });
     if (!c) throw new NotFoundException('评论不存在');

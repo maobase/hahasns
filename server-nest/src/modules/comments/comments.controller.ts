@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -57,6 +58,12 @@ export class CommentsController {
   @UseGuards(OptionalAuthGuard)
   reactions(@Param('id') id: string, @CurrentUser() user: User | null) {
     return this.comments.reactions(Number(id), user);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  update(@Param('id') id: string, @CurrentUser() user: User, @Body('content') content: string) {
+    return this.comments.update(user, Number(id), content);
   }
 
   @Delete(':id')
