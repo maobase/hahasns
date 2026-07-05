@@ -107,6 +107,20 @@ export class AuthService implements OnApplicationBootstrap {
     );
   }
 
+  // 用户名规则可配（username_pattern 正则 / username_hint 提示文案）；
+  // fail-safe：空或非法正则一律回内置默认，绝不因坏配置挡死所有注册。
+  private async usernameRe(): Promise<RegExp> {
+    const src = (await this.site.getConfig('username_pattern', '')) || '';
+    if (!src) return USERNAME_RE;
+    try { return new RegExp(src); } catch { return USERNAME_RE; }
+  }
+  private async usernameHint(): Promise<string> {
+    return (
+      (await this.site.getConfig('username_hint', '')) ||
+      '用户名需为 2-20 位字母、数字、下划线或中文'
+    );
+  }
+
   async register(dto: RegisterDto, ip?: string) {
     await this.rateLimit.enforceRegistration(ip); // 防批量注册：按 IP 限每日数/最小间隔（开关关或无 IP 则放行）
     // 注册开关（默认开=未配置视为开，行为与现状一致）
@@ -115,10 +129,9 @@ export class AuthService implements OnApplicationBootstrap {
     const { username, password, nickname, inviteCode } = dto || {};
     if (!username || !password)
       throw new BadRequestException('用户名和密码必填');
-    if (!USERNAME_RE.test(username))
-      throw new BadRequestException(
-        '用户名需为 2-20 位字母、数字、下划线或中文',
-      );
+    // 先按长度硬顶（防 ReDoS：正则只在有界输入上跑），再按可配正则校验
+    if (username.length > 64 || !(await this.usernameRe()).test(username))
+      throw new BadRequestException(await this.usernameHint());
     if (password.length < 6) throw new BadRequestException('密码至少 6 位');
     if (checkSensitive(username) || checkSensitive(nickname))
       throw new BadRequestException('用户名或昵称包含敏感信息');
@@ -271,10 +284,8 @@ export class AuthService implements OnApplicationBootstrap {
 
   async changeUsername(user: User, dto: ChangeUsernameDto) {
     const newName = (dto?.username || '').trim();
-    if (!USERNAME_RE.test(newName))
-      throw new BadRequestException(
-        '用户名需为 2-20 位字母、数字、下划线或中文',
-      );
+    if (newName.length > 64 || !(await this.usernameRe()).test(newName))
+      throw new BadRequestException(await this.usernameHint());
     if (checkSensitive(newName))
       throw new BadRequestException('用户名包含敏感信息');
     if (newName === user.username)

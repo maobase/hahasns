@@ -942,6 +942,14 @@ function Security() {
           <span className="sec-label">邀请码必填</span>
           <Toggle on={cfg.invite_required === '1'} onChange={(v) => setK('invite_required', v ? '1' : '0')} />
         </label>
+        <label className="sec-field" style={{ marginTop: 14, display: 'block' }}>
+          <span className="sec-label">用户名规则（正则，留空用默认 2-20 位字母/数字/下划线/中文）</span>
+          <input className="inp" maxLength={200} value={cfg.username_pattern ?? ''} onChange={(e) => setK('username_pattern', e.target.value)} placeholder="^[A-Za-z0-9_一-龥]{2,20}$" style={{ marginTop: 6, width: '100%' }} />
+        </label>
+        <label className="sec-field" style={{ marginTop: 10, display: 'block' }}>
+          <span className="sec-label">用户名不符合时的提示文案</span>
+          <input className="inp" maxLength={100} value={cfg.username_hint ?? ''} onChange={(e) => setK('username_hint', e.target.value)} placeholder="用户名需为 2-20 位字母、数字、下划线或中文" style={{ marginTop: 6, width: '100%' }} />
+        </label>
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
