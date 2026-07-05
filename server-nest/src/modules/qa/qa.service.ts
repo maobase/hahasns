@@ -185,7 +185,7 @@ export class QaService {
     );
     if (bounty > 0)
       await this.users.decrement({ id: user.id }, 'points', bounty);
-    await this.helpers.award(user.id, { exp: 5 });
+    await this.helpers.award(user.id, { exp: 5 }, 'question');
     const row = await this.questions.findOne({ where: { id: saved.id } });
     return {
       question: await this.serializeQuestion(row!, user.id, { withBody: true }),
@@ -209,7 +209,7 @@ export class QaService {
       }),
     );
     await this.questions.increment({ id: q.id }, 'answer_count', 1);
-    await this.helpers.award(user.id, { exp: 4, points: 1 });
+    await this.helpers.award(user.id, { exp: 4, points: 1 }, 'answer');
     if (q.user_id !== user.id)
       await this.helpers.notify({
         userId: q.user_id,
@@ -274,7 +274,7 @@ export class QaService {
       if (q.bounty > 0 && a.user_id !== q.user_id)
         await mgr.increment(User, { id: a.user_id }, 'points', q.bounty);
     });
-    await this.helpers.award(a.user_id, { exp: 10 });
+    await this.helpers.award(a.user_id, { exp: 10 }, 'answer_accepted');
     if (a.user_id !== user.id)
       await this.helpers.notify({
         userId: a.user_id,

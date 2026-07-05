@@ -266,7 +266,7 @@ export class CommentsService {
         });
       }
     }
-    await this.helpers.award(user.id, { exp: 2, points: 1 });
+    await this.helpers.award(user.id, { exp: 2, points: 1 }, 'comment');
     const row = await this.comments.findOne({ where: { id: saved.id } });
     return {
       comment: {

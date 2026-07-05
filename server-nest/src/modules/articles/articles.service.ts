@@ -141,7 +141,7 @@ export class ArticlesService {
       user_id: user.id, title, summary, cover: b?.cover || '', content, category,
       created_at: this.helpers.nowSql(),
     }));
-    await this.helpers.award(user.id, { exp: 12 });
+    await this.helpers.award(user.id, { exp: 12 }, 'article');
     return { article: await this.serialize(saved, user.id, { full: true }) };
   }
 

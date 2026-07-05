@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AdminLog, Follow, Notification, Post, User, ViewHistory } from '../database/entities';
+import { AdminLog, Follow, Notification, Post, SiteConfig, User, ViewHistory } from '../database/entities';
 
 /**
  * 解析后台配置的奖励数值（经验/积分）。空/非法回退到内置默认；**允许 0**
@@ -34,7 +34,15 @@ export class HelpersService {
     private readonly viewHistory: Repository<ViewHistory>,
     @InjectRepository(AdminLog)
     private readonly adminLog: Repository<AdminLog>,
+    @InjectRepository(SiteConfig)
+    private readonly siteConfig: Repository<SiteConfig>,
   ) {}
+
+  /** 读取站点配置原始字符串（未配置→null）。common.module 已注册 SiteConfig repo，无需依赖 SiteModule。 */
+  private async cfg(key: string): Promise<string | null> {
+    const row = await this.siteConfig.findOne({ where: { key } });
+    return row ? row.value : null;
+  }
 
   /** 记录管理操作日志（admin_audit_log）。非关键路径，出错静默吞掉。Mirrors helpers.js logAdmin. */
   async logAdmin(
@@ -93,11 +101,20 @@ export class HelpersService {
     return { level: lvl, exp, curLevelExp: cur, nextLevelExp: next, percent: pct };
   }
 
-  /** Award experience + points (no-op when both zero). */
+  /**
+   * Award experience + points (no-op when both zero). 传入 key 时按后台配置
+   * reward_<key>_exp / reward_<key>_points 覆盖（未配置→用传入默认，允许 0 关闭）。
+   * key 仅用于非热路径的内容创建奖励（发帖/评论/发帖子/文章/问答等）；点赞等热路径不传 key，零额外查询。
+   */
   async award(
     userId: number,
     { exp = 0, points = 0 }: { exp?: number; points?: number } = {},
+    key?: string,
   ): Promise<void> {
+    if (key) {
+      exp = rewardNum(await this.cfg(`reward_${key}_exp`), exp);
+      points = rewardNum(await this.cfg(`reward_${key}_points`), points);
+    }
     if (!exp && !points) return;
     await this.users.increment({ id: userId }, 'experience', exp);
     await this.users.increment({ id: userId }, 'points', points);

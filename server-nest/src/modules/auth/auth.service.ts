@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { CheckinLog, Order, Product, User } from '../../database/entities';
 import { defaultAvatar } from '../../common/default-avatar';
-import { HelpersService, rewardNum } from '../../common/helpers.service';
+import { HelpersService } from '../../common/helpers.service';
 import { RateLimitService } from '../../common/rate-limit.service';
 import { SiteService } from '../site/site.service';
 import { checkSensitive } from '../../common/sensitive';
@@ -181,10 +181,7 @@ export class AuthService implements OnApplicationBootstrap {
 
     // 邀请奖励：邀请人 +50 积分 +10 经验，并收到通知
     if (inviter) {
-      await this.helpers.award(inviter.id, {
-        exp: rewardNum(await this.site.getConfig('reward_invite_exp'), 10),
-        points: rewardNum(await this.site.getConfig('reward_invite_points'), 50),
-      });
+      await this.helpers.award(inviter.id, { exp: 10, points: 50 }, 'invite');
       await this.helpers.notify({
         userId: inviter.id,
         actorId: user.id,

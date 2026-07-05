@@ -410,7 +410,7 @@ export class ForumService {
       .values({ user_id: user.id, thread_id: saved.id, created_at: now })
       .orIgnore()
       .execute();
-    await this.helpers.award(user.id, { exp: 8, points: 5 });
+    await this.helpers.award(user.id, { exp: 8, points: 5 }, 'thread');
     const t = await this.threads.findOne({ where: { id: saved.id } });
     return {
       thread: await this.serializeThread(t!, user.id, { full: true }),

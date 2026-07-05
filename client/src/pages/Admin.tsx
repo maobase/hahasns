@@ -1879,9 +1879,19 @@ function CheckinAdmin() {
 
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>内容奖励配置</div>
-        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>发帖、邀请注册时给作者 / 邀请人的经验与积分奖励（设 0 = 关闭该项奖励）。</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>各类内容创作与互动给作者 / 参与者的经验与积分奖励（设 0 = 关闭该项）。点赞等高频互动为固定值不在此列。</div>
         <div className="sec-grid">
-          {([['reward_post_exp', '发帖经验', '经验', 5], ['reward_post_points', '发帖积分', '积分', 2], ['reward_invite_exp', '邀请经验', '经验', 10], ['reward_invite_points', '邀请积分', '积分', 50]] as [string, string, string, number][]).map(([k, label, unit, def]) => (
+          {([
+            ['reward_post_exp', '发动态经验', '经验', 5], ['reward_post_points', '发动态积分', '积分', 2],
+            ['reward_comment_exp', '评论经验', '经验', 2], ['reward_comment_points', '评论积分', '积分', 1],
+            ['reward_thread_exp', '发论坛帖经验', '经验', 8], ['reward_thread_points', '发论坛帖积分', '积分', 5],
+            ['reward_article_exp', '发文章经验', '经验', 12], ['reward_article_points', '发文章积分', '积分', 0],
+            ['reward_question_exp', '提问经验', '经验', 5], ['reward_question_points', '提问积分', '积分', 0],
+            ['reward_answer_exp', '回答经验', '经验', 4], ['reward_answer_points', '回答积分', '积分', 1],
+            ['reward_answer_accepted_exp', '回答被采纳经验', '经验', 10], ['reward_answer_accepted_points', '回答被采纳积分', '积分', 0],
+            ['reward_event_exp', '发活动经验', '经验', 10], ['reward_event_points', '发活动积分', '积分', 0],
+            ['reward_invite_exp', '邀请注册经验', '经验', 10], ['reward_invite_points', '邀请注册积分', '积分', 50],
+          ] as [string, string, string, number][]).map(([k, label, unit, def]) => (
             <label className="sec-field" key={k}>
               <span className="sec-label">{label}</span>
               <span className="sec-num">

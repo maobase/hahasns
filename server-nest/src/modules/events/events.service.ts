@@ -121,7 +121,7 @@ export class EventsService {
       start_at: startAt, end_at: b?.endAt || '', capacity, fee, online: b?.online ? 1 : 0,
       created_at: this.helpers.nowSql(),
     }));
-    await this.helpers.award(user.id, { exp: 10 });
+    await this.helpers.award(user.id, { exp: 10 }, 'event');
     return { event: await this.serialize(saved, user.id, { full: true }) };
   }
 
