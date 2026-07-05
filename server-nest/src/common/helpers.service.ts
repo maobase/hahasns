@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminLog, Follow, Notification, Post, SiteConfig, User, ViewHistory } from '../database/entities';
@@ -61,6 +61,43 @@ export class HelpersService {
   /** 读取数值型站点配置（未配置/非法→默认，允许 0）。供各服务就地读经济类可配项（非热路径）。 */
   async configNum(key: string, fallback: number): Promise<number> {
     return rewardNum(await this.cfg(key), fallback);
+  }
+
+  /** 读取开关型站点配置（存 '1'/'0'；未配置→默认）。 */
+  async configBool(key: string, fallback: boolean): Promise<boolean> {
+    const v = await this.cfg(key);
+    if (v === null || v === undefined || v === '') return fallback;
+    return v === '1' || v === 'true';
+  }
+
+  /**
+   * 接口权限门控（后台「安全 → 接口权限门控」）：站长可要求某动作需开通会员 / 达到等级。
+   * ⚠️ 默认 perm_enabled=关 → 第一行短路直接放行，**零行为变化**；仅站长显式开启后生效。管理员豁免。
+   * fail-open：读配置/查用户出错一律放行（绝不因配置基础设施故障误挡正常操作），仅真正未达门槛才抛 403。
+   * 对齐 RateLimitService.enforce 的短路 + 管理员豁免 + fail-open 范式。
+   * action: comment | dm | upload | post | thread（对应 perm_<action>_require_vip / perm_<action>_min_level）。
+   */
+  async enforcePerm(
+    action: string,
+    user: { id?: number; role?: string } | null | undefined,
+  ): Promise<void> {
+    try {
+      if (!(await this.configBool('perm_enabled', false))) return; // 短路：默认关 = 完全 no-op
+      if (!user || user.role === 'admin' || !user.id) return; // 管理员豁免 / 无用户交后续鉴权
+      const requireVip = await this.configBool(`perm_${action}_require_vip`, false);
+      const minLevel = await this.configNum(`perm_${action}_min_level`, 0);
+      if (!requireVip && minLevel <= 0) return; // 该动作未设门槛
+      const u = await this.getUser(user.id); // 拉完整实体确保 vip/level 准确
+      if (!u) return;
+      if (u.role === 'admin') return;
+      if (requireVip && !u.vip)
+        throw new ForbiddenException('该操作需要开通会员');
+      if (minLevel > 0 && this.levelFromExp(u.experience ?? 0) < minLevel)
+        throw new ForbiddenException(`该操作需要账号等级达到 Lv.${minLevel}`);
+    } catch (e) {
+      if (e instanceof ForbiddenException) throw e; // 真正的门控拦截要抛出
+      return; // 其余（配置/查询异常）fail-open 放行
+    }
   }
 
   /** 记录管理操作日志（admin_audit_log）。非关键路径，出错静默吞掉。Mirrors helpers.js logAdmin. */

@@ -170,6 +170,7 @@ export class MessagesService {
   // ---- POST /api/messages/:peerId ----
   async send(user: User, peerId: number, dto: SendMessageDto) {
     await this.rateLimit.enforce('dm', user); // 防私信骚扰：超频抛 429（管理员豁免/开关关则放行）
+    await this.helpers.enforcePerm('dm', user); // 接口权限门控（默认关；开启后可要求私信需 VIP/等级）
     const me = user.id;
     const content = (dto.content || '').trim();
     const type = dto.type === 'image' ? 'image' : 'text';

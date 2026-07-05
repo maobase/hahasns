@@ -9,6 +9,9 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { HelpersService } from '../../common/helpers.service';
+import { User } from '../../database/entities';
 import { StorageService } from './storage.service';
 import { SiteService } from '../site/site.service';
 
@@ -23,6 +26,7 @@ export class UploadsController {
   constructor(
     private readonly storage: StorageService,
     private readonly site: SiteService,
+    private readonly helpers: HelpersService,
   ) {}
 
   // 上传限制（后台可配，未配置用默认；multer 硬顶 25MB/9 张仍在，配置只能收紧不能放宽）
@@ -59,7 +63,11 @@ export class UploadsController {
       },
     }),
   )
-  async upload(@UploadedFiles() files: Express.Multer.File[]) {
+  async upload(
+    @CurrentUser() user: User,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    await this.helpers.enforcePerm('upload', user); // 接口权限门控（默认关；开启后可要求上传需 VIP/等级）
     if (!files || files.length === 0) {
       throw new BadRequestException('请选择要上传的文件');
     }

@@ -478,6 +478,7 @@ export class PostsService {
   // ---- POST /api/posts ----
   async create(user: User, dto: CreatePostDto) {
     await this.rateLimit.enforce('post', user); // 防刷屏：超频抛 429（管理员豁免/开关关则放行）
+    await this.helpers.enforcePerm('post', user); // 接口权限门控（默认关；开启后可要求发帖需 VIP/等级）
     let content = (dto.content || '').trim();
     const media = dto.media || [];
     const mediaType = dto.mediaType || 'text';

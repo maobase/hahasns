@@ -380,6 +380,7 @@ export class ForumService {
   // ---- POST /api/forum/threads ----
   async createThread(user: User, dto: CreateThreadDto) {
     await this.rateLimit.enforce('thread', user); // 防灌水：超频抛 429（管理员豁免/开关关则放行）
+    await this.helpers.enforcePerm('thread', user); // 接口权限门控（默认关；开启后可要求发帖需 VIP/等级）
     const { boardId } = dto;
     const title = (dto.title || '').trim();
     const content = (dto.content || '').trim();

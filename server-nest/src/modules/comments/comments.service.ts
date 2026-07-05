@@ -127,6 +127,7 @@ export class CommentsService {
 
   // ---- POST /api/comments ----
   async create(user: User, dto: CreateCommentDto) {
+    await this.helpers.enforcePerm('comment', user); // 接口权限门控（默认关；开启后可要求评论需 VIP/等级，管理员豁免）
     const text = (dto.content || '').trim();
     const { postId, threadId, articleId, parentId, replyTo } = dto;
     if (!text) throw new BadRequestException('评论内容不能为空');
