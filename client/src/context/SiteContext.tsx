@@ -21,12 +21,15 @@ export interface SiteConfig {
   paidPriceMax: number;         // 付费内容价格上限（积分）；默认 100000
   landingTitle: string;         // 落地页主标题；空=内置默认
   landingSubtitle: string;      // 落地页副标题；空=内置默认
+  defaultSkin: string;          // 新访客默认皮肤；空=内置默认
+  defaultMode: string;          // 新访客默认亮暗（light|dark）；空=跟随系统
+  defaultStyle: string;         // 新访客默认视觉风格；空=内置默认
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）
 }
 
-const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '', registrationEnabled: true, inviteRequired: false, uploadMaxImages: 9, uploadMaxSizeMb: 25, paidPriceMax: 100000, landingTitle: '', landingSubtitle: '', modules: {}, layouts: {}, payments: {} };
+const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '', registrationEnabled: true, inviteRequired: false, uploadMaxImages: 9, uploadMaxSizeMb: 25, paidPriceMax: 100000, landingTitle: '', landingSubtitle: '', defaultSkin: '', defaultMode: '', defaultStyle: '', modules: {}, layouts: {}, payments: {} };
 
 // 模块是否开启：只有显式 false 才隐藏（取不到配置时默认全开，绝不误伤导航）
 export function moduleOn(modules: Record<string, boolean> | undefined, key?: string) {

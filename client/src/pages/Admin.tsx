@@ -8,6 +8,7 @@ import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { SKINS, STYLES } from '../context/ThemeContext';
 import api from '../api/client';
 import { fmtNum, timeAgo } from '../lib/format';
 import { confirmDialog } from '../components/confirm';
@@ -1936,6 +1937,28 @@ function Appearance() {
           <label className="sec-field">
             <span className="sec-label">登录页副标题（留空用默认）</span>
             <input className="inp" maxLength={60} value={cfg.landing_subtitle ?? ''} onChange={(e) => setK('landing_subtitle', e.target.value)} placeholder="轻社交 · 轻论坛 · 轻社区" />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">默认皮肤（新访客，用户可自选覆盖）</span>
+            <select className="inp" value={cfg.default_skin ?? ''} onChange={(e) => setK('default_skin', e.target.value)}>
+              <option value="">内置默认（经典蓝）</option>
+              {SKINS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">默认亮暗（新访客）</span>
+            <select className="inp" value={cfg.default_mode ?? ''} onChange={(e) => setK('default_mode', e.target.value)}>
+              <option value="">跟随系统</option>
+              <option value="light">浅色</option>
+              <option value="dark">深色</option>
+            </select>
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">默认视觉风格（新访客）</span>
+            <select className="inp" value={cfg.default_style ?? ''} onChange={(e) => setK('default_style', e.target.value)}>
+              <option value="">内置默认（现代）</option>
+              {STYLES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
           </label>
         </div>
         <label className="sec-field" style={{ marginTop: 12 }}>

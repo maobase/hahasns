@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useSite } from './SiteContext';
 
 export interface Skin { key: string; label: string; color: string; }
 export interface VisualStyle { key: string; label: string; desc: string; }
@@ -50,6 +51,18 @@ function initStyle(): string {
   } catch { return 'modern'; }
 }
 
+// 模块加载时（在 ThemeProvider 的持久化副作用把默认值写进 localStorage 之前）捕获「是否已有本地偏好」，
+// 用于判断首访——只有首访（无偏好）才应用后台配置的默认皮肤/亮暗/风格，绝不覆盖用户已选。
+const HAD_SAVED = (() => {
+  try {
+    return {
+      skin: !!localStorage.getItem('haha_skin'),
+      mode: !!localStorage.getItem('haha_theme'),
+      style: !!localStorage.getItem('haha_style'),
+    };
+  } catch { return { skin: true, mode: true, style: true }; }
+})();
+
 export interface ThemeValue {
   theme: Mode;
   toggle: () => void;
@@ -68,6 +81,15 @@ export function ThemeProvider({ children }: { children?: ReactNode }) {
   const [theme, setTheme] = useState<Mode>(initMode);
   const [skin, setSkinState] = useState<string>(initSkin);
   const [style, setStyleState] = useState<string>(initStyle);
+  const site = useSite();
+
+  // 首访（无本地偏好）时应用后台配置的默认皮肤/亮暗/风格；getSite 异步返回后触发一次，
+  // 应用后由下方持久化副作用存入 localStorage，下次访问不再闪。有偏好者完全不受影响。
+  useEffect(() => {
+    if (!HAD_SAVED.skin && site.defaultSkin && SKIN_KEYS.includes(site.defaultSkin)) setSkinState(site.defaultSkin);
+    if (!HAD_SAVED.style && site.defaultStyle && STYLE_KEYS.includes(site.defaultStyle)) setStyleState(site.defaultStyle);
+    if (!HAD_SAVED.mode && (site.defaultMode === 'dark' || site.defaultMode === 'light')) setTheme(site.defaultMode);
+  }, [site.defaultSkin, site.defaultStyle, site.defaultMode]);
 
   useEffect(() => {
     const el = document.documentElement;

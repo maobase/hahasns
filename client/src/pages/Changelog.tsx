@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.05', date: '2026-07-05 13:07:41', items: [
+      ['feat', '后台可设新访客的默认皮肤 / 亮暗 / 视觉风格（仅对无本地偏好的首次访客生效，已自选主题的老用户完全不受影响）。'],
+    ],
+  },
+  {
     ver: 'v5.04', date: '2026-07-05 12:19:55', items: [
       ['feat', '管理后台的各分区改为独立网址（/admin/&lt;分区&gt;），支持深链直达、收藏与浏览器前进/后退。'],
     ],
