@@ -6,7 +6,6 @@ import ErrorBoundary from './ErrorBoundary';
 import TabBar from './TabBar';
 import AuthModal from './AuthModal';
 import BackToTop from './BackToTop';
-import WelcomeModal from './WelcomeModal';
 import ComposeFab from './ComposeFab';
 import Shell from './Shell';
 import { Empty } from './States';
@@ -120,7 +119,6 @@ export default function Layout() {
       <TabBar />
       <AuthModal />
       <BackToTop />
-      <WelcomeModal />
       <ComposeFab />
     </>
   );
