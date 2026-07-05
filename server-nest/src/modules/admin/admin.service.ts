@@ -77,6 +77,9 @@ const NUM_KEYS: Record<string, [number, number]> = {
   // 每日任务积分奖励（波D）：签到/发帖/评论/点赞/投票/完善资料；默认 5/10/6/4/3/20
   task_checkin_points: [0, 100000], task_post_points: [0, 100000], task_comment_points: [0, 100000],
   task_like_points: [0, 100000], task_vote_points: [0, 100000], task_profile_points: [0, 100000],
+  // 成就徽章「累计」类解锁阈值（里程碑/vip 型不可调）
+  badge_writer_threshold: [1, 1000000], badge_voter_threshold: [1, 1000000], badge_checkin7_threshold: [1, 3650],
+  badge_social_threshold: [1, 100000000], badge_popular_threshold: [1, 100000000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

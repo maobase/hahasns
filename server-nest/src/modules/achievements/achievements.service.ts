@@ -33,10 +33,12 @@ interface TaskDef {
 interface BadgeDef {
   key: string;
   name: string;
-  desc: string;
+  desc: string; // 阈值型可含 {n}，渲染时替换为实际（可配置）阈值
   icon: string;
   tier: string;
-  check: (s: any) => boolean;
+  stat?: string; // 阈值型：判定用的统计字段（阈值可后台配 badge_<key>_threshold 覆盖）
+  threshold?: number; // 阈值型：默认阈值
+  check?: (s: any) => boolean; // 非阈值型（如 vip）判定
 }
 
 /**
@@ -173,15 +175,17 @@ export class AchievementsService {
       },
     ];
 
+    // 阈值型徽章用 stat + threshold（阈值可后台配 badge_<key>_threshold；desc 里 {n} 会被替换为实际阈值）；
+    // 里程碑型（首次达成，threshold=1）与非阈值型（vip）不在后台暴露。
     this.badges = [
-      { key: 'newcomer', name: '初来乍到', desc: '发布第一条动态', icon: 'edit', tier: 'bronze', check: (s) => s.posts >= 1 },
-      { key: 'writer', name: '笔耕不辍', desc: '累计发布 20 条动态', icon: 'edit', tier: 'silver', check: (s) => s.posts >= 20 },
-      { key: 'voter', name: '热心参与', desc: '累计参与 10 次投票', icon: 'poll', tier: 'bronze', check: (s) => s.votes >= 10 },
-      { key: 'checkin7', name: '签到坚持', desc: '连续签到满 7 天', icon: 'checkin', tier: 'silver', check: (s) => s.streak >= 7 },
-      { key: 'social', name: '社交达人', desc: '粉丝数达到 50', icon: 'users', tier: 'silver', check: (s) => s.followers >= 50 },
-      { key: 'popular', name: '人气作者', desc: '累计获得 200 个赞', icon: 'heart', tier: 'gold', check: (s) => s.likesRecv >= 200 },
-      { key: 'helper', name: '乐于助人', desc: '有回答被采纳', icon: 'check', tier: 'gold', check: (s) => s.accepted >= 1 },
-      { key: 'founder', name: '圈子主理人', desc: '创建过一个圈子', icon: 'users', tier: 'gold', check: (s) => s.circlesOwned >= 1 },
+      { key: 'newcomer', name: '初来乍到', desc: '发布第一条动态', icon: 'edit', tier: 'bronze', stat: 'posts', threshold: 1 },
+      { key: 'writer', name: '笔耕不辍', desc: '累计发布 {n} 条动态', icon: 'edit', tier: 'silver', stat: 'posts', threshold: 20 },
+      { key: 'voter', name: '热心参与', desc: '累计参与 {n} 次投票', icon: 'poll', tier: 'bronze', stat: 'votes', threshold: 10 },
+      { key: 'checkin7', name: '签到坚持', desc: '连续签到满 {n} 天', icon: 'checkin', tier: 'silver', stat: 'streak', threshold: 7 },
+      { key: 'social', name: '社交达人', desc: '粉丝数达到 {n}', icon: 'users', tier: 'silver', stat: 'followers', threshold: 50 },
+      { key: 'popular', name: '人气作者', desc: '累计获得 {n} 个赞', icon: 'heart', tier: 'gold', stat: 'likesRecv', threshold: 200 },
+      { key: 'helper', name: '乐于助人', desc: '有回答被采纳', icon: 'check', tier: 'gold', stat: 'accepted', threshold: 1 },
+      { key: 'founder', name: '圈子主理人', desc: '创建过一个圈子', icon: 'users', tier: 'gold', stat: 'circlesOwned', threshold: 1 },
       { key: 'vip', name: '尊享会员', desc: '开通 VIP 会员', icon: 'shield', tier: 'gold', check: (s) => s.vip },
     ];
   }
@@ -255,7 +259,10 @@ export class AchievementsService {
     );
     const out: any[] = [];
     for (const b of this.badges) {
-      const unlocked = b.check(stats);
+      // 阈值型：读配置阈值 badge_<key>_threshold（默认 b.threshold），判定 stat >= 阈值；非阈值型走 check。
+      const n = b.stat ? await this.helpers.configNum(`badge_${b.key}_threshold`, b.threshold ?? 1) : 0;
+      const unlocked = b.stat ? (stats[b.stat] ?? 0) >= n : !!b.check?.(stats);
+      const desc = b.desc.replace('{n}', String(n));
       if (unlocked && persist && !owned.has(b.key)) {
         await this.userBadges
           .createQueryBuilder()
@@ -273,7 +280,7 @@ export class AchievementsService {
       out.push({
         key: b.key,
         name: b.name,
-        desc: b.desc,
+        desc,
         icon: b.icon,
         tier: b.tier,
         unlocked: unlocked || owned.has(b.key),
