@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.24', date: '2026-07-06 15:28:41', items: [
+      ['fix', '首页信息流无限滚动收敛到通用实现：翻页按窗口推进偏移，避免服务端过滤时的重复/漏加载，切换标签或登录态自动重置。'],
+    ],
+  },
+  {
     ver: 'v5.23', date: '2026-07-06 14:36:20', items: [
       ['feat', '升级方案：引入版本化数据库迁移（替代 synchronize 自动建表）+ upgrade.sh 一键升级脚本 + 后台「系统更新」页（检测新版、半自动一键升级），让自托管用户安全升级不丢数据。见 UPGRADE.md。'],
     ],
