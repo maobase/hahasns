@@ -437,7 +437,7 @@ function Boards() {
           <input className="inp" value={form.icon} onChange={(e) => setForm((f: any) => ({ ...f, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
           <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
           <input className="inp" value={form.slug} onChange={(e) => setForm((f: any) => ({ ...f, slug: e.target.value }))} placeholder="slug（必填，英文）" style={{ width: 130 }} />
-          <button className="btn btn-primary" onClick={create}>创建</button>
+          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.slug.trim()}>创建</button>
         </div>
         <input className="inp" value={form.description} onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="板块说明 (可选)" style={{ width: '100%', marginTop: 8 }} />
       </div>
@@ -512,7 +512,7 @@ function Topics() {
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
           <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="话题名（必填）" style={{ flex: 1, minWidth: 120 }} />
           <input className="inp" value={form.description} onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="描述" style={{ flex: 1, minWidth: 120 }} />
-          <button className="btn btn-primary" onClick={create}>创建话题</button>
+          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim()}>创建话题</button>
         </div>
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
@@ -649,7 +649,7 @@ function Notices() {
             <label className="row gap-6" style={{ fontSize: 13, cursor: 'pointer', color: 'var(--ink-2)' }}>
               <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((f: any) => ({ ...f, pinned: e.target.checked }))} /> 置顶展示
             </label>
-            <button className="btn btn-primary" onClick={create}>发布公告</button>
+            <button className="btn btn-primary" onClick={create} disabled={!form.title.trim()}>发布公告</button>
           </div>
         </div>
       </div>
@@ -783,7 +783,7 @@ function Products() {
             {PRODUCT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <input className="inp" type="number" value={form.price} onChange={(e) => setForm((f: any) => ({ ...f, price: e.target.value }))} placeholder="积分" style={{ width: 100 }} />
-          <button className="btn btn-primary" onClick={create}>上架</button>
+          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.price}>上架</button>
         </div>
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
@@ -1273,7 +1273,7 @@ function NavAdmin() {
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
           <input className="inp" style={{ maxWidth: 220 }} maxLength={20} value={newCat.name} onChange={(e) => setNewCat((c) => ({ ...c, name: e.target.value }))} placeholder="分类名（如 开发工具）" />
           <input className="inp" style={{ maxWidth: 150 }} value={newCat.icon} onChange={(e) => setNewCat((c) => ({ ...c, icon: e.target.value }))} placeholder="图标 如 compass" />
-          <button className="btn btn-primary" onClick={addCat}><Icon name="plus" size={15} /> 添加分类</button>
+          <button className="btn btn-primary" onClick={addCat} disabled={!newCat.name.trim()}><Icon name="plus" size={15} /> 添加分类</button>
         </div>
       </div>
       {cats.length === 0 ? <div className="ui-card"><Empty text="还没有导航分类，先新建一个" /></div> : cats.map((c) => (
