@@ -71,6 +71,7 @@ export class SiteService {
       inviteRequired: cfg.get('invite_required') === '1',
       uploadMaxImages: Number(cfg.get('upload_max_images')) || 9,
       uploadMaxSizeMb: Number(cfg.get('upload_max_size_mb')) || 25,
+      paidPriceMax: Number(cfg.get('paid_price_max')) || 100000,
       modules,
       layouts,
       payments,

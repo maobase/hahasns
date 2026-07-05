@@ -1427,6 +1427,9 @@ function PaymentAdmin() {
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>充值档位</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>会员中心充值页展示的金额按钮（单位：分，逗号分隔，最多 8 档；留空用内置默认 1000,3000,6800,19800）。例如 1000 显示为 ¥10。</div>
         <input className="inp" value={cfg.recharge_tiers ?? ''} onChange={(e) => setK('recharge_tiers', e.target.value)} placeholder="1000,3000,6800,19800" maxLength={200} style={{ marginTop: 10 }} />
+        <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>付费内容价格上限</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户发「付费解锁」动态时允许的最高积分价格（留空用默认 100000）。</div>
+        <label className="sec-field" style={{ marginTop: 10 }}><span className="sec-num"><input type="number" min={1} value={cfg.paid_price_max ?? ''} placeholder="100000" onChange={(e) => setK('paid_price_max', e.target.value)} /><i>积分</i></span></label>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>

@@ -20,6 +20,7 @@ import {
 } from '../../database/entities';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
+import { SiteModule } from '../site/site.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PostsService } from './posts.service';
       RedPacket,
       RedPacketGrab,
     ]),
+    SiteModule,
   ],
   controllers: [PostsController],
   providers: [PostsService],

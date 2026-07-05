@@ -54,6 +54,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   lottery_cost: [0, 100000], lottery_free_daily: [0, 10],
   // 上传限制：单文件大小(MB, 上限=multer 硬顶 25) / 单次张数(上限=multer 硬顶 9)
   upload_max_size_mb: [1, 25], upload_max_images: [1, 9],
+  // 付费内容价格上限（积分）
+  paid_price_max: [1, 1000000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

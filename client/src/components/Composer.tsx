@@ -30,6 +30,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const [content, setContent] = useState<string>(() => initialDraft?.content ?? prefill ?? '');
   const [media, setMedia] = useState<any[]>(() => initialDraft?.media ?? []);
   const maxImages = useSite().uploadMaxImages;
+  const paidPriceMax = useSite().paidPriceMax;
   const [vis, setVis] = useState(() => initialDraft?.vis ?? 'public');
   const [price, setPrice] = useState<any>(50);
   const [password, setPassword] = useState('');
@@ -107,7 +108,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
       const device = /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent) ? '手机端' : '电脑端';
       const { data } = await api.post('/posts', {
         content, media, mediaType, visibility: vis,
-        price: vis === 'paid' ? Number(price) : 0,
+        price: vis === 'paid' ? Math.min(Number(price) || 0, paidPriceMax) : 0,
         password: vis === 'password' ? password : '',
         location: location.trim(), device,
         ...(circleId ? { circleId } : {}),
@@ -248,7 +249,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
           {vis === 'paid' && (
             <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
               <span className="muted">解锁价格</span>
-              <input type="number" min={1} value={price} onChange={(e) => setPrice(e.target.value)}
+              <input type="number" min={1} max={paidPriceMax} value={price} onChange={(e) => setPrice(e.target.value)}
                 className="inp inp-sm" style={{ width: 96 }} />
               <span className="muted">积分</span>
             </div>

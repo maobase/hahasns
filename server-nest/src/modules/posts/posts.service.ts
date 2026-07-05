@@ -27,6 +27,7 @@ import {
 } from '../../database/entities';
 import { HelpersService } from '../../common/helpers.service';
 import { RateLimitService } from '../../common/rate-limit.service';
+import { SiteService } from '../site/site.service';
 import { checkSensitive } from '../../common/sensitive';
 import {
   CreatePostDto,
@@ -41,6 +42,11 @@ import {
  * block filter, and every CRUD/interaction endpoint — response shapes match
  * the Express version byte-for-byte so the client works unchanged.
  */
+// 付费内容价格钳制：非数/负数 → 0；超过后台上限 → 钳到上限。抽成纯函数以便 vitest 覆盖边界。
+export function clampPrice(raw: unknown, max: number): number {
+  return Math.min(Math.max(0, Number(raw) || 0), Math.max(0, Number(max) || 0));
+}
+
 @Injectable()
 export class PostsService {
   constructor(
@@ -70,6 +76,7 @@ export class PostsService {
     private readonly helpers: HelpersService,
     private readonly dataSource: DataSource,
     private readonly rateLimit: RateLimitService,
+    private readonly site: SiteService,
   ) {}
 
   /** 构造 post 的红包视图(进度 + 抢红包列表 + 自己的份额)。Mirrors Express buildRedPacket. */
@@ -476,7 +483,9 @@ export class PostsService {
     const mediaType = dto.mediaType || 'text';
     const visibility = dto.visibility || 'public';
     const password = dto.password || '';
-    const price = dto.price ?? 0;
+    // 付费内容价格上限（后台 paid_price_max，默认 100000），超出即钳制
+    const priceMax = Number(await this.site.getConfig('paid_price_max', '100000')) || 100000;
+    const price = clampPrice(dto.price, priceMax);
     const location = dto.location || '';
     const device = dto.device || '电脑端';
     const poll = dto.poll;
