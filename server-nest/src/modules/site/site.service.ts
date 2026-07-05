@@ -77,6 +77,15 @@ export class SiteService {
       defaultSkin: cfg.get('default_skin') || '',
       defaultMode: cfg.get('default_mode') || '',
       defaultStyle: cfg.get('default_style') || '',
+      // 自定义导航外链（波D）：每行「标题|网址」→ {label,url}；网址须 http(s):// 或 /开头，非法行跳过，最多 8 条
+      customNavLinks: (cfg.get('custom_nav_links') || '')
+        .split('\n')
+        .map((line) => {
+          const [label, url] = line.split('|').map((s) => (s || '').trim());
+          return { label, url };
+        })
+        .filter((l) => l.label && l.url && (/^https?:\/\//.test(l.url) || l.url.startsWith('/')))
+        .slice(0, 8),
       // VIP 各档位月价（分）：已配置→数字，未配置→null（前端回退到内置默认）
       vipPrices: {
         '1': cfg.get('vip1_price') ? Number(cfg.get('vip1_price')) : null,

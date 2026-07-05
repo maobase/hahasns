@@ -81,6 +81,7 @@ const STR_KEYS: Record<string, number> = {
   footer_text: 200, icp_beian: 100,
   recharge_tiers: 200, report_reasons: 500,
   default_avatar: 500, // 新用户默认头像（URL 或 emoji:X:color）；空=按昵称渲染渐变首字母
+  custom_nav_links: 800, // 自定义导航外链（波D）：每行「标题|网址」，最多 8 条；网址 http(s):// 或 / 开头
   username_pattern: 200, username_hint: 100, // 用户名正则 + 提示文案；空=用内置默认
   landing_title: 80, landing_subtitle: 60, // 登录落地页主标题/副标题；空=用内置默认
   vip1_name: 40, vip2_name: 40, vip3_name: 40, // VIP 各档位名称；空=用内置默认（青铜/黄金/黑钻会员）

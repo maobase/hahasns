@@ -2114,6 +2114,15 @@ function Appearance() {
           style={{ marginTop: 12, minHeight: 220, fontFamily: 'var(--font-mono, ui-monospace, monospace)', fontSize: 12.5, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
 
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>自定义导航链接</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>在左栏与移动抽屉导航底部追加自定义链接，每行一条「标题|网址」，最多 8 条。网址以 http(s):// 开头为外链（新标签打开），以 / 开头为站内路径。例：<code>官网|https://example.com</code></div>
+        <textarea className="inp" value={cfg.custom_nav_links ?? ''} maxLength={800} spellCheck={false}
+          onChange={(e) => setK('custom_nav_links', e.target.value)}
+          placeholder={'官网|https://example.com\n帮助中心|https://help.example.com'}
+          style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
+      </div>
+
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存外观'}</button>
       </div>

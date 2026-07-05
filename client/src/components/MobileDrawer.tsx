@@ -16,7 +16,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
   const { user, setAuthOpen } = useAuth();
   const { openCompose } = useCompose();
   const { theme, toggle, skin, setSkin, skins, style, setStyle, styles } = useTheme();
-  const { modules } = useSite();
+  const { modules, customNavLinks } = useSite();
   const loc = useLocation();
 
   // close when the route changes (e.g. back button / programmatic nav)
@@ -70,6 +70,17 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
               <span className="ico"><Icon name="shield" size={20} /></span> 管理后台
             </NavLink>
           )}
+          {customNavLinks.map((l) => (
+            /^https?:\/\//.test(l.url) ? (
+              <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" onClick={onClose} className="mdrawer-item">
+                <span className="ico"><Icon name="compass" size={20} /></span> {l.label}
+              </a>
+            ) : (
+              <NavLink key={l.url} to={l.url} onClick={onClose} className={({ isActive }) => `mdrawer-item${isActive ? ' active' : ''}`}>
+                <span className="ico"><Icon name="compass" size={20} /></span> {l.label}
+              </NavLink>
+            )
+          ))}
         </nav>
 
         <button className="btn btn-primary btn-lg btn-block" style={{ marginTop: 10 }} onClick={() => { openCompose(); onClose(); }}>

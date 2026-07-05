@@ -45,7 +45,7 @@ interface LeftRailProps {
 export default function LeftRail({ onCompose }: LeftRailProps) {
   const { user, setAuthOpen } = useAuth();
   const { openCompose } = useCompose();
-  const { modules } = useSite();
+  const { modules, customNavLinks } = useSite();
   const loc = useLocation();
   // 在「自己的主页」上隐藏左栏「我的」卡片——主页大头部已展示同样的头像/昵称/统计，避免重复
   const onOwnProfile = !!user && decodeURIComponent(loc.pathname) === `/u/${user.username}`;
@@ -93,6 +93,18 @@ export default function LeftRail({ onCompose }: LeftRailProps) {
             <span className="ico"><Icon name="shield" size={21} /></span> 管理后台
           </NavLink>
         )}
+        {customNavLinks.length > 0 && <div className="rail-section">更多</div>}
+        {customNavLinks.map((l) => (
+          /^https?:\/\//.test(l.url) ? (
+            <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="rail-item">
+              <span className="ico"><Icon name="compass" size={21} /></span> {l.label}
+            </a>
+          ) : (
+            <NavLink key={l.url} to={l.url} className={({ isActive }) => `rail-item${isActive ? ' active' : ''}`}>
+              <span className="ico"><Icon name="compass" size={21} /></span> {l.label}
+            </NavLink>
+          )
+        ))}
       </nav>
 
       <button className="btn btn-primary btn-lg btn-block" style={{ marginTop: 14 }} onClick={openCompose}>
