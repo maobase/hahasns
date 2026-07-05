@@ -42,6 +42,7 @@ const TOGGLE_KEYS = [
   'pay_alipay_enabled', 'pay_wechat_enabled', 'pay_epay_enabled', // 支付网关开关
   'demo_recharge_enabled', // 演示充值开关：开=可模拟充值/开通会员（免真实支付，默认开，未配置视为开）；关=必须走真实支付渠道
   'home_tab_video', 'home_tab_samecity', 'home_tab_following', // 首页信息流可选 tab 开关（默认开，未配置视为开）
+  'widget_hottopics', 'widget_qa', 'widget_circle', 'widget_flash', 'widget_whotofollow', 'widget_checkin', 'widget_trending', // 右栏挂件开关（默认开；与模块开关叠加，可只藏挂件保留模块）
   ...MODULE_KEYS.map((k) => `module_${k}`), // 模块市场 (C)：各可选模块开关
 ];
 // 数值型：key → [min, max]，超界 clamp

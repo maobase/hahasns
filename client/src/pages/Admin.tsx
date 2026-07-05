@@ -1076,6 +1076,18 @@ function Layouts() {
           ))}
         </div>
       </div>
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>右栏挂件</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>控制首页右侧栏各挂件的显示（与模块开关叠加：对应模块关闭时挂件也会自动隐藏）。</div>
+        <div className="sec-toggles" style={{ marginTop: 14 }}>
+          {([['widget_hottopics', '热门话题'], ['widget_qa', '问答'], ['widget_circle', '圈子'], ['widget_flash', '快讯'], ['widget_whotofollow', '谁值得关注'], ['widget_checkin', '签到榜'], ['widget_trending', '热搜']] as [string, string][]).map(([k, label]) => (
+            <div className="row" style={{ justifyContent: 'space-between', gap: 12 }} key={k}>
+              <span style={{ fontSize: 13.5 }}>{label}</span>
+              <Toggle on={(cfg[k] ?? '1') !== '0'} onChange={(v) => setK(k, v ? '1' : '0')} />
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存布局'}</button>
       </div>

@@ -83,6 +83,16 @@ export class SiteService {
         samecity: cfg.get('home_tab_samecity') !== '0',
         following: cfg.get('home_tab_following') !== '0',
       },
+      // 右栏挂件开关（默认开）；前端与模块开关叠加：模块关或挂件关都不显示
+      widgets: {
+        hottopics: cfg.get('widget_hottopics') !== '0',
+        qa: cfg.get('widget_qa') !== '0',
+        circle: cfg.get('widget_circle') !== '0',
+        flash: cfg.get('widget_flash') !== '0',
+        whotofollow: cfg.get('widget_whotofollow') !== '0',
+        checkin: cfg.get('widget_checkin') !== '0',
+        trending: cfg.get('widget_trending') !== '0',
+      },
       modules,
       layouts,
       payments,
