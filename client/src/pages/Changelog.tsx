@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.21', date: '2026-07-06 09:58:14', items: [
+      ['fix', '发积分红包时就地提示校验（个数≥1、积分≥个数、余额充足），写红包时即时看到问题，而非仅在提交时弹出。'],
+    ],
+  },
+  {
     ver: 'v5.20', date: '2026-07-06 09:12:38', items: [
       ['fix', '关于页跟随站点品牌：大标题跟随登录页主标题设置，页脚与赞助文案改用配置的站点名称与副标题（此前写死 HahaSNS）。'],
     ],

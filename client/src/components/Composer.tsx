@@ -327,6 +327,11 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
                 {Number(redPacket.count) > 0 && `${redPacket.count} 个红包随机分配 ${Number(redPacket.points) || 0} 积分，先到先得 · `}
                 你当前 {user?.points ?? 0} 积分
               </div>
+              {(() => {
+                const c = Number(redPacket.count) || 0, p = Number(redPacket.points) || 0;
+                const err = c < 1 ? '红包个数至少 1 个' : p < c ? `${c} 个红包至少需要 ${c} 积分` : (user?.points || 0) < p ? '积分不足，发不出这么大的红包' : '';
+                return err ? <div style={{ fontSize: 12, color: 'var(--danger, #d64545)', padding: '2px 2px 0' }}>{err}</div> : null;
+              })()}
             </div>
           )}
           <div className="composer-bar">
