@@ -1929,6 +1929,14 @@ function Appearance() {
             <span className="sec-label">ICP 备案号（页脚显示，链到工信部）</span>
             <input className="inp" maxLength={100} value={cfg.icp_beian ?? ''} onChange={(e) => setK('icp_beian', e.target.value)} placeholder="如：京ICP备12345678号（留空不显示）" />
           </label>
+          <label className="sec-field">
+            <span className="sec-label">登录页主标题（可用换行，留空用默认）</span>
+            <textarea className="inp" maxLength={80} value={cfg.landing_title ?? ''} onChange={(e) => setK('landing_title', e.target.value)} rows={2} placeholder={'连接有趣的人\n与值得分享的内容'} style={{ lineHeight: 1.5 }} />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">登录页副标题（留空用默认）</span>
+            <input className="inp" maxLength={60} value={cfg.landing_subtitle ?? ''} onChange={(e) => setK('landing_subtitle', e.target.value)} placeholder="轻社交 · 轻论坛 · 轻社区" />
+          </label>
         </div>
         <label className="sec-field" style={{ marginTop: 12 }}>
           <span className="sec-label">Logo 图片</span>

@@ -72,6 +72,8 @@ export class SiteService {
       uploadMaxImages: Number(cfg.get('upload_max_images')) || 9,
       uploadMaxSizeMb: Number(cfg.get('upload_max_size_mb')) || 25,
       paidPriceMax: Number(cfg.get('paid_price_max')) || 100000,
+      landingTitle: cfg.get('landing_title') || '',
+      landingSubtitle: cfg.get('landing_subtitle') || '',
       modules,
       layouts,
       payments,

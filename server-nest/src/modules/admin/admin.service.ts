@@ -64,6 +64,7 @@ const STR_KEYS: Record<string, number> = {
   recharge_tiers: 200, report_reasons: 500,
   default_avatar: 500, // 新用户默认头像（URL 或 emoji:X:color）；空=按昵称渲染渐变首字母
   username_pattern: 200, username_hint: 100, // 用户名正则 + 提示文案；空=用内置默认
+  landing_title: 80, landing_subtitle: 60, // 登录落地页主标题/副标题；空=用内置默认
   // 支付配置（凭据为敏感串，仅 admin 可读写；公开 /api/site 只暴露「是否启用」不含密钥）
   pay_alipay_appid: 64, pay_alipay_key: 4000, pay_alipay_public_key: 2000, pay_alipay_gateway: 200,
   pay_wechat_appid: 64, pay_wechat_mchid: 64, pay_wechat_key: 200, pay_wechat_private_key: 4000, pay_wechat_serial: 80,
