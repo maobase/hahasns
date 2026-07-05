@@ -1455,6 +1455,16 @@ function PaymentAdmin() {
         <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>付费内容价格上限</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户发「付费解锁」动态时允许的最高积分价格（留空用默认 100000）。</div>
         <label className="sec-field" style={{ marginTop: 10 }}><span className="sec-num"><input type="number" min={1} value={cfg.paid_price_max ?? ''} placeholder="100000" onChange={(e) => setK('paid_price_max', e.target.value)} /><i>积分</i></span></label>
+        <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>VIP 档位月价</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>会员页展示的各 VIP 档位月价（单位：分；留空用内置默认 1200 / 3600 / 9800，即 ¥12 / 36 / 98）。仅影响会员页展示文案。</div>
+        <div className="sec-grid" style={{ marginTop: 10 }}>
+          {([['vip1_price', '青铜 VIP1', 1200], ['vip2_price', '黄金 VIP2', 3600], ['vip3_price', '黑钻 VIP3', 9800]] as [string, string, number][]).map(([k, label, def]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <span className="sec-num"><input type="number" min={0} value={cfg[k] ?? ''} placeholder={String(def)} onChange={(e) => setK(k, e.target.value)} /><i>分</i></span>
+            </label>
+          ))}
+        </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>

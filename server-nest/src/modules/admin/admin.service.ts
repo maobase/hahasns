@@ -72,6 +72,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   vip1_bonus_pct: [0, 1000], vip2_bonus_pct: [0, 1000], vip3_bonus_pct: [0, 1000],
   // 等级曲线（波B）：base=每级经验系数(默认30，越大升级越慢) / max=最高等级(默认60)。所需经验=base*(L-1)^1.7
   level_base: [1, 100000], level_max: [1, 200],
+  // VIP 各档位月价（分，波B）：默认 1200/3600/9800（¥12/36/98）；空=用内置默认。仅影响会员页展示
+  vip1_price: [0, 100000000], vip2_price: [0, 100000000], vip3_price: [0, 100000000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

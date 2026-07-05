@@ -77,6 +77,12 @@ export class SiteService {
       defaultSkin: cfg.get('default_skin') || '',
       defaultMode: cfg.get('default_mode') || '',
       defaultStyle: cfg.get('default_style') || '',
+      // VIP 各档位月价（分）：已配置→数字，未配置→null（前端回退到内置默认）
+      vipPrices: {
+        '1': cfg.get('vip1_price') ? Number(cfg.get('vip1_price')) : null,
+        '2': cfg.get('vip2_price') ? Number(cfg.get('vip2_price')) : null,
+        '3': cfg.get('vip3_price') ? Number(cfg.get('vip3_price')) : null,
+      },
       // 首页信息流可选 tab 开关（默认开：未配置或非 '0' 视为显示）
       homeTabs: {
         video: cfg.get('home_tab_video') !== '0',

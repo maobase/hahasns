@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.12', date: '2026-07-05 18:11:07', items: [
+      ['feat', '后台可配置各 VIP 档位在会员页展示的月价（青铜 / 黄金 / 黑钻，单位分，留空用内置默认 ¥12 / 36 / 98）。'],
+    ],
+  },
+  {
     ver: 'v5.11', date: '2026-07-05 17:29:41', items: [
       ['feat', '后台可配置等级曲线（每级经验系数与最高等级），自由调整成长速度与等级上限；改动约 1 分钟内全站生效。'],
     ],
