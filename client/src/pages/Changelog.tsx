@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.16', date: '2026-07-05 21:02:58', items: [
+      ['feat', '上线「AI 智能助手」入口（左栏导航 + 独立页面）：可与 Claude 多轮对话；服务端未配置 API key 时为演示模式，配置 ANTHROPIC_API_KEY 后走真实模型。可在后台模块市场随时开关。'],
+    ],
+  },
+  {
     ver: 'v5.15', date: '2026-07-05 20:18:44', items: [
       ['feat', '后台可在左栏与移动抽屉导航底部追加自定义链接（站内路径或外部网址，每行「标题|网址」，最多 8 条；外链在新标签打开）。'],
     ],

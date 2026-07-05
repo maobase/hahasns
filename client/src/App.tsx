@@ -32,6 +32,7 @@ const CircleDetail = lazy(() => import('./pages/CircleDetail'));
 const Achievements = lazy(() => import('./pages/Achievements'));
 const Lottery = lazy(() => import('./pages/Lottery'));
 const Checkin = lazy(() => import('./pages/Checkin'));
+const AIChat = lazy(() => import('./pages/AIChat'));
 const Articles = lazy(() => import('./pages/Articles'));
 const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const Collections = lazy(() => import('./pages/Collections'));
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/messages/:peerId" element={<Messages />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/member" element={<Member />} />
+        <Route path="/ai" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><AIChat /></Suspense>} />
         <Route path="/mall" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Mall /></Suspense>} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/history" element={<History />} />

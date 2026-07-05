@@ -25,6 +25,7 @@ export const RAIL_ITEMS: RailItem[] = [
   { to: '/forum', icon: 'forum', label: '论坛', module: 'forum', section: '社区' },
   { to: '/circles', icon: 'users', label: '圈子', module: 'circles', section: '社区' },
   { to: '/qa', icon: 'help', label: '问答', module: 'qa', section: '社区' },
+  { to: '/ai', icon: 'spark', label: 'AI 助手', module: 'ai', auth: true, section: '社区' },
   { to: '/flash', icon: 'bell', label: '快报', module: 'flash', section: '社区' },
   { to: '/articles', icon: 'book', label: '专栏', module: 'articles', section: '社区' },
   { to: '/collections', icon: 'grid', label: '专题', section: '社区' },

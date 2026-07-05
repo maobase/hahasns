@@ -7,6 +7,7 @@ import { SiteConfig } from '../../database/entities';
 export const MODULE_KEYS = [
   'discover', 'circles', 'qa', 'flash', 'articles', 'events', 'nav',
   'forum', 'leaderboard', 'achievements', 'checkin', 'lottery', 'mall',
+  'ai', // AI 智能助手（后端 demo-mode 无需 API key 也可用；配 ANTHROPIC_API_KEY 走真实 Claude）
 ];
 
 // 布局市场：站长可在后台为这些页面选择布局（default 三栏 / wide 宽屏 / narrow 居中）。
