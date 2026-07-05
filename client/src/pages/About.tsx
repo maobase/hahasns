@@ -3,6 +3,7 @@ import { BrandMark } from '../components/Navbar';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSite } from '../context/SiteContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { APP_VERSION } from '../version';
 
@@ -45,6 +46,7 @@ const SPONSOR: [string, string, string][] = [
 export default function About() {
   const { user } = useAuth();
   const { skins } = useTheme();
+  const site = useSite();
   usePageTitle('关于');
   return (
     <div className="about">
@@ -58,7 +60,7 @@ export default function About() {
       <section className="about-hero">
         <div className="about-hero-glow" aria-hidden />
         <span className="about-badge"><Icon name="spark" size={13} /> 完全免费 · MIT 开源 · 可自托管 · 可商用二开</span>
-        <h1 className="about-hero-title">连接有趣的人<br />与值得分享的内容</h1>
+        <h1 className="about-hero-title" style={{ whiteSpace: 'pre-line' }}>{site.landingTitle || '连接有趣的人\n与值得分享的内容'}</h1>
         <p className="about-hero-sub">轻社交 · 轻论坛 · 轻社区 —— 一站式开源社区系统</p>
         <div className="row gap-10" style={{ justifyContent: 'center', marginTop: 26, flexWrap: 'wrap' }}>
           <Link to="/" className="btn btn-primary btn-lg">立即体验</Link>
@@ -136,7 +138,7 @@ export default function About() {
             </div>
           ))}
         </div>
-        <p className="faint" style={{ textAlign: 'center', marginTop: 18, fontSize: 13 }}>有意赞助请通过开源仓库联系我们，备注「赞助 HahaSNS」。</p>
+        <p className="faint" style={{ textAlign: 'center', marginTop: 18, fontSize: 13 }}>有意赞助请通过开源仓库联系我们，备注「赞助 {site.name}」。</p>
       </section>
 
       <section className="about-cta">
@@ -149,7 +151,7 @@ export default function About() {
         </div>
       </section>
 
-      <footer className="about-foot">© 2026 HahaSNS · 轻社交社区 · <span className="num">{APP_VERSION}</span></footer>
+      <footer className="about-foot">© 2026 {site.name} · {site.slogan} · <span className="num">{APP_VERSION}</span></footer>
     </div>
   );
 }
