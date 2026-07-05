@@ -1967,6 +1967,19 @@ function CheckinAdmin() {
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>每日任务奖励</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>每日任务完成后可领取的积分奖励（设 0 = 该任务无奖励）。</div>
+        <div className="sec-grid">
+          {([['task_checkin_points', '签到', 5], ['task_post_points', '发帖', 10], ['task_comment_points', '评论', 6], ['task_like_points', '点赞', 4], ['task_vote_points', '投票', 3], ['task_profile_points', '完善资料', 20]] as [string, string, number][]).map(([k, label, def]) => (
+            <label className="sec-field" key={k}>
+              <span className="sec-label">{label}</span>
+              <span className="sec-num"><input type="number" min={0} value={cfg[k] ?? ''} placeholder={String(def)} onChange={(e) => setK(k, e.target.value)} /><i>积分</i></span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>7 日奖励预览</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, marginBottom: 12, lineHeight: 1.5 }}>按当前配置，连续签到第 1–7 天的基础积分（未含会员加成）。</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>

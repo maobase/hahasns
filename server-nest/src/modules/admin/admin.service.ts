@@ -74,6 +74,9 @@ const NUM_KEYS: Record<string, [number, number]> = {
   level_base: [1, 100000], level_max: [1, 200],
   // VIP 各档位月价（分，波B）：默认 1200/3600/9800（¥12/36/98）；空=用内置默认。仅影响会员页展示
   vip1_price: [0, 100000000], vip2_price: [0, 100000000], vip3_price: [0, 100000000],
+  // 每日任务积分奖励（波D）：签到/发帖/评论/点赞/投票/完善资料；默认 5/10/6/4/3/20
+  task_checkin_points: [0, 100000], task_post_points: [0, 100000], task_comment_points: [0, 100000],
+  task_like_points: [0, 100000], task_vote_points: [0, 100000], task_profile_points: [0, 100000],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {

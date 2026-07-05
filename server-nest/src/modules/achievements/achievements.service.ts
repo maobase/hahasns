@@ -229,12 +229,13 @@ export class AchievementsService {
         where: { user_id: uid, task_key: t.key, ymd: slot },
       }));
       const done = prog >= t.target;
+      const points = await this.helpers.configNum('task_' + t.key + '_points', t.points);
       out.push({
         key: t.key,
         title: t.title,
         desc: t.desc,
         icon: t.icon,
-        points: t.points,
+        points,
         target: t.target,
         daily: !!t.daily,
         progress: prog,
@@ -325,10 +326,11 @@ export class AchievementsService {
       ymd: slot,
       claimed_at: this.helpers.nowSql(),
     });
-    await this.helpers.award(user.id, { points: t.points });
+    const points = await this.helpers.configNum('task_' + t.key + '_points', t.points);
+    await this.helpers.award(user.id, { points });
     return {
       ok: true,
-      points: t.points,
+      points,
       user: await this.helpers.publicUser(
         await this.helpers.getUser(user.id),
         user.id,

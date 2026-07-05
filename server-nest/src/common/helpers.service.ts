@@ -58,6 +58,11 @@ export class HelpersService {
     return row ? row.value : null;
   }
 
+  /** 读取数值型站点配置（未配置/非法→默认，允许 0）。供各服务就地读经济类可配项（非热路径）。 */
+  async configNum(key: string, fallback: number): Promise<number> {
+    return rewardNum(await this.cfg(key), fallback);
+  }
+
   /** 记录管理操作日志（admin_audit_log）。非关键路径，出错静默吞掉。Mirrors helpers.js logAdmin. */
   async logAdmin(
     adminId: number | null | undefined,

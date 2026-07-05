@@ -25,6 +25,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.18', date: '2026-07-05 22:29:53', items: [
+      ['feat', '后台可配置每日任务的积分奖励（签到 / 发帖 / 评论 / 点赞 / 投票 / 完善资料），设 0 关闭该任务奖励。'],
+    ],
+  },
+  {
     ver: 'v5.17', date: '2026-07-05 21:44:37', items: [
       ['feat', '后台可重命名内置导航项（每行「/路径|新名称」），配合自定义链接实现导航栏完整定制。'],
     ],
