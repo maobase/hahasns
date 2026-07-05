@@ -87,6 +87,17 @@ export class SiteService {
         })
         .filter((l) => l.label && l.url && (/^https?:\/\//.test(l.url) || l.url.startsWith('/')))
         .slice(0, 8),
+      // 导航项改名（波D）：每行「/路径|新名称」→ { '/路径': '新名称' }，覆盖内置导航标签；非法行跳过
+      navLabels: Object.fromEntries(
+        (cfg.get('nav_labels') || '')
+          .split('\n')
+          .map((line) => {
+            const [path, label] = line.split('|').map((s) => (s || '').trim());
+            return [path, label] as [string, string];
+          })
+          .filter(([path, label]) => path.startsWith('/') && label)
+          .slice(0, 30),
+      ),
       // VIP 各档位月价（分）：已配置→数字，未配置→null（前端回退到内置默认）
       vipPrices: {
         '1': cfg.get('vip1_price') ? Number(cfg.get('vip1_price')) : null,

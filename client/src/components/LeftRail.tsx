@@ -46,7 +46,7 @@ interface LeftRailProps {
 export default function LeftRail({ onCompose }: LeftRailProps) {
   const { user, setAuthOpen } = useAuth();
   const { openCompose } = useCompose();
-  const { modules, customNavLinks } = useSite();
+  const { modules, customNavLinks, navLabels } = useSite();
   const loc = useLocation();
   // 在「自己的主页」上隐藏左栏「我的」卡片——主页大头部已展示同样的头像/昵称/统计，避免重复
   const onOwnProfile = !!user && decodeURIComponent(loc.pathname) === `/u/${user.username}`;
@@ -85,7 +85,7 @@ export default function LeftRail({ onCompose }: LeftRailProps) {
               onClick={(e: React.MouseEvent) => { if (it.auth && !user) { e.preventDefault(); setAuthOpen(true); } }}
               className={({ isActive }) => `rail-item${isActive ? ' active' : ''}`}
             >
-              <span className="ico"><Icon name={it.icon} size={21} /></span> {it.label}
+              <span className="ico"><Icon name={it.icon} size={21} /></span> {navLabels[it.to] || it.label}
             </NavLink>
           </Fragment>
         ))}

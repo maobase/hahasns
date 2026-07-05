@@ -16,7 +16,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
   const { user, setAuthOpen } = useAuth();
   const { openCompose } = useCompose();
   const { theme, toggle, skin, setSkin, skins, style, setStyle, styles } = useTheme();
-  const { modules, customNavLinks } = useSite();
+  const { modules, customNavLinks, navLabels } = useSite();
   const loc = useLocation();
 
   // close when the route changes (e.g. back button / programmatic nav)
@@ -62,7 +62,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
             <NavLink key={it.to} to={it.to} end={it.end}
               onClick={(e) => guard(e, it.auth)}
               className={({ isActive }) => `mdrawer-item${isActive ? ' active' : ''}`}>
-              <span className="ico"><Icon name={it.icon} size={20} /></span> {it.label}
+              <span className="ico"><Icon name={it.icon} size={20} /></span> {navLabels[it.to] || it.label}
             </NavLink>
           ))}
           {user?.role === 'admin' && (

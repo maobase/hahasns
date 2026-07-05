@@ -2124,6 +2124,15 @@ function Appearance() {
           style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
 
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>导航项改名</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>重命名内置导航项，每行一条「/路径|新名称」。常见路径：/discover 发现、/forum 论坛、/qa 问答、/circles 圈子、/flash 快报、/articles 专栏、/mall 积分商城、/leaderboard 排行榜、/member 会员中心。例：<code>/forum|讨论区</code></div>
+        <textarea className="inp" value={cfg.nav_labels ?? ''} maxLength={600} spellCheck={false}
+          onChange={(e) => setK('nav_labels', e.target.value)}
+          placeholder={'/forum|讨论区\n/discover|发现精选'}
+          style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
+      </div>
+
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存外观'}</button>
       </div>
