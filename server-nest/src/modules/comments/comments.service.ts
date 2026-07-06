@@ -59,6 +59,7 @@ export class CommentsService {
       id: c.id,
       content: c.content,
       createdAt: c.created_at,
+      edited: !!c.edited,
       likeCount: c.like_count,
       liked: !!mine,
       myReaction: mine ? mine.reaction || 'like' : null,
@@ -377,11 +378,12 @@ export class CommentsService {
       throw new BadRequestException('评论包含敏感信息，请修改后重试');
     const c = await this.comments.findOne({ where: { id } });
     if (!c) throw new NotFoundException('评论不存在');
-    if (c.user_id !== user.id && user.role !== 'admin')
-      throw new ForbiddenException('无权编辑');
+    // 与动态/帖子一致：仅作者可编辑自己的内容（管理员通过删除管理，不改写他人发言）。
+    if (c.user_id !== user.id) throw new ForbiddenException('无权编辑');
     c.content = text;
+    c.edited = 1;
     await this.comments.save(c);
-    return { comment: { id: c.id, content: c.content } };
+    return { comment: { id: c.id, content: c.content, edited: true } };
   }
 
   async remove(id: number, user: User) {

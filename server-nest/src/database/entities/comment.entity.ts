@@ -34,6 +34,10 @@ export class Comment {
   @Column({ name: 'like_count', type: 'int', default: 0 })
   like_count: number;
 
+  // 编辑标记：被作者编辑过则置 1，前端显示「· 已编辑」。见迁移 AddCommentEdited。
+  @Column({ type: 'smallint', default: 0 })
+  edited: number;
+
   @Column({ name: 'created_at', type: 'varchar', length: 32, nullable: true })
   created_at: string;
 }
