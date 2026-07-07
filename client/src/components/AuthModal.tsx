@@ -20,6 +20,7 @@ export default function AuthModal() {
   const [form, setForm] = useState<AuthForm>({ username: '', password: '', nickname: '', inviteCode: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   // 邀请链接 ?invite=用户名 → 预填邀请码并默认切到注册
   useEffect(() => {
@@ -71,6 +72,16 @@ export default function AuthModal() {
             <label>密码</label>
             <input type="password" value={form.password} onChange={set('password')} placeholder="至少 6 位" />
           </div>
+          {mode === 'login' && (
+            <div style={{ textAlign: 'right', marginTop: -6, marginBottom: showForgot ? 8 : 10 }}>
+              <button type="button" onClick={() => setShowForgot((s) => !s)} style={{ fontSize: 12.5, color: 'var(--ink-4)', background: 'none', border: 0, cursor: 'pointer', padding: 0 }}>忘记密码？</button>
+            </div>
+          )}
+          {mode === 'login' && showForgot && (
+            <div className="faint" style={{ fontSize: 12.5, lineHeight: 1.65, border: '1px solid var(--line)', borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
+              本站暂未开放邮箱自助找回。如忘记密码，请联系站点管理员协助重置——管理员可在「后台 → 用户」中为任意账号重置登录密码。
+            </div>
+          )}
           {mode === 'register' && (
             <div className="field">
               <label>邀请码{site.inviteRequired ? '（必填）' : '（可选）'}</label>

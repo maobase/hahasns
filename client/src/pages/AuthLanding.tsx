@@ -22,6 +22,7 @@ export default function AuthLanding() {
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   const site = useSite();
   // 登出落地页也把标签标题设成配置的品牌（否则显示 index.html 写死的「HahaSNS」）
   useEffect(() => { document.title = `${site.name} · ${site.slogan}`; }, [site.name, site.slogan]);
@@ -102,6 +103,16 @@ export default function AuthLanding() {
                   <Icon name="eye" size={18} />
                 </button>
               } />
+            {mode === 'login' && (
+              <div style={{ textAlign: 'right', marginTop: -6 }}>
+                <button type="button" onClick={() => setShowForgot((s) => !s)} style={{ fontSize: 12.5, color: 'var(--ink-4)', background: 'none', border: 0, cursor: 'pointer', padding: 0 }}>忘记密码？</button>
+              </div>
+            )}
+            {mode === 'login' && showForgot && (
+              <div className="faint" style={{ fontSize: 12.5, lineHeight: 1.65, border: '1px solid var(--line)', borderRadius: 8, padding: '10px 12px' }}>
+                本站暂未开放邮箱自助找回。如忘记密码，请联系站点管理员协助重置——管理员可在「后台 → 用户」中为任意账号重置登录密码。
+              </div>
+            )}
             {mode === 'register' && (
               <Input label={site.inviteRequired ? '邀请码（必填）' : '邀请码（可选）'} labelPlacement="outside" variant="bordered" radius="md"
                 value={form.inviteCode} onValueChange={set('inviteCode')} maxLength={64} placeholder={site.inviteRequired ? '本站需要邀请码，填邀请人用户名' : '填邀请人用户名，双方得积分'} />
