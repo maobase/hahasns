@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCompose } from '../context/ComposeContext';
 import { useTheme } from '../context/ThemeContext';
 import { RAIL_ITEMS } from './LeftRail';
+import { BrandMark, BrandName, showBrandText, logoHeightOf } from './Navbar';
 import { useSite, moduleOn } from '../context/SiteContext';
 
 // Mobile-only slide-in drawer that surfaces the full LeftRail navigation
@@ -16,7 +17,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
   const { user, setAuthOpen } = useAuth();
   const { openCompose } = useCompose();
   const { theme, toggle, skin, setSkin, skins, style, setStyle, styles } = useTheme();
-  const { modules, customNavLinks, navLabels } = useSite();
+  const { modules, customNavLinks, navLabels, logo, name, logoOnly, logoHeight } = useSite();
   const loc = useLocation();
 
   // close when the route changes (e.g. back button / programmatic nav)
@@ -41,7 +42,10 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
       <div className="mdrawer-backdrop" onClick={onClose} />
       <aside className="mdrawer" role="dialog" aria-label="导航菜单">
         <div className="mdrawer-head">
-          <span className="brand-name" style={{ fontSize: 18 }}><b>Haha</b><span>SNS</span></span>
+          <Link to="/" className="row gap-8" style={{ alignItems: 'center', fontSize: 18 }} onClick={onClose}>
+            <BrandMark logo={logo} size={logoHeightOf(logoHeight)} />
+            {showBrandText(logo, logoOnly) && <BrandName name={name} />}
+          </Link>
           <button className="mdrawer-close" onClick={onClose} aria-label="关闭菜单"><Icon name="close" size={20} /></button>
         </div>
 

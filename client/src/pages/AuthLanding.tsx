@@ -69,12 +69,12 @@ export default function AuthLanding() {
 
       <div className="auth-landing-form">
         <div className="auth-mobile-intro">
-          <BrandMark size={46} />
+          <BrandMark size={46} logo={site.logo} />
           <h2 className="auth-mi-title" style={{ whiteSpace: 'pre-line' }}>{site.landingTitle || '连接有趣的人\n与值得分享的内容'}</h2>
           <p className="auth-mi-sub">{site.landingSubtitle || '轻社交 · 轻论坛 · 轻社区'}</p>
         </div>
         <div className="auth-form-card">
-          <div className="auth-form-brand"><BrandMark size={34} /><span className="brand-name"><b>Haha</b><span>SNS</span></span></div>
+          <div className="auth-form-brand"><BrandMark size={34} logo={site.logo} />{showBrandText(site.logo, site.logoOnly) && <BrandName name={site.name} />}</div>
 
           <Tabs
             aria-label="登录或注册"
@@ -142,7 +142,7 @@ export default function AuthLanding() {
           {showAuthAboutLink(site) && (
             <><Link to="/about" className="auth-about-link">了解功能</Link> · </>
           )}
-          {site.footerText || '© 2026 HahaSNS · 轻社交社区'} · <span className="num">{APP_VERSION}</span>
+          {site.footerText || `© 2026 ${site.name} · 轻社交社区`} · <span className="num">{APP_VERSION}</span>
         </div>
         {site.icpBeian && <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 6 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'inherit' }}>{site.icpBeian}</a></div>}
       </div>

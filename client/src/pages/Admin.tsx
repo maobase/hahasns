@@ -7,6 +7,7 @@ import Icon from '../components/Icon';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
 import { useAuth } from '../context/AuthContext';
+import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
 import { SKINS, STYLES } from '../context/ThemeContext';
 import api from '../api/client';
@@ -2546,6 +2547,7 @@ function SystemAdmin() {
 
 export default function Admin() {
   const { user, loading, logout } = useAuth();
+  const { name: siteName } = useSite();
   const navigate = useNavigate();
   const location = useLocation();
   // tab 以 URL 为准（/admin/<tab>）→ 可深链 + 浏览器前进/后退；非法 tab 回退 overview
@@ -2588,7 +2590,7 @@ export default function Admin() {
       <aside className="admin-side">
         <div className="admin-brand">
           <span className="admin-logo"><Icon name="shield" size={18} /></span>
-          <div className="admin-brand-txt"><b>HahaSNS</b><span>管理后台</span></div>
+          <div className="admin-brand-txt"><b>{siteName}</b><span>管理后台</span></div>
         </div>
         <nav className="admin-nav">
           {NAV_GROUPS.map((grp) => (
