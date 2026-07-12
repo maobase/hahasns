@@ -179,7 +179,7 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
             onKeyDown={(e) => { if (mention.onKeyDown(e)) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
             onBlur={() => setTimeout(mention.close, 120)}
             onFocus={() => !user && setAuthOpen(true)}
-            placeholder={replyTarget ? `回复 @${replyTarget.author.nickname}：` : '友善评论，@ 提及好友…'}
+            placeholder={!user ? '登录后即可参与评论…' : (replyTarget ? `回复 @${replyTarget.author.nickname}：` : '友善评论，@ 提及好友…')}
             className="inp"
             style={{ height: 'auto', minHeight: 40, maxHeight: 120, padding: '9px 16px', lineHeight: 1.45, resize: 'none', overflowY: 'auto' }}
           />
