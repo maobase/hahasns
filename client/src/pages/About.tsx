@@ -3,7 +3,8 @@ import { BrandMark } from '../components/Navbar';
 import Icon from '../components/Icon';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useSite } from '../context/SiteContext';
+import { useSite, moduleOn } from '../context/SiteContext';
+import SafeMarkdown from '../components/SafeMarkdown';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { APP_VERSION } from '../version';
 
@@ -43,20 +44,35 @@ const SPONSOR: [string, string, string][] = [
   ['trend', 'CDN 加速', '全球加速静态资源与媒体，访问更快更稳'],
 ];
 
+// 功能卡 → 模块 key（无 module 的核心项始终显示）
+const FEATURE_MODULE: Record<string, string | undefined> = {
+  '社区论坛': 'forum', '兴趣圈子': 'circles', '问答 · 悬赏': 'qa', '资讯快报': 'flash',
+  '专栏文章': 'articles', '活动报名': 'events', '网址导航': 'nav', '排行榜': 'leaderboard',
+  '任务勋章': 'achievements', '签到抽奖': 'checkin', '积分商城': 'mall',
+};
+
 export default function About() {
   const { user } = useAuth();
   const { skins } = useTheme();
   const site = useSite();
   usePageTitle('关于');
+  const custom = (site.aboutContent || '').trim();
+  const features = FEATURES.filter(([, t]) => moduleOn(site.modules, FEATURE_MODULE[t]));
   return (
     <div className="about">
       <header className="about-nav">
         <Link to="/" className="row gap-8" style={{ alignItems: 'center' }}>
-          <BrandMark size={32} /><span className="brand-name" style={{ fontSize: 19 }}><b>Haha</b><span>SNS</span></span>
+          <BrandMark size={32} logo={site.logo} /><span className="brand-name" style={{ fontSize: 19 }}><b>{site.name}</b></span>
         </Link>
         <Link to="/" className="btn btn-primary">{user ? '进入应用' : '登录 / 注册'}</Link>
       </header>
 
+      {custom ? (
+        <section className="about-sec" style={{ maxWidth: 760, margin: '40px auto', padding: '0 20px' }}>
+          <SafeMarkdown source={custom} />
+        </section>
+      ) : (
+      <>
       <section className="about-hero">
         <div className="about-hero-glow" aria-hidden />
         <span className="about-badge"><Icon name="spark" size={13} /> 完全免费 · MIT 开源 · 可自托管 · 可商用二开</span>
@@ -86,7 +102,7 @@ export default function About() {
         <h2 className="about-h2">功能一览</h2>
         <p className="about-sub">围绕「轻社交 · 轻论坛 · 轻社区」打造的完整功能矩阵</p>
         <div className="about-grid">
-          {FEATURES.map(([ic, t, d]) => (
+          {features.map(([ic, t, d]) => (
             <div className="about-feat" key={t}>
               <span className="about-feat-ico"><Icon name={ic} size={22} /></span>
               <div style={{ minWidth: 0 }}><div className="about-feat-t">{t}</div><div className="about-feat-d">{d}</div></div>
@@ -152,6 +168,8 @@ export default function About() {
       </section>
 
       <footer className="about-foot">© 2026 {site.name} · {site.slogan} · <span className="num">{APP_VERSION}</span></footer>
+      </>
+      )}
     </div>
   );
 }

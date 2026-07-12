@@ -39,7 +39,7 @@ interface PostCardProps {
   [k: string]: any;
 }
 
-export default function PostCard({ post: initial, onDelete, defaultOpenComments = false }: PostCardProps) {
+export default function PostCard({ post: initial, onDelete, defaultOpenComments = false, compact = false }: PostCardProps) {
   const { user, setAuthOpen, patchUser } = useAuth();
   const toast = useToast();
   const nav = useNavigate();
@@ -169,9 +169,9 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   };
 
   return (
-    <article className="ui-card post rise">
+    <article className={`ui-card post rise${compact ? ' post-compact' : ''}`}>
       <div className="post-head">
-        <UserHoverCard user={author}><Avatar user={author} size={46} showV /></UserHoverCard>
+        <UserHoverCard user={author}><Avatar user={author} size={compact ? 36 : 46} showV /></UserHoverCard>
         <div className="meta">
           <div className="row gap-6">
             <UserHoverCard user={author}><UserName user={author} /></UserHoverCard>

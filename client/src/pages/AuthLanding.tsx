@@ -4,8 +4,9 @@ import { Input, Tabs, Tab } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
-import { BrandMark } from '../components/Navbar';
+import { BrandMark, BrandName, logoHeightOf, showBrandText } from '../components/Navbar';
 import Icon from '../components/Icon';
+import { showAuthAboutLink } from '../lib/pageEntries';
 import { APP_VERSION } from '../version';
 
 const FEATURES = [
@@ -15,7 +16,7 @@ const FEATURES = [
 ];
 
 export default function AuthLanding() {
-  const { login, register } = useAuth();
+  const { login, register, enterGuest } = useAuth();
   const toast = useToast();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ username: '', password: '', nickname: '', inviteCode: '' });
@@ -47,9 +48,11 @@ export default function AuthLanding() {
     <div className="auth-landing">
       <div className="auth-landing-hero">
         <div className="auth-hero-inner">
-          <div className="row gap-8" style={{ marginBottom: 26 }}>
-            <BrandMark size={40} logo={site.logo} />
-            <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em' }}>{site.name}</span>
+          <div className="row gap-8" style={{ marginBottom: 26, alignItems: 'center' }}>
+            <BrandMark size={logoHeightOf(site.logoHeight) + 7} logo={site.logo} />
+            {showBrandText(site.logo, site.logoOnly) && (
+              <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em' }}><BrandName name={site.name} /></span>
+            )}
           </div>
           <h1 className="auth-hero-title" style={{ whiteSpace: 'pre-line' }}>{site.landingTitle || '连接有趣的人\n与值得分享的内容'}</h1>
           <p className="auth-hero-sub">{site.landingSubtitle || '轻社交 · 轻论坛 · 轻社区'}</p>
@@ -124,9 +127,22 @@ export default function AuthLanding() {
               {busy ? <span className="ui-spinner" style={{ width: 18, height: 18, borderWidth: 2, borderTopColor: '#fff' }} /> : (mode === 'login' ? '登录' : '注册')}
             </button>
           </form>
+          {site.allowGuest && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-block"
+              style={{ marginTop: 12, fontWeight: 600 }}
+              onClick={() => { enterGuest(); toast.show('已进入游客浏览（只读）'); }}
+            >
+              游客浏览
+            </button>
+          )}
         </div>
         <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 18 }}>
-          <Link to="/about" className="auth-about-link">了解功能</Link> · {site.footerText || '© 2026 HahaSNS · 轻社交社区'} · <span className="num">{APP_VERSION}</span>
+          {showAuthAboutLink(site) && (
+            <><Link to="/about" className="auth-about-link">了解功能</Link> · </>
+          )}
+          {site.footerText || '© 2026 HahaSNS · 轻社交社区'} · <span className="num">{APP_VERSION}</span>
         </div>
         {site.icpBeian && <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 6 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'inherit' }}>{site.icpBeian}</a></div>}
       </div>

@@ -9,6 +9,7 @@ import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { WhoToFollow } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
+import { normalizeFeedLayout } from '../lib/feedLayout';
 import api from '../api/client';
 
 const FILTERS = [
@@ -22,7 +23,9 @@ const PAGE = 12;
 
 export default function Home() {
   const { user, setAuthOpen } = useAuth();
-  const { homeTabs } = useSite();
+  const { homeTabs, feedLayout } = useSite();
+  const layout = normalizeFeedLayout(feedLayout);
+  const isWaterfall = layout === 'waterfall';
   const loc = useLocation();
   // 站长可在后台隐藏可选信息流 tab（视频/同城/关注）；核心 tab（推荐/最新）恒显
   const tabs = FILTERS.filter((f) => homeTabs[f.key] !== false);
@@ -47,7 +50,7 @@ export default function Home() {
   const onDelete = (id: number) => setPosts((p) => p.filter((x) => x.id !== id));
 
   return (
-    <Shell>
+    <Shell right={isWaterfall ? false : undefined} wide={isWaterfall || undefined}>
       <SiteNotice />
       <div ref={composerRef}><Composer onPosted={onPosted} /></div>
 
@@ -74,7 +77,13 @@ export default function Home() {
         </>
       ) : (
         <>
-          {posts.map((p) => <PostCard key={p.id} post={p} onDelete={onDelete} />)}
+          <div className={isWaterfall ? 'feed-waterfall' : 'feed-list'}>
+            {posts.map((p) => (
+              <div key={p.id} className={isWaterfall ? 'feed-waterfall-item' : undefined}>
+                <PostCard post={p} onDelete={onDelete} compact={isWaterfall} />
+              </div>
+            ))}
+          </div>
           <div ref={sentinelRef} />
           {hasMore && <PostSkeleton />}
           {!hasMore && <div className="empty" style={{ padding: '24px 0', fontSize: 13 }}>· 没有更多了 ·</div>}

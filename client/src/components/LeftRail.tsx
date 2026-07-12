@@ -28,7 +28,7 @@ export const RAIL_ITEMS: RailItem[] = [
   { to: '/ai', icon: 'spark', label: 'AI 助手', module: 'ai', auth: true, section: '社区' },
   { to: '/flash', icon: 'bell', label: '快报', module: 'flash', section: '社区' },
   { to: '/articles', icon: 'book', label: '专栏', module: 'articles', section: '社区' },
-  { to: '/collections', icon: 'grid', label: '专题', section: '社区' },
+  { to: '/collections', icon: 'grid', label: '专题', module: 'articles', section: '社区' },
   { to: '/events', icon: 'ticket', label: '活动', module: 'events', section: '社区' },
   { to: '/nav', icon: 'grid', label: '导航', module: 'nav', section: '社区' },
   { to: '/checkin', icon: 'calendar', label: '签到', auth: true, module: 'checkin', section: '福利 · 我的' },

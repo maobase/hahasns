@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { useSite } from './context/SiteContext';
 import AuthLanding from './pages/AuthLanding';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -19,12 +20,9 @@ import Settings from './pages/Settings';
 const Mall = lazy(() => import('./pages/Mall'));
 import Bookmarks from './pages/Bookmarks';
 import History from './pages/History';
-// 懒加载：Changelog(1364行) 与 Admin(2040行) 是最大的两个页面且都不在首屏关键路径，
-// 拆成独立 chunk，缩小初始包、加快首屏（首屏只加载社交端核心页）。
 const Changelog = lazy(() => import('./pages/Changelog'));
 import QA from './pages/QA';
 import QADetail from './pages/QADetail';
-// 二级页（社区/福利/内容类，非首屏关键路径）路由级懒加载，缩小首屏主包（接 v4.41 SharePoster/Mall）。
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Flash = lazy(() => import('./pages/Flash'));
 const Circles = lazy(() => import('./pages/Circles'));
@@ -48,24 +46,56 @@ import { ConfirmHost } from './components/confirm';
 import { ReportHost } from './components/report';
 import { PromptHost } from './components/prompt';
 
-export default function App() {
-  const { user, loading } = useAuth();
+/** 游客不可访问：会员/设置/私信/通知/书签/足迹/写文章/AI — 跳登录墙 */
+const LOGIN_REQUIRED_RE = /^\/(member|settings|messages|notifications|bookmarks|history|write|ai)(\/|$)/;
+
+function GuestLoginGate({ children }: { children: React.ReactNode }) {
+  const { user, isGuest, setAuthOpen } = useAuth();
+  const loc = useLocation();
+  useEffect(() => {
+    if (!user && isGuest && LOGIN_REQUIRED_RE.test(loc.pathname)) {
+      setAuthOpen(true);
+    }
+  }, [user, isGuest, loc.pathname, setAuthOpen]);
+  if (!user && isGuest && LOGIN_REQUIRED_RE.test(loc.pathname)) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
+function PageGate({ on, children }: { on: boolean; children: React.ReactNode }) {
+  if (!on) {
+    return (
+      <div className="center" style={{ padding: 48 }}>
+        <div className="ui-card" style={{ padding: 24, textAlign: 'center' }}>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>该页面暂未开放</div>
+          <a href="/" className="btn btn-primary btn-sm" style={{ marginTop: 14 }}>返回首页</a>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  const { user, loading, isGuest } = useAuth();
+  const site = useSite();
   if (loading) return <div className="auth-splash"><div className="ui-spinner" /></div>;
+
+  // allow_guest 关 → 与现状一致：未登录整树 AuthLanding
+  // allow_guest 开 + 游客态 → Layout 只读；未进游客仍 AuthLanding
+  const canBrowse = !!user || (site.allowGuest && isGuest);
+
   return (
-    <>
-    <ConfirmHost />
-    <ReportHost />
-    <PromptHost />
     <Routes>
-      {/* 后台是独立入口：/admin 自带登录 + 权限校验，不经过社交端登录墙（即使未登录也能直达后台登录页） */}
       <Route path="/admin/*" element={<Suspense fallback={<div className="auth-splash"><div className="ui-spinner" /></div>}><Admin /></Suspense>} />
-      {/* 官网/功能展示页 — 访客（未登录）也能查看 */}
-      <Route path="/about" element={<About />} />
-      {/* Social app — gated behind the auth wall (registration/login required) */}
-      {!user ? (
+      <Route path="/about" element={
+        <PageGate on={site.pageAboutOn}><About /></PageGate>
+      } />
+      {!canBrowse ? (
         <Route path="*" element={<AuthLanding />} />
       ) : (
-      <Route element={<Layout />}>
+      <Route element={<GuestLoginGate><Layout /></GuestLoginGate>}>
         <Route path="/" element={<Home />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/topic/:name" element={<Topic />} />
@@ -82,7 +112,11 @@ export default function App() {
         <Route path="/mall" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Mall /></Suspense>} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/history" element={<History />} />
-        <Route path="/changelog" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Changelog /></Suspense>} />
+        <Route path="/changelog" element={
+          <PageGate on={site.pageChangelogOn || site.pageRoadmapOn}>
+            <Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Changelog /></Suspense>
+          </PageGate>
+        } />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/flash" element={<Flash />} />
         <Route path="/circles" element={<Circles />} />
@@ -106,6 +140,16 @@ export default function App() {
       </Route>
       )}
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+    <ConfirmHost />
+    <ReportHost />
+    <PromptHost />
+    <AppRoutes />
     </>
   );
 }

@@ -14,6 +14,7 @@ import { fmtNum, timeAgo } from '../lib/format';
 import { confirmDialog } from '../components/confirm';
 import { APP_VERSION } from '../version';
 import { promptDialog } from '../components/prompt';
+import { parseCustomThemes, validateThemePackage, type ThemePackage } from '../lib/themePackage';
 // 品牌化二次确认已抽到 ../components/confirm（全站共用，<ConfirmHost/> 挂在 App 根）。
 
 // 通用 CSV 导出（前缀 BOM 以便 Excel 正确识别 UTF-8 中文）。cols: {label, get}[]。
@@ -47,6 +48,8 @@ const TABS = [
   { k: 'modules', l: '模块', icon: 'grid', d: '前台功能模块的开关' },
   { k: 'layout', l: '布局', icon: 'compass', d: '各页面布局（三栏 / 宽屏 / 居中）' },
   { k: 'appearance', l: '外观', icon: 'image', d: '站点品牌、Logo 与自定义 CSS' },
+  { k: 'pages', l: '页面内容', icon: 'book', d: '关于 / 路线图 / 更新日志 可编辑与开关' },
+  { k: 'storage', l: '存储', icon: 'image', d: '本地 / S3 兼容对象存储（七牛等）' },
   { k: 'audit', l: '日志', icon: 'book', d: '管理操作审计记录' },
   { k: 'system', l: '系统更新', icon: 'rocket', d: '版本检测与一键升级' },
 ];
@@ -56,7 +59,7 @@ const NAV_GROUPS: { l: string; keys: string[] }[] = [
   { l: '内容', keys: ['boards', 'topics', 'articles', 'flash', 'events', 'circles', 'qa', 'nav'] },
   { l: '运营', keys: ['notices', 'mall', 'payment', 'lottery', 'checkin'] },
   { l: '用户', keys: ['users', 'reports'] },
-  { l: '系统', keys: ['security', 'modules', 'layout', 'appearance', 'audit', 'system'] },
+  { l: '系统', keys: ['security', 'modules', 'layout', 'appearance', 'pages', 'storage', 'audit', 'system'] },
 ];
 const TAB_BY_K = Object.fromEntries(TABS.map((t) => [t.k, t]));
 // tab key → 所属分组名（顶栏面包屑用）
@@ -1067,6 +1070,14 @@ function Layouts() {
             </div>
           ))}
         </div>
+      </div>
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>首页信息流布局</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>list = 现状单列；waterfall = 多列瀑布流（吸收右栏，左栏宽度不变）。默认 list。</div>
+        <select className="inp" style={{ marginTop: 12, maxWidth: 280 }} value={cfg.feed_layout || 'list'} onChange={(e) => setK('feed_layout', e.target.value)}>
+          <option value="list">列表（默认）</option>
+          <option value="waterfall">瀑布流</option>
+        </select>
       </div>
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>首页信息流标签</div>
@@ -2113,6 +2124,17 @@ function Appearance() {
             <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_logo', e)} /></label>
           </div>
         </label>
+        <div className="sec-grid" style={{ marginTop: 12 }}>
+          <label className="sec-field row gap-8" style={{ alignItems: 'center' }}>
+            <input type="checkbox" checked={cfg.site_logo_only === '1'} onChange={(e) => setK('site_logo_only', e.target.checked ? '1' : '0')} />
+            <span className="sec-label" style={{ margin: 0 }}>仅显示 Logo（隐藏站名文字；需已设 Logo）</span>
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Logo 高度（px，24–64，默认 33）</span>
+            <input className="inp" type="number" min={24} max={64} value={cfg.site_logo_height ?? '33'}
+              onChange={(e) => setK('site_logo_height', e.target.value)} />
+          </label>
+        </div>
         <label className="sec-field" style={{ marginTop: 12 }}>
           <span className="sec-label">Favicon（浏览器标签图标）</span>
           <div className="row gap-8" style={{ alignItems: 'center' }}>
@@ -2162,8 +2184,256 @@ function Appearance() {
           style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
 
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>访问与游客</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>关闭时强制登录（现状）；开启后登录页出现「游客浏览」按钮，游客可只读公开内容，写操作仍需登录。</div>
+        <div className="row" style={{ justifyContent: 'space-between', marginTop: 12 }}>
+          <span style={{ fontSize: 13.5 }}>允许游客浏览</span>
+          <Toggle on={cfg.allow_guest === '1'} onChange={(v) => setK('allow_guest', v ? '1' : '0')} />
+        </div>
+      </div>
+
+      <ThemePackagesPanel cfg={cfg} setK={setK} />
+
       <div className="row" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存外观'}</button>
+      </div>
+    </div>
+  );
+}
+
+function ThemePackagesPanel({ cfg, setK }: { cfg: Record<string, string>; setK: (k: string, v: string) => void }) {
+  const toast = useToast();
+  const list = parseCustomThemes(cfg.custom_themes || '[]');
+  const [draft, setDraft] = useState('');
+  const [preview, setPreview] = useState<ThemePackage | null>(null);
+  const [editErr, setEditErr] = useState('');
+
+  const persist = (next: ThemePackage[]) => {
+    setK('custom_themes', JSON.stringify(next));
+  };
+
+  const importJson = () => {
+    setEditErr('');
+    let parsed: unknown;
+    try { parsed = JSON.parse(draft); } catch { setEditErr('JSON 无法解析'); return; }
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const next = [...list];
+    for (const item of items) {
+      const r = validateThemePackage(item);
+      if (!r.ok || !r.value) { setEditErr(r.error || '主题包无效'); return; }
+      const i = next.findIndex((t) => t.id === r.value!.id);
+      if (i >= 0) next[i] = r.value; else next.push(r.value);
+    }
+    persist(next);
+    setDraft('');
+    toast.ok('主题已导入（记得点保存外观）');
+  };
+
+  const exportOne = (p: ThemePackage) => {
+    const blob = new Blob([JSON.stringify(p, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `theme-${p.id}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  const remove = (id: string) => persist(list.filter((t) => t.id !== id));
+
+  const applyPreview = () => {
+    setEditErr('');
+    try {
+      const r = validateThemePackage(JSON.parse(draft));
+      if (!r.ok || !r.value) { setEditErr(r.error || '无效'); setPreview(null); return; }
+      setPreview(r.value);
+      // 沙箱预览：仅注入临时 style，确认后再导入
+      let el = document.getElementById('theme-admin-preview') as HTMLStyleElement | null;
+      if (!el) { el = document.createElement('style'); el.id = 'theme-admin-preview'; document.head.appendChild(el); }
+      const decls = Object.entries(r.value.tokens).map(([k, v]) => `${k}:${v}`).join(';');
+      el.textContent = `.admin-shell{${decls}}`;
+    } catch { setEditErr('JSON 无法解析'); setPreview(null); }
+  };
+
+  return (
+    <div className="ui-card" style={{ padding: 18 }}>
+      <div style={{ fontWeight: 700, fontSize: 14.5 }}>自定义主题包</div>
+      <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>
+        导入 JSON 主题包后会出现在前台主题切换器。须含 id / name / version / tokens（至少 --brand）。坏数据会被拒绝。
+      </div>
+      {list.length > 0 && (
+        <div className="sec-toggles" style={{ marginTop: 12 }}>
+          {list.map((p) => (
+            <div className="row" style={{ justifyContent: 'space-between', gap: 8 }} key={p.id}>
+              <span className="row gap-8" style={{ fontSize: 13.5 }}>
+                <span style={{ width: 14, height: 14, borderRadius: 4, background: p.color || p.tokens['--brand'] }} />
+                {p.name} <span className="faint">({p.id} v{p.version})</span>
+              </span>
+              <span className="row gap-6">
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => exportOne(p)}>导出</button>
+                <button type="button" className="btn btn-ghost btn-sm danger" onClick={() => remove(p.id)}>删除</button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      <textarea className="inp" value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} spellCheck={false}
+        placeholder={'{\n  "id": "ocean",\n  "name": "深海蓝",\n  "version": "1.0.0",\n  "tokens": { "--brand": "#0e7490", "--brand-strong": "#155e75", "--page": "#f0f9ff" }\n}'}
+        style={{ marginTop: 12, fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, lineHeight: 1.5 }} />
+      {editErr && <div className="form-err" style={{ marginTop: 8 }}>{editErr}</div>}
+      {preview && <div className="faint" style={{ marginTop: 8, fontSize: 12.5 }}>预览中：{preview.name}（仅后台沙箱，点「导入」再保存）</div>}
+      <div className="row gap-8" style={{ marginTop: 10, flexWrap: 'wrap' }}>
+        <button type="button" className="btn btn-sm" onClick={applyPreview}>预览</button>
+        <button type="button" className="btn btn-primary btn-sm" onClick={importJson} disabled={!draft.trim()}>导入到列表</button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => {
+          const el = document.getElementById('theme-admin-preview');
+          if (el) el.textContent = '';
+          setPreview(null);
+        }}>清除预览</button>
+      </div>
+    </div>
+  );
+}
+
+function PagesContent() {
+  const toast = useToast();
+  const [cfg, setCfg] = useState<Record<string, string> | null>(null);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { api.get('/admin/config').then(({ data }) => setCfg(data.config)).catch(() => setCfg({})); }, []);
+  const setK = (k: string, v: string) => setCfg((c) => ({ ...(c || {}), [k]: v }));
+  const save = async () => {
+    setSaving(true);
+    try { await api.put('/admin/config', { config: cfg }); toast.ok('页面内容已保存'); }
+    catch (e: any) { toast.err(e.message); }
+    finally { setSaving(false); }
+  };
+  if (cfg === null) return <RowSkeleton rows={6} />;
+  const pages: [string, string, string, string][] = [
+    ['about', '关于页', 'about_content', 'page_about_on'],
+    ['changelog', '更新日志', 'changelog_content', 'page_changelog_on'],
+    ['roadmap', '开发计划', 'roadmap_content', 'page_roadmap_on'],
+  ];
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>页面内容与开关</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>
+          Markdown 内容非空则覆盖内置；留空回退内置。关闭开关会隐藏入口并拦截路由。支持安全 markdown，禁止裸 HTML。
+        </div>
+        {pages.map(([, label, contentKey, toggleKey]) => (
+          <div key={contentKey} style={{ marginTop: 18 }}>
+            <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 13.5 }}>{label}</span>
+              <label className="row gap-8" style={{ fontSize: 13 }}>
+                启用
+                <Toggle on={(cfg[toggleKey] ?? '1') !== '0'} onChange={(v) => setK(toggleKey, v ? '1' : '0')} />
+              </label>
+            </div>
+            <textarea className="inp" maxLength={20000} rows={8} value={cfg[contentKey] ?? ''}
+              onChange={(e) => setK(contentKey, e.target.value)}
+              placeholder={`${label} Markdown（留空用内置）`}
+              style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, lineHeight: 1.55 }} />
+          </div>
+        ))}
+      </div>
+      <div className="row" style={{ justifyContent: 'flex-end' }}>
+        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存页面内容'}</button>
+      </div>
+    </div>
+  );
+}
+
+function StorageAdmin() {
+  const toast = useToast();
+  const [cfg, setCfg] = useState<Record<string, string> | null>(null);
+  const [secrets, setSecrets] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  useEffect(() => {
+    api.get('/admin/config').then(({ data }) => {
+      setCfg(data.config || {});
+      setSecrets(data.secretsSet || {});
+    }).catch(() => setCfg({}));
+  }, []);
+  const setK = (k: string, v: string) => setCfg((c) => ({ ...(c || {}), [k]: v }));
+  const save = async () => {
+    setSaving(true);
+    try {
+      await api.put('/admin/config', { config: cfg });
+      toast.ok('存储配置已保存');
+      const { data } = await api.get('/admin/config');
+      setCfg(data.config || {});
+      setSecrets(data.secretsSet || {});
+    } catch (e: any) { toast.err(e.message); }
+    finally { setSaving(false); }
+  };
+  const test = async () => {
+    setTesting(true);
+    try {
+      const { data } = await api.post('/admin/storage/test');
+      if (data.ok) toast.ok(data.message || '连接成功');
+      else toast.err(data.message || '连接失败');
+    } catch (e: any) { toast.err(e.message); }
+    finally { setTesting(false); }
+  };
+  if (cfg === null) return <RowSkeleton rows={6} />;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="ui-card" style={{ padding: 18 }}>
+        <div style={{ fontWeight: 700, fontSize: 14.5 }}>对象存储</div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>
+          支持 S3 兼容网关（含七牛 Kodo：endpoint 如 https://s3-cn-east-1.qiniucs.com，public_url 填 CDN 域名）。凭据仅后台可见且掩码，绝不进入公开站点配置。留空密钥 = 保留原值。未配时回退环境变量。
+        </div>
+        <div className="sec-grid" style={{ marginTop: 14 }}>
+          <label className="sec-field">
+            <span className="sec-label">存储驱动</span>
+            <select className="inp" value={cfg.storage_driver || 'local'} onChange={(e) => setK('storage_driver', e.target.value)}>
+              <option value="local">本地磁盘</option>
+              <option value="s3">S3 兼容</option>
+            </select>
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">S3 Endpoint</span>
+            <input className="inp" value={cfg.s3_endpoint ?? ''} onChange={(e) => setK('s3_endpoint', e.target.value)} placeholder="https://s3-cn-east-1.qiniucs.com" />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Bucket</span>
+            <input className="inp" value={cfg.s3_bucket ?? ''} onChange={(e) => setK('s3_bucket', e.target.value)} placeholder="hahasns" />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Region</span>
+            <input className="inp" value={cfg.s3_region ?? ''} onChange={(e) => setK('s3_region', e.target.value)} placeholder="cn-east-1" />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Public URL（CDN）</span>
+            <input className="inp" value={cfg.s3_public_url ?? ''} onChange={(e) => setK('s3_public_url', e.target.value)} placeholder="https://cdn.example.com" />
+          </label>
+          <label className="sec-field row gap-8" style={{ alignItems: 'center' }}>
+            <input type="checkbox" checked={(cfg.s3_force_path_style ?? '0') === '1'} onChange={(e) => setK('s3_force_path_style', e.target.checked ? '1' : '0')} />
+            <span className="sec-label" style={{ margin: 0 }}>Force path style（部分 MinIO 需要；七牛通常关）</span>
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Access Key {secrets.s3_access_key ? '（已配置）' : ''}</span>
+            <input className="inp" type="password" autoComplete="new-password"
+              value={cfg.s3_access_key ?? ''} onChange={(e) => setK('s3_access_key', e.target.value)}
+              placeholder={secrets.s3_access_key ? '••••（留空保留）' : 'Access Key'} />
+          </label>
+          <label className="sec-field">
+            <span className="sec-label">Secret Key {secrets.s3_secret_key ? '（已配置）' : ''}</span>
+            <input className="inp" type="password" autoComplete="new-password"
+              value={cfg.s3_secret_key ?? ''} onChange={(e) => setK('s3_secret_key', e.target.value)}
+              placeholder={secrets.s3_secret_key ? '••••（留空保留）' : 'Secret Key'} />
+          </label>
+        </div>
+        <div className="faint" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.6 }}>
+          存量迁移（默认 dry-run）：
+          <code style={{ display: 'block', marginTop: 6, padding: 8, background: 'var(--surface-2)', borderRadius: 6 }}>
+            node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
+            node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
+          </code>
+        </div>
+      </div>
+      <div className="row gap-8" style={{ justifyContent: 'flex-end' }}>
+        <button className="btn btn-outline" onClick={test} disabled={testing}>{testing ? '测试中…' : '测试连接'}</button>
+        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存存储配置'}</button>
       </div>
     </div>
   );
@@ -2373,6 +2643,8 @@ export default function Admin() {
           {tab === 'modules' && <Modules />}
           {tab === 'layout' && <Layouts />}
           {tab === 'appearance' && <Appearance />}
+          {tab === 'pages' && <PagesContent />}
+          {tab === 'storage' && <StorageAdmin />}
           {tab === 'audit' && <AuditLog />}
           {tab === 'system' && <SystemAdmin />}
         </div>

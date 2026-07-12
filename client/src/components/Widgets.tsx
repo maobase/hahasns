@@ -8,6 +8,7 @@ import FollowButton from './FollowButton';
 import { Badges } from './Identity';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
+import { footerLinksOf, pageChangelogRouteOpen } from '../lib/pageEntries';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -165,15 +166,22 @@ export function QAWidget() {
 
 export function Footer() {
   const site = useSite();
+  // 与 App PageGate 一致：关页不出现入口（含「问题反馈」）
+  const links = footerLinksOf(site);
+  const changelogRouteOpen = pageChangelogRouteOpen(site);
   return (
     <div style={{ padding: '8px 14px', fontSize: 12, color: 'var(--ink-4)', lineHeight: 1.8 }}>
       <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-        <Link to="/changelog" style={{ color: 'var(--ink-3)' }}>更新日志</Link><span>·</span>
-        <Link to="/changelog" style={{ color: 'var(--ink-3)' }}>开发计划</Link><span>·</span>
-        <Link to="/changelog" style={{ color: 'var(--ink-3)' }}>问题反馈</Link><span>·</span>
-        <Link to="/about" style={{ color: 'var(--ink-3)' }}>关于</Link><span>·</span><span>隐私</span>
+        {links.map((l, i) => (
+          <span key={`${l.label}-${i}`} className="row gap-8">
+            {i > 0 && <span>·</span>}
+            <Link to={l.to} style={{ color: 'var(--ink-3)' }}>{l.label}</Link>
+          </span>
+        ))}
+        {links.length > 0 && <span>·</span>}
+        <span>隐私</span>
       </div>
-      <div style={{ marginTop: 6 }}>{site.footerText || '© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区'} · <Link to="/changelog" className="num" style={{ color: 'var(--ink-3)' }}>{APP_VERSION}</Link></div>
+      <div style={{ marginTop: 6 }}>{site.footerText || '© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区'} · {changelogRouteOpen ? <Link to="/changelog" className="num" style={{ color: 'var(--ink-3)' }}>{APP_VERSION}</Link> : <span className="num">{APP_VERSION}</span>}</div>
       {site.icpBeian && <div style={{ marginTop: 4 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'var(--ink-4)' }}>{site.icpBeian}</a></div>}
     </div>
   );

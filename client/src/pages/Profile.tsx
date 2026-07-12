@@ -13,6 +13,7 @@ import { CheckinRank, TrendingSearch, Footer } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useCompose } from '../context/ComposeContext';
+import { useSite, moduleOn, widgetOn } from '../context/SiteContext';
 import api from '../api/client';
 import { confirmDialog } from '../components/confirm';
 import { reportDialog } from '../components/report';
@@ -51,6 +52,7 @@ export default function Profile() {
   const { user: me, setAuthOpen } = useAuth();
   const toast = useToast();
   const { openCompose } = useCompose();
+  const { modules, widgets } = useSite();
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -151,7 +153,13 @@ export default function Profile() {
 
   const lp = user.levelProgress || { percent: 0, level: user.level, nextLevelExp: 0, exp: 0 };
 
-  const right = (<><CheckinRank /><TrendingSearch /><Footer /></>);
+  const right = (
+    <>
+      {moduleOn(modules, 'checkin') && widgetOn(widgets, 'checkin') && <CheckinRank />}
+      {widgetOn(widgets, 'trending') && <TrendingSearch />}
+      <Footer />
+    </>
+  );
 
   return (
     <Shell right={right}>

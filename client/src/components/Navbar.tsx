@@ -7,13 +7,13 @@ import MobileDrawer from './MobileDrawer';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
-import { useSite } from '../context/SiteContext';
+import { useSite, moduleOn } from '../context/SiteContext';
 import api from '../api/client';
 
 export function BrandMark({ size = 33, logo }: { size?: number; logo?: string }) {
   if (logo) {
-    return <img className="brand-mark brand-mark-img" src={logo} alt="" width={size} height={size}
-      style={{ width: size, height: size }} aria-hidden />;
+    return <img className="brand-mark brand-mark-img" src={logo} alt=""
+      style={{ height: size, width: 'auto', ['--brand-logo-h' as string]: `${size}px` }} aria-hidden />;
   }
   return (
     <span className="brand-mark" style={{ width: size, height: size }} aria-hidden>
@@ -24,10 +24,25 @@ export function BrandMark({ size = 33, logo }: { size?: number; logo?: string })
   );
 }
 
-// 站名渲染：默认 HahaSNS 保留 Haha/SNS 双色，自定义名则整体高亮。
+// 站名渲染：默认名含 Haha + SNS 时保留双色；其它自定义名整体高亮。
 export function BrandName({ name }: { name: string }) {
-  if (name === 'HahaSNS') return <span className="brand-name"><b>Haha</b><span>SNS</span></span>;
+  const m = name.match(/^(.*)(SNS)$/i);
+  if (m && m[1]) {
+    return <span className="brand-name"><b>{m[1]}</b><span>{m[2]}</span></span>;
+  }
   return <span className="brand-name"><b>{name}</b></span>;
+}
+
+/** LOGO 高度 clamp 到 [24,64]，缺省 33。纯函数便于单测。 */
+export function logoHeightOf(h?: number | null): number {
+  const n = Number(h);
+  if (!Number.isFinite(n)) return 33;
+  return Math.max(24, Math.min(64, Math.round(n)));
+}
+
+/** 有 logo 且 logoOnly 时只显图；否则 LOGO+文字。 */
+export function showBrandText(logo: string | undefined, logoOnly: boolean | undefined): boolean {
+  return !(logoOnly && !!logo);
 }
 
 export default function Navbar() {
@@ -85,14 +100,18 @@ export default function Navbar() {
       <div className="nav-inner">
         <button type="button" className="nav-burger" onClick={() => setDrawerOpen(true)} aria-label="打开菜单"><Icon name="menu" size={22} /></button>
         <Link to="/" className="brand">
-          <BrandMark logo={site.logo} />
-          <BrandName name={site.name} />
+          <BrandMark logo={site.logo} size={logoHeightOf(site.logoHeight)} />
+          {showBrandText(site.logo, site.logoOnly) && <BrandName name={site.name} />}
         </Link>
 
         <nav className="nav-links">
           <NavLink to="/" end className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Icon name="home" size={18} /> 首页</NavLink>
-          <NavLink to="/discover" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Icon name="compass" size={18} /> 发现</NavLink>
-          <NavLink to="/forum" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Icon name="forum" size={18} /> 论坛</NavLink>
+          {moduleOn(site.modules, 'discover') && (
+            <NavLink to="/discover" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Icon name="compass" size={18} /> 发现</NavLink>
+          )}
+          {moduleOn(site.modules, 'forum') && (
+            <NavLink to="/forum" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}><Icon name="forum" size={18} /> 论坛</NavLink>
+          )}
         </nav>
 
         <div className="spacer" />

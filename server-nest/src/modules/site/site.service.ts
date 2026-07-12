@@ -62,6 +62,8 @@ export class SiteService {
       name: cfg.get('site_name') || 'HahaSNS',
       slogan: cfg.get('site_slogan') || '轻社交社区',
       logo: cfg.get('site_logo') || '',
+      logoOnly: cfg.get('site_logo_only') === '1',
+      logoHeight: Math.max(24, Math.min(64, Number(cfg.get('site_logo_height')) || 33)),
       favicon: cfg.get('site_favicon') || '',
       customCss: cfg.get('site_custom_css') || '',
       footerText: cfg.get('footer_text') || '',
@@ -70,6 +72,7 @@ export class SiteService {
       reportReasons: cfg.get('report_reasons') || '',
       registrationEnabled: (cfg.get('registration_enabled') ?? '1') !== '0',
       inviteRequired: cfg.get('invite_required') === '1',
+      allowGuest: cfg.get('allow_guest') === '1',
       uploadMaxImages: Number(cfg.get('upload_max_images')) || 9,
       uploadMaxSizeMb: Number(cfg.get('upload_max_size_mb')) || 25,
       paidPriceMax: Number(cfg.get('paid_price_max')) || 100000,
@@ -78,6 +81,17 @@ export class SiteService {
       defaultSkin: cfg.get('default_skin') || '',
       defaultMode: cfg.get('default_mode') || '',
       defaultStyle: cfg.get('default_style') || '',
+      // 页面内容：非空覆盖内置；开关默认开
+      aboutContent: cfg.get('about_content') || '',
+      roadmapContent: cfg.get('roadmap_content') || '',
+      changelogContent: cfg.get('changelog_content') || '',
+      pageAboutOn: (cfg.get('page_about_on') ?? '1') !== '0',
+      pageRoadmapOn: (cfg.get('page_roadmap_on') ?? '1') !== '0',
+      pageChangelogOn: (cfg.get('page_changelog_on') ?? '1') !== '0',
+      // 首页布局 list|waterfall；非法→list
+      feedLayout: (cfg.get('feed_layout') || '').toLowerCase() === 'waterfall' ? 'waterfall' : 'list',
+      // 自定义主题 JSON 字符串（前端 parseCustomThemes）；坏数据前端回退
+      customThemes: cfg.get('custom_themes') || '',
       // 自定义导航外链（波D）：每行「标题|网址」→ {label,url}；网址须 http(s):// 或 /开头，非法行跳过，最多 8 条
       customNavLinks: (cfg.get('custom_nav_links') || '')
         .split('\n')

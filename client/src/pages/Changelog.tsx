@@ -5,7 +5,8 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
-import { useLayout } from '../context/SiteContext';
+import { useLayout, useSite } from '../context/SiteContext';
+import SafeMarkdown from '../components/SafeMarkdown';
 import api from '../api/client';
 import { timeAgo } from '../lib/format';
 
@@ -24,6 +25,20 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 const RELEASES = [
+  {
+    ver: 'v5.33', date: '2026-07-12 11:52:54', items: [
+      ['feat', '对象存储后台可配：新增「存储」设置，可在后台切到 S3 兼容对象存储（七牛云 Kodo 等），填端点 / 桶 / 密钥即可把新上传的图片视频转存到对象存储，缓解服务器磁盘压力；密钥仅后台可写、不回显、不外泄。配套迁移脚本可搬运历史文件。'],
+      ['feat', '游客浏览模式：后台开启后，登录页出现「游客浏览」入口，未登录也能逛动态与社区；发帖 / 评论 / 私信仍需登录，会员中心等页面照常引导登录。默认关闭，行为与此前一致。'],
+      ['feat', '关于 / 更新日志 / 开发计划 三页后台可编辑、可隐藏：站长可填自己的内容（留空用内置），或一键隐藏不需要的页面。'],
+      ['feat', 'LOGO 显示增强：可设「仅显示 LOGO 隐藏站名文字」，并可调整 LOGO 高度，品牌展示更清爽。'],
+      ['feat', '首页新增瀑布流布局：后台可切「列表 / 瀑布流」，瀑布流下正文区错落两栏（默认列表，不影响现有观感）。'],
+      ['feat', '主题模板：支持导入 / 导出命名主题包，一套配色打包分享、一键套用；含完整语义色注入与坏数据回退保护。'],
+      ['fix', '模块开关堵漏：后台关闭某模块后，顶栏、论坛 / 个人页右栏挂件、专题入口、AI 直链等残留一并隐藏或拦截，不再「关了还显示」。'],
+      ['fix', '图片 / 视频显示居中：单图与视频此前偏左，现水平居中。'],
+      ['fix', 'ICP 备案号全站底部可见（含移动端），填写后链到工信部；后台底部内容区对齐修正。'],
+      ['fix', '自定义主题刷新后不再丢失：修复选中自定义主题一刷新就回退默认、并覆盖已存偏好的问题。'],
+    ],
+  },
   {
     ver: 'v5.32', date: '2026-07-07 09:48:30', items: [
       ['feat', '登录页新增「忘记密码？」入口：点开即说明找回方式（本站暂未内置邮箱自助找回，请联系站点管理员在后台重置登录密码），不再让忘记密码的用户无处可去。'],
@@ -1898,6 +1913,7 @@ function ReleaseCard({ r }: { r: any }) {
 export default function Changelog() {
   const toast = useToast();
   const { user, setAuthOpen } = useAuth();
+  const site = useSite();
   const layout = useLayout('changelog', 'narrow');
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
@@ -1919,6 +1935,11 @@ export default function Changelog() {
     finally { setBusy(false); }
   };
 
+  const showLog = site.pageChangelogOn !== false;
+  const showRoadmap = site.pageRoadmapOn !== false;
+  const customLog = (site.changelogContent || '').trim();
+  const customRoadmap = (site.roadmapContent || '').trim();
+
   return (
     <Shell layout={layout}>
       <Card shadow="sm" radius="lg" className="mb-4 border border-default-200 bg-gradient-to-br from-primary-50 to-content1">
@@ -1931,13 +1952,22 @@ export default function Changelog() {
       </Card>
 
       <Tabs aria-label="更新与反馈" color="primary" variant="solid" radius="lg" fullWidth size="lg">
+        {showLog && (
         <Tab key="log" title="更新日志">
-          <div className="mt-3">{RELEASES.map((r) => <ReleaseCard key={r.ver} r={r} />)}</div>
+          <div className="mt-3">
+            {customLog
+              ? <Card shadow="sm" radius="lg" className="border border-default-200"><CardBody><SafeMarkdown source={customLog} /></CardBody></Card>
+              : RELEASES.map((r) => <ReleaseCard key={r.ver} r={r} />)}
+          </div>
         </Tab>
+        )}
 
+        {showRoadmap && (
         <Tab key="roadmap" title="开发计划">
           <div className="mt-3 flex flex-col gap-3">
-            {ROADMAP.map((g) => (
+            {customRoadmap
+              ? <Card shadow="sm" radius="lg" className="border border-default-200"><CardBody><SafeMarkdown source={customRoadmap} /></CardBody></Card>
+              : ROADMAP.map((g) => (
               <Card key={g.label} shadow="sm" radius="lg" className="border border-default-200">
                 <CardHeader className="pb-1"><Chip color={g.color} variant="flat" className="font-bold">{g.label}</Chip></CardHeader>
                 <CardBody className="pt-1 flex flex-col gap-2">
@@ -1952,6 +1982,7 @@ export default function Changelog() {
             ))}
           </div>
         </Tab>
+        )}
 
         <Tab key="feedback" title={`问题反馈${list?.length ? ` (${list.length})` : ''}`}>
           <Card shadow="sm" radius="lg" className="mt-3 border border-default-200">

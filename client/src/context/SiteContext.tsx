@@ -8,6 +8,8 @@ export interface SiteConfig {
   name: string;
   slogan: string;
   logo: string;
+  logoOnly: boolean;  // 有 logo 时只显图隐藏站名；默认 false
+  logoHeight: number; // LOGO 高度 px，默认 33，范围 [24,64]
   favicon: string;   // 浏览器标签图标 URL（走对象存储 / 图床）；留空用 index.html 内置 SVG
   customCss: string;
   footerText: string; // 页脚版权文案；空 = 用内置默认
@@ -16,6 +18,15 @@ export interface SiteConfig {
   reportReasons: string; // 举报理由（换行分隔）；空 = 用内置默认
   registrationEnabled: boolean; // 注册开关；默认 true
   inviteRequired: boolean;      // 邀请码必填；默认 false
+  allowGuest: boolean;          // 游客浏览；默认 false
+  aboutContent: string;
+  roadmapContent: string;
+  changelogContent: string;
+  pageAboutOn: boolean;
+  pageRoadmapOn: boolean;
+  pageChangelogOn: boolean;
+  feedLayout: string;
+  customThemes: string;
   uploadMaxImages: number;      // 单次最多上传张数；默认 9
   uploadMaxSizeMb: number;      // 单文件最大 MB；默认 25
   paidPriceMax: number;         // 付费内容价格上限（积分）；默认 100000
@@ -33,9 +44,21 @@ export interface SiteConfig {
   modules: Record<string, boolean>; // 模块市场 (C)：模块开关；缺省视为开启
   layouts: Record<string, string>;  // 布局市场：每页布局 default|wide|narrow；缺省=各页内置默认
   payments?: { alipay?: boolean; wechat?: boolean; epay?: boolean }; // 已启用的支付网关（仅布尔，无密钥）
+  loaded: boolean; // /api/site 是否已返回；主题恢复要等它为真，避免把未加载的自定义皮肤误判为非法
 }
 
-const DEFAULTS: SiteConfig = { name: 'HahaSNS', slogan: '轻社交社区', logo: '', favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '', registrationEnabled: true, inviteRequired: false, uploadMaxImages: 9, uploadMaxSizeMb: 25, paidPriceMax: 100000, landingTitle: '', landingSubtitle: '', defaultSkin: '', defaultMode: '', defaultStyle: '', homeTabs: {}, widgets: {}, vipPrices: {}, vipTiers: {}, customNavLinks: [], navLabels: {}, modules: {}, layouts: {}, payments: {} };
+const DEFAULTS: SiteConfig = {
+  name: 'HahaSNS', slogan: '轻社交社区', logo: '', logoOnly: false, logoHeight: 33,
+  favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '',
+  registrationEnabled: true, inviteRequired: false, allowGuest: false,
+  aboutContent: '', roadmapContent: '', changelogContent: '',
+  pageAboutOn: true, pageRoadmapOn: true, pageChangelogOn: true,
+  feedLayout: 'list', customThemes: '',
+  uploadMaxImages: 9, uploadMaxSizeMb: 25, paidPriceMax: 100000,
+  landingTitle: '', landingSubtitle: '', defaultSkin: '', defaultMode: '', defaultStyle: '',
+  homeTabs: {}, widgets: {}, vipPrices: {}, vipTiers: {}, customNavLinks: [], navLabels: {},
+  modules: {}, layouts: {}, payments: {}, loaded: false,
+};
 
 // 模块是否开启：只有显式 false 才隐藏（取不到配置时默认全开，绝不误伤导航）
 export function moduleOn(modules: Record<string, boolean> | undefined, key?: string) {
@@ -61,8 +84,11 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true;
     api.get('/site')
-      .then(({ data }) => { if (alive && data) setSite({ ...DEFAULTS, ...data }); })
-      .catch(() => { /* 取不到就用内置默认，不阻塞首屏 */ });
+      .then(({ data }) => {
+        if (!alive) return;
+        setSite(data ? { ...DEFAULTS, ...data, loaded: true } : (s) => ({ ...s, loaded: true }));
+      })
+      .catch(() => { if (alive) setSite((s) => ({ ...s, loaded: true })); }); // 取不到就用内置默认，仍标记已加载，避免主题恢复一直挂起
     return () => { alive = false; };
   }, []);
 

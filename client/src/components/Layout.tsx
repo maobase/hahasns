@@ -13,12 +13,13 @@ import { Empty } from './States';
 type TitleLabel = string | ((m: RegExpMatchArray) => string);
 
 // 模块市场 (C)：路径 → 模块 key。后台关闭模块后，直接访问其 URL 也拦截（route 守卫，闭环 v2.83）。
-const MODULE_PATHS: [RegExp, string][] = [
+// collections 归入 articles；ai 补齐，关模块后直链也拦。
+export const MODULE_PATHS: [RegExp, string][] = [
   [/^\/discover|^\/topic\//, 'discover'],
   [/^\/circles|^\/circle\//, 'circles'],
   [/^\/qa/, 'qa'],
   [/^\/flash/, 'flash'],
-  [/^\/articles|^\/article\/|^\/write/, 'articles'],
+  [/^\/articles|^\/article\/|^\/write|^\/collections|^\/collection\//, 'articles'],
   [/^\/events|^\/event\//, 'events'],
   [/^\/nav/, 'nav'],
   [/^\/forum|^\/thread\//, 'forum'],
@@ -27,8 +28,9 @@ const MODULE_PATHS: [RegExp, string][] = [
   [/^\/checkin/, 'checkin'],
   [/^\/lottery/, 'lottery'],
   [/^\/mall/, 'mall'],
+  [/^\/ai/, 'ai'],
 ];
-function moduleForPath(path: string): string | null {
+export function moduleForPath(path: string): string | null {
   for (const [re, k] of MODULE_PATHS) if (re.test(path)) return k;
   return null;
 }
@@ -116,6 +118,12 @@ export default function Layout() {
           <Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Outlet /></Suspense>
         </ErrorBoundary>
       )}
+      {/* 全局 ICP 条：移动端/无右栏页也能看到备案号；空值不占位 */}
+      {site.icpBeian ? (
+        <div className="site-icp-bar">
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener">{site.icpBeian}</a>
+        </div>
+      ) : null}
       <TabBar />
       <AuthModal />
       <BackToTop />

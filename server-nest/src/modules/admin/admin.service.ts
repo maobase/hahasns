@@ -43,6 +43,10 @@ const TOGGLE_KEYS = [
   'demo_recharge_enabled', // 演示充值开关：开=可模拟充值/开通会员（免真实支付，默认开，未配置视为开）；关=必须走真实支付渠道
   'home_tab_video', 'home_tab_samecity', 'home_tab_following', // 首页信息流可选 tab 开关（默认开，未配置视为开）
   'widget_hottopics', 'widget_qa', 'widget_circle', 'widget_flash', 'widget_whotofollow', 'widget_checkin', 'widget_trending', // 右栏挂件开关（默认开；与模块开关叠加，可只藏挂件保留模块）
+  'site_logo_only', // LOGO 独占：有 logo 时隐藏站名文字（默认关）
+  'allow_guest', // 游客浏览：登录页显示「游客浏览」按钮（默认关=强制登录）
+  'page_about_on', 'page_roadmap_on', 'page_changelog_on', // 关于/路线图/更新日志页开关（默认开）
+  's3_force_path_style', // S3 兼容 path-style（七牛等部分网关）
   ...MODULE_KEYS.map((k) => `module_${k}`), // 模块市场 (C)：各可选模块开关
 ];
 // 数值型：key → [min, max]，超界 clamp
@@ -80,6 +84,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   // 成就徽章「累计」类解锁阈值（里程碑/vip 型不可调）
   badge_writer_threshold: [1, 1000000], badge_voter_threshold: [1, 1000000], badge_checkin7_threshold: [1, 3650],
   badge_social_threshold: [1, 100000000], badge_popular_threshold: [1, 100000000],
+  // LOGO 高度 px（默认 33）
+  site_logo_height: [24, 64],
 };
 // 字符串型（站点外观自定义 W + 支付网关凭据）：key → 最大长度，超长截断
 const STR_KEYS: Record<string, number> = {
@@ -99,12 +105,28 @@ const STR_KEYS: Record<string, number> = {
   pay_alipay_appid: 64, pay_alipay_key: 4000, pay_alipay_public_key: 2000, pay_alipay_gateway: 200,
   pay_wechat_appid: 64, pay_wechat_mchid: 64, pay_wechat_key: 200, pay_wechat_private_key: 4000, pay_wechat_serial: 80,
   pay_epay_pid: 64, pay_epay_key: 200, pay_epay_url: 200,
+  // 对象存储（后台可配；凭据进 SECRET_KEYS，绝不进 getSite）
+  storage_driver: 16, s3_endpoint: 300, s3_bucket: 120, s3_region: 64, s3_public_url: 300,
+  s3_access_key: 200, s3_secret_key: 200,
+  // 页面内容 markdown（空=回退内置；开关见 page_*_on）
+  about_content: 20000, roadmap_content: 20000, changelog_content: 20000,
+  // 首页信息流布局 list|waterfall；自定义主题 JSON 数组
+  feed_layout: 16, custom_themes: 100000,
 };
+// 敏感凭据：GET /config 不回显原值；PUT 留空=保留；绝不进 getSite
+export const SECRET_KEYS = new Set([
+  'pay_alipay_key', 'pay_wechat_key', 'pay_wechat_private_key', 'pay_epay_key',
+  's3_access_key', 's3_secret_key',
+]);
+/** 公开 getSite 绝不可出现的键（测试锁死） */
+export const PUBLIC_SITE_FORBIDDEN_KEYS = [
+  's3_access_key', 's3_secret_key', 'pay_alipay_key', 'pay_wechat_key',
+  'pay_wechat_private_key', 'pay_epay_key',
+];
 // 布局型（按页面）：key=layout_<page>，值只允许 default|wide|narrow（枚举校验）
 const LAYOUT_KEYS = LAYOUT_PAGES.map((k) => `layout_${k}`);
 const CONFIG_KEYS = [...TOGGLE_KEYS, ...Object.keys(NUM_KEYS), ...Object.keys(STR_KEYS), ...LAYOUT_KEYS];
-// 敏感凭据：GET /config 不回显原值（只告知是否已配置）；PUT 留空=保留原值，不覆盖。避免支付密钥明文回传浏览器。
-const SECRET_KEYS = new Set(['pay_alipay_key', 'pay_wechat_key', 'pay_wechat_private_key', 'pay_epay_key']);
+// SECRET_KEYS 已在 STR_KEYS 后声明
 
 // 管理操作中文标签（审计日志展示用）。Mirrors server/src/routes/admin.js ACTION_LABEL
 const ACTION_LABEL: Record<string, string> = {
@@ -202,8 +224,43 @@ export class AdminService {
     for (const [k, max] of Object.entries(STR_KEYS)) {
       if (k in updates) {
         const val = String(updates[k] ?? '');
-        // 密钥字段留空 = 保持原值（不覆盖），避免「未改动即清空」误删凭据
-        if (SECRET_KEYS.has(k) && val === '') continue;
+        // 密钥字段留空/占位 = 保持原值（不覆盖），避免「未改动即清空」误删凭据
+        if (SECRET_KEYS.has(k) && (val === '' || val === '••••' || /^•+$/.test(val))) continue;
+        // feed_layout 枚举
+        if (k === 'feed_layout') {
+          const fl = val.toLowerCase() === 'waterfall' ? 'waterfall' : 'list';
+          await this.site.setConfig(k, fl);
+          changed.push(k);
+          continue;
+        }
+        // storage_driver 枚举
+        if (k === 'storage_driver') {
+          const d = val.toLowerCase() === 's3' ? 's3' : 'local';
+          await this.site.setConfig(k, d);
+          changed.push(k);
+          continue;
+        }
+        // custom_themes：必须是 JSON 数组；坏数据拒绝
+        if (k === 'custom_themes') {
+          if (val.trim()) {
+            let parsed: unknown;
+            try { parsed = JSON.parse(val); } catch {
+              throw new BadRequestException('自定义主题必须是合法 JSON 数组');
+            }
+            if (!Array.isArray(parsed)) {
+              throw new BadRequestException('自定义主题必须是 JSON 数组');
+            }
+            // 轻量字段检查（完整 schema 在前端/测试；此处防明显坏包）
+            for (const item of parsed as any[]) {
+              if (!item || typeof item !== 'object' || !item.id || !item.name || !item.tokens) {
+                throw new BadRequestException('主题包缺少 id/name/tokens');
+              }
+            }
+          }
+          await this.site.setConfig(k, val.slice(0, max));
+          changed.push(k);
+          continue;
+        }
         await this.site.setConfig(k, val.slice(0, max));
         changed.push(k);
       }

@@ -16,10 +16,15 @@
   background: linear-gradient(150deg, #4d86ff, var(--brand) 60%, var(--brand-strong));
   color: #fff; font-size: 18px;
   box-shadow: var(--shadow-brand), inset 0 1px 0 rgba(255,255,255,.35);
+  flex-shrink: 0;
 }
 .brand:hover .brand-mark { transform: rotate(-6deg) scale(1.04); transition: transform .2s var(--ease-out, ease); }
-/* 自定义 Logo 图片（站点外观自定义 W）：保留圆角，去掉渐变底/内阴影，按容器裁切 */
-.brand-mark-img { background: none; box-shadow: none; object-fit: cover; padding: 0; }
+/* 自定义 Logo 图片：高度可调（site_logo_height），宽度 auto 保持比例，去掉方形锁定 */
+.brand-mark-img {
+  background: none; box-shadow: none; object-fit: contain; padding: 0;
+  width: auto !important; height: var(--brand-logo-h, 33px); max-height: 64px;
+  border-radius: 10px;
+}
 .brand-name b { color: var(--ink); }
 .brand-name span { color: var(--brand); }
 
@@ -85,6 +90,37 @@
 .col-left::-webkit-scrollbar-track, .col-right::-webkit-scrollbar-track { background: transparent; }
 .col-center { min-width: 0; display: flex; flex-direction: column; gap: var(--gap); }
 .col-center > * { min-width: 0; max-width: 100%; }  /* keep any child from overflowing the feed column */
+
+/* 首页瀑布流：吸收右栏后中列多栏；list 模式无此类 */
+.feed-list { display: flex; flex-direction: column; gap: var(--gap); }
+.feed-waterfall {
+  column-count: 2; column-gap: var(--gap);
+}
+.feed-waterfall-item {
+  break-inside: avoid; -webkit-column-break-inside: avoid;
+  margin-bottom: var(--gap); display: block;
+}
+.feed-waterfall .post-compact .post-body { font-size: 14px; line-height: 1.6; }
+.feed-waterfall .post-compact .media-grid.n1 { max-width: 100%; }
+.feed-waterfall .post-compact .media-video { max-width: 100%; }
+.feed-waterfall .post-compact .post-actions { flex-wrap: wrap; gap: 4px; }
+@media (min-width: 1100px) {
+  .feed-waterfall { column-count: 3; }
+}
+@media (max-width: 720px) {
+  .feed-waterfall { column-count: 1; }
+}
+
+/* 全站 ICP 备案条：主内容区底部，桌面+移动均可见；空值时组件不渲染 */
+.site-icp-bar {
+  max-width: 1180px; margin: 0 auto; padding: 8px 20px 20px;
+  text-align: center; font-size: 12px; color: var(--ink-4); line-height: 1.6;
+}
+.site-icp-bar a { color: inherit; text-decoration: none; }
+.site-icp-bar a:hover { color: var(--ink-3); text-decoration: underline; }
+@media (max-width: 720px) {
+  .site-icp-bar { padding: 8px 16px calc(16px + var(--tabbar-h, 56px)); }
+}
 
 /* ---------- Left rail nav ---------- */
 .rail { display: flex; flex-direction: column; gap: 2px; }

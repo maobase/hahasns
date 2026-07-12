@@ -8,6 +8,7 @@ import { Empty, RowSkeleton, ListEnd, LoadError } from '../components/States';
 import { HotTopics, TrendingSearch, Footer } from '../components/Widgets';
 import { BoardTile, BoardMini } from '../components/BoardIcon';
 import { useAuth } from '../context/AuthContext';
+import { useSite, moduleOn, widgetOn } from '../context/SiteContext';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
@@ -16,6 +17,7 @@ const SORTS = [{ key: 'latest', label: '最新回复' }, { key: 'hot', label: '�
 
 export default function Forum() {
   const { user, setAuthOpen } = useAuth();
+  const { modules, widgets } = useSite();
   const [boards, setBoards] = useState<any[]>([]);
   const [sort, setSort] = useState('latest');
   const [composeOpen, setComposeOpen] = useState(false);
@@ -55,8 +57,8 @@ export default function Forum() {
           </Link>
         ))}
       </div>
-      <HotTopics />
-      <TrendingSearch />
+      {moduleOn(modules, 'discover') && widgetOn(widgets, 'hottopics') && <HotTopics />}
+      {widgetOn(widgets, 'trending') && <TrendingSearch />}
       <Footer />
     </>
   );
