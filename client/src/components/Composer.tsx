@@ -30,6 +30,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const [content, setContent] = useState<string>(() => initialDraft?.content ?? prefill ?? '');
   const [media, setMedia] = useState<any[]>(() => initialDraft?.media ?? []);
   const maxImages = useSite().uploadMaxImages;
+  const maxSizeMb = useSite().uploadMaxSizeMb;
   const paidPriceMax = useSite().paidPriceMax;
   const [vis, setVis] = useState(() => initialDraft?.vis ?? 'public');
   const [price, setPrice] = useState<any>(50);
@@ -79,7 +80,11 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
     if (!files.length) return;
     const fd = new FormData();
     const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
-    picked.forEach((f) => fd.append('files', f));
+    // 后台可配「单文件最大 MB」：前端先拦超限文件，给友好提示，避免直接吃后端报错
+    const okFiles = picked.filter((f) => (f as Blob).size <= maxSizeMb * 1024 * 1024);
+    if (okFiles.length < picked.length) toast.err(`部分文件超过 ${maxSizeMb}MB，已跳过`);
+    if (!okFiles.length) { e.target.value = ''; return; }
+    okFiles.forEach((f) => fd.append('files', f));
     try {
       const { data } = await api.post('/upload', fd);
       setMedia((m) => [...m, ...data.files].slice(0, maxImages));
@@ -196,6 +201,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
     const raw = (ev.target.files || [])[0];
     if (!raw) return;
     const file = await shrinkImage(raw);
+    if ((file as Blob).size > maxSizeMb * 1024 * 1024) { toast.err(`文件超过 ${maxSizeMb}MB`); ev.target.value = ''; return; }
     const fd = new FormData();
     fd.append('files', file);
     try {

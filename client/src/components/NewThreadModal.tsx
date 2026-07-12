@@ -41,6 +41,7 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
   const [content, setContent] = useState('');
   const [media, setMedia] = useState<any[]>([]);
   const maxImages = useSite().uploadMaxImages;
+  const maxSizeMb = useSite().uploadMaxSizeMb;
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
@@ -68,7 +69,11 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
     if (!files.length) return;
     const fd = new FormData();
     const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
-    picked.forEach((f) => fd.append('files', f));
+    // 后台可配「单文件最大 MB」：前端先拦超限文件
+    const okFiles = picked.filter((f) => (f as Blob).size <= maxSizeMb * 1024 * 1024);
+    if (okFiles.length < picked.length) toast.err(`部分文件超过 ${maxSizeMb}MB，已跳过`);
+    if (!okFiles.length) { e.target.value = ''; return; }
+    okFiles.forEach((f) => fd.append('files', f));
     try { const { data } = await api.post('/upload', fd); setMedia((m) => [...m, ...data.files].slice(0, maxImages)); }
     catch (err: any) { toast.err(err.message); }
     e.target.value = '';
