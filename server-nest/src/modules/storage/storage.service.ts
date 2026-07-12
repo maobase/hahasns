@@ -28,6 +28,8 @@ export class StorageService implements OnModuleInit {
   private client: S3Client | null = null;
   private resolved: StorageResolvedConfig | null = null;
   private cfgHash = '';
+  private cfgAt = 0; // 上次从 site_config 读取配置的时间戳
+  private static readonly CONFIG_TTL_MS = 5000; // 配置缓存窗口：避免一次多图上传每文件都打 8 次 DB
 
   constructor(
     private readonly config: ConfigService,
@@ -83,8 +85,12 @@ export class StorageService implements OnModuleInit {
     }
   }
 
-  /** 从 site_config 刷新配置（env 回退）。 */
-  async refreshFromSite(): Promise<StorageResolvedConfig> {
+  /** 从 site_config 刷新配置（env 回退）。TTL 内复用上次结果，避免每文件重复读库；force=true 强制读最新（如后台「测试连接」）。 */
+  async refreshFromSite(force = false): Promise<StorageResolvedConfig> {
+    const now = Date.now();
+    if (!force && this.resolved && now - this.cfgAt < StorageService.CONFIG_TTL_MS) {
+      return this.resolved;
+    }
     const keys = [
       'storage_driver', 's3_endpoint', 's3_bucket', 's3_region',
       's3_public_url', 's3_force_path_style', 's3_access_key', 's3_secret_key',
@@ -106,6 +112,7 @@ export class StorageService implements OnModuleInit {
       S3_SECRET_KEY: envS3.secretKey || process.env.S3_SECRET_KEY,
     });
     this.applyConfig(cfg);
+    this.cfgAt = now;
     return cfg;
   }
 
@@ -201,7 +208,7 @@ export class StorageService implements OnModuleInit {
 
   /** 测试连接：上传并删除探针对象。 */
   async testConnection(): Promise<{ ok: boolean; message: string; driver: string }> {
-    const cfg = await this.refreshFromSite();
+    const cfg = await this.refreshFromSite(true);
     if (cfg.driver === 'local') {
       try {
         fs.mkdirSync(this.uploadsDir, { recursive: true });
