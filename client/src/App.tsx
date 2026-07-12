@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { useSite } from './context/SiteContext';
 import AuthLanding from './pages/AuthLanding';
 import Layout from './components/Layout';
+import { RAIL_ITEMS } from './components/LeftRail';
 import Home from './pages/Home';
 import Discover from './pages/Discover';
 import Topic from './pages/Topic';
@@ -46,18 +47,25 @@ import { ConfirmHost } from './components/confirm';
 import { ReportHost } from './components/report';
 import { PromptHost } from './components/prompt';
 
-/** 游客不可访问：会员/设置/私信/通知/书签/足迹/写文章/AI — 跳登录墙 */
-const LOGIN_REQUIRED_RE = /^\/(member|settings|messages|notifications|bookmarks|history|write|ai)(\/|$)/;
+// 游客不可访问（跳登录墙）：左栏所有 auth:true 项（AI/签到/任务/会员）+ 非左栏的个人页。
+// 从 RAIL_ITEMS 派生，避免与左栏 auth 标记漂移（此前 /checkin·/achievements 漏进 → 游客直链看到半坏页）。
+const LOGIN_REQUIRED_PATHS = [
+  ...RAIL_ITEMS.filter((it) => it.auth).map((it) => it.to),
+  '/settings', '/messages', '/notifications', '/bookmarks', '/history', '/write',
+];
+function loginRequired(pathname: string): boolean {
+  return LOGIN_REQUIRED_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
+}
 
 function GuestLoginGate({ children }: { children: React.ReactNode }) {
   const { user, isGuest, setAuthOpen } = useAuth();
   const loc = useLocation();
   useEffect(() => {
-    if (!user && isGuest && LOGIN_REQUIRED_RE.test(loc.pathname)) {
+    if (!user && isGuest && loginRequired(loc.pathname)) {
       setAuthOpen(true);
     }
   }, [user, isGuest, loc.pathname, setAuthOpen]);
-  if (!user && isGuest && LOGIN_REQUIRED_RE.test(loc.pathname)) {
+  if (!user && isGuest && loginRequired(loc.pathname)) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
