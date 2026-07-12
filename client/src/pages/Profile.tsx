@@ -207,7 +207,7 @@ export default function Profile() {
           <div className="profile-tags">
             {user.location && <span className="pt"><Icon name="location" size={14} /> {user.location}</span>}
             {user.verified && <span className="pt"><Icon name="check" size={14} style={{ color: 'var(--verify)' }} /> {user.verifiedNote || '认证用户'}</span>}
-            <span className="pt"><Icon name="checkin" size={14} /> 连续签到 {user.checkinStreak} 天</span>
+            {moduleOn(modules, 'checkin') && <span className="pt"><Icon name="checkin" size={14} /> 连续签到 {user.checkinStreak} 天</span>}
           </div>
 
           <div className="profile-stats">

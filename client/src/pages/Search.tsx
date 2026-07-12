@@ -8,6 +8,7 @@ import FollowButton from '../components/FollowButton';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
+import { useSite, moduleOn } from '../context/SiteContext';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -17,6 +18,7 @@ export default function Search() {
   const [sp] = useSearchParams();
   const nav = useNavigate();
   const { user: me } = useAuth();
+  const { modules } = useSite();
   const q = sp.get('q') || '';
   const [input, setInput] = useState(q);
   const [res, setRes] = useState<any>(null);
@@ -30,8 +32,12 @@ export default function Search() {
 
   useEffect(() => { setInput(q); }, [q]);
   useEffect(() => { api.get('/search/trending').then(({ data }) => setTrending(data.keywords)).catch(() => {}); }, []);
-  // 空态发现内容：热门话题，填充无搜索词时的空白区，让搜索页始终有可逛内容
-  useEffect(() => { api.get('/topics', { params: { limit: 8 } }).then(({ data }) => setHotTopics(data.topics || [])).catch(() => {}); }, []);
+  // 空态发现内容：热门话题，填充无搜索词时的空白区，让搜索页始终有可逛内容。
+  // 「话题」属发现模块——站长关闭发现时不拉取、不展示（否则会残留入口并深链到已关闭的 /discover）。
+  useEffect(() => {
+    if (!moduleOn(modules, 'discover')) { setHotTopics([]); return; }
+    api.get('/topics', { params: { limit: 8 } }).then(({ data }) => setHotTopics(data.topics || [])).catch(() => {});
+  }, [modules]);
   useEffect(() => {
     if (!q) { setRes(null); setError(false); setLoading(false); return; }
     setLoading(true); setError(false);
