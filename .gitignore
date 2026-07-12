@@ -26,3 +26,6 @@ deploy-sns.sh
 upgrade.env
 upgrade.log
 .upgrade-backups/
+
+# 存储迁移脚本的回滚清单（运行时产物）
+migrate-rollback-*.json

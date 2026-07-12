@@ -29,7 +29,7 @@ const YES = args.has('--yes');
 
 const UPLOADS_DIR =
   process.env.UPLOADS_DIR ||
-  path.resolve(__dirname, '../../server/uploads');
+  path.resolve(__dirname, '../uploads'); // server-nest/uploads —— 与 StorageService 本地默认一致（旧 ../../server/uploads 指向已退役目录）
 
 function loadEnvFiles() {
   for (const p of [
@@ -67,8 +67,46 @@ function keyFromLocal(url) {
   return url.replace(/^\/?uploads\//, '');
 }
 
+function connectDb() {
+  const mysql = require('mysql2/promise');
+  return mysql.createConnection({
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || 'hahasns',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'hahasns',
+  });
+}
+
+// 解析 `--rollback <file>` 或 `--rollback=<file>`
+function getRollbackArg() {
+  const argv = process.argv.slice(2);
+  const i = argv.indexOf('--rollback');
+  if (i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--')) return argv[i + 1];
+  const eq = argv.find((a) => a.startsWith('--rollback='));
+  return eq ? eq.slice('--rollback='.length) : null;
+}
+
+// 用回滚清单把库中媒体路径还原为迁移前的值
+async function runRollback(file) {
+  const abs = path.resolve(process.cwd(), file);
+  if (!fs.existsSync(abs)) { console.error(`[rollback] 找不到回滚清单: ${abs}`); process.exit(1); }
+  const entries = JSON.parse(fs.readFileSync(abs, 'utf8'));
+  console.log(`[rollback] 从 ${abs} 还原 ${entries.length} 行…`);
+  const db = await connectDb();
+  let n = 0;
+  for (const e of entries) {
+    await db.query(`UPDATE \`${e.table}\` SET \`${e.column}\` = ? WHERE id = ?`, [e.from, e.id]);
+    n++;
+  }
+  await db.end();
+  console.log(`[rollback] 已还原 ${n} 行`);
+}
+
 async function main() {
   loadEnvFiles();
+  const rollbackFile = getRollbackArg();
+  if (rollbackFile) { await runRollback(rollbackFile); return; }
   console.log(`[migrate-uploads] mode=${DRY_RUN ? 'DRY-RUN (default)' : 'EXECUTE'}`);
   console.log(`[migrate-uploads] uploadsDir=${UPLOADS_DIR}`);
 
@@ -101,19 +139,8 @@ async function main() {
 
   // DB：尽量用 mysql2（项目默认）；无则只迁移文件不写库
   let db = null;
-  try {
-    const mysql = require('mysql2/promise');
-    db = await mysql.createConnection({
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: Number(process.env.DB_PORT || 3306),
-      user: process.env.DB_USER || 'hahasns',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'hahasns',
-    });
-    console.log('[migrate-uploads] DB 已连接');
-  } catch (e) {
-    console.warn('[migrate-uploads] 无法连接 DB，将只处理文件（不重写路径）:', e.message);
-  }
+  try { db = await connectDb(); console.log('[migrate-uploads] DB 已连接'); }
+  catch (e) { console.warn('[migrate-uploads] 无法连接 DB，将只处理文件（不重写路径）:', e.message); }
 
   if (!DRY_RUN && !YES) {
     console.log('[migrate-uploads] 将真实上传并改库。若确认，请加 --yes');
@@ -219,6 +246,16 @@ async function main() {
   if (rewrites.length > 20) console.log(`  ... +${rewrites.length - 20} more`);
 
   if (!DRY_RUN && db) {
+    // 改库前先落回滚清单（记录每行改前的值），出问题可 --rollback 还原
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const manifestPath = path.resolve(process.cwd(), `migrate-rollback-${stamp}.json`);
+    try {
+      fs.writeFileSync(manifestPath, JSON.stringify(rewrites.map((r) => ({ table: r.table, id: r.id, column: r.column, from: r.from })), null, 2));
+      console.log(`[migrate-uploads] 回滚清单已写: ${manifestPath}`);
+      console.log(`[migrate-uploads] 如需还原: node server-nest/scripts/migrate-uploads-to-s3.mjs --rollback ${manifestPath}`);
+    } catch (e) {
+      console.warn(`[migrate-uploads] 回滚清单写入失败（仍将继续改库）: ${e.message}`);
+    }
     for (const r of rewrites) {
       await db.query(`UPDATE \`${r.table}\` SET \`${r.column}\` = ? WHERE id = ?`, [r.to, r.id]);
     }
