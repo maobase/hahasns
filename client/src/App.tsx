@@ -86,8 +86,12 @@ function PageGate({ on, children }: { on: boolean; children: React.ReactNode }) 
 }
 
 function AppRoutes() {
-  const { user, loading, isGuest } = useAuth();
+  const { user, loading, isGuest, exitGuest } = useAuth();
   const site = useSite();
+  // 站长关闭游客浏览后，清掉本地残留的游客标记，避免日后重新开启时静默再入游客态（须点「游客浏览」重新进入）
+  useEffect(() => {
+    if (site.loaded && !site.allowGuest && isGuest) exitGuest();
+  }, [site.loaded, site.allowGuest, isGuest, exitGuest]);
   if (loading) return <div className="auth-splash"><div className="ui-spinner" /></div>;
 
   // allow_guest 关 → 与现状一致：未登录整树 AuthLanding
