@@ -73,6 +73,12 @@ export class SiteService {
       registrationEnabled: (cfg.get('registration_enabled') ?? '1') !== '0',
       inviteRequired: cfg.get('invite_required') === '1',
       allowGuest: cfg.get('allow_guest') === '1',
+      // 游客信息流上限：未配置→8；配 0→不限；否则 clamp [0,200]
+      guestFeedLimit: (() => {
+        const v = cfg.get('guest_feed_limit');
+        if (v == null || v === '') return 8;
+        return Math.max(0, Math.min(200, Math.round(Number(v)) || 0));
+      })(),
       uploadMaxImages: Number(cfg.get('upload_max_images')) || 9,
       uploadMaxSizeMb: Number(cfg.get('upload_max_size_mb')) || 25,
       paidPriceMax: Number(cfg.get('paid_price_max')) || 100000,

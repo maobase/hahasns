@@ -122,6 +122,20 @@
   .site-icp-bar { padding: 8px 16px calc(16px + var(--tabbar-h, 56px)); }
 }
 
+/* 游客提示条：顶栏下方一条轻量转化提示（仅游客态） */
+.guest-strip {
+  display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+  padding: 7px 16px; background: var(--brand-soft); color: var(--ink-2);
+  font-size: 13px; border-bottom: 1px solid var(--line);
+}
+/* 信息流注册墙：游客刷到上限后的转化卡 */
+.guest-wall {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  padding: 30px 20px; margin-top: var(--gap);
+}
+.guest-wall-title { font-size: 16px; font-weight: 800; color: var(--ink); }
+.guest-wall-sub { font-size: 13px; color: var(--ink-3); max-width: 300px; line-height: 1.6; }
+
 /* ---------- Left rail nav ---------- */
 .rail { display: flex; flex-direction: column; gap: 2px; }
 /* 分组小标题：把长导航分成 社区 / 福利·我的 等区块，层次更清晰 */

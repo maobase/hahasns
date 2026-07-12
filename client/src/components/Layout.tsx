@@ -1,6 +1,7 @@
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import { useEffect, Suspense } from 'react';
 import { useSite, moduleOn } from '../context/SiteContext';
+import { useAuth } from '../context/AuthContext';
 import Navbar from './Navbar';
 import ErrorBoundary from './ErrorBoundary';
 import TabBar from './TabBar';
@@ -97,6 +98,7 @@ function titleFor(path: string): string | null {
 export default function Layout() {
   const loc = useLocation();
   const site = useSite();
+  const { isGuest, setAuthOpen } = useAuth();
   useEffect(() => {
     window.scrollTo(0, 0);
     const t = titleFor(loc.pathname);
@@ -111,6 +113,12 @@ export default function Layout() {
   return (
     <>
       <Navbar />
+      {isGuest && (
+        <div className="guest-strip">
+          <span>你正在游客浏览 · 登录后可发帖、评论、私信</span>
+          <button className="btn btn-primary btn-sm" onClick={() => setAuthOpen(true)}>登录 / 注册</button>
+        </div>
+      )}
       {/* 单一 Suspense 边界兜住所有路由级懒加载的二级页；ErrorBoundary(key=路由)兜住页面组件崩溃，
           换页自动恢复、导航栏保持在位，而不是整页白屏。 */}
       {blocked ? <ModuleClosed /> : (

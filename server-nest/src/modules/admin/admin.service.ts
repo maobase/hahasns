@@ -62,6 +62,8 @@ const NUM_KEYS: Record<string, [number, number]> = {
   upload_max_size_mb: [1, 25], upload_max_images: [1, 9],
   // 付费内容价格上限（积分）
   paid_price_max: [1, 1000000],
+  // 游客信息流上限（注册墙）：0 = 不限；游客刷到第 N 条后出「注册解锁」卡
+  guest_feed_limit: [0, 200],
   // 积分/经验奖励（波B 经济）：各类内容创作 / 互动奖励；设 0 = 关闭该奖励。key=reward_<action>_<exp|points>
   reward_post_exp: [0, 10000], reward_post_points: [0, 1000000],
   reward_comment_exp: [0, 10000], reward_comment_points: [0, 1000000],

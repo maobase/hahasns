@@ -22,8 +22,8 @@ const FILTERS = [
 const PAGE = 12;
 
 export default function Home() {
-  const { user, setAuthOpen } = useAuth();
-  const { homeTabs, feedLayout } = useSite();
+  const { user, setAuthOpen, isGuest } = useAuth();
+  const { homeTabs, feedLayout, guestFeedLimit } = useSite();
   const layout = normalizeFeedLayout(feedLayout);
   const isWaterfall = layout === 'waterfall';
   const loc = useLocation();
@@ -78,15 +78,25 @@ export default function Home() {
       ) : (
         <>
           <div className={isWaterfall ? 'feed-waterfall' : 'feed-list'}>
-            {posts.map((p) => (
+            {(isGuest && guestFeedLimit > 0 ? posts.slice(0, guestFeedLimit) : posts).map((p) => (
               <div key={p.id} className={isWaterfall ? 'feed-waterfall-item' : undefined}>
                 <PostCard post={p} onDelete={onDelete} compact={isWaterfall} />
               </div>
             ))}
           </div>
-          <div ref={sentinelRef} />
-          {hasMore && <PostSkeleton />}
-          {!hasMore && <div className="empty" style={{ padding: '24px 0', fontSize: 13 }}>· 没有更多了 ·</div>}
+          {isGuest && guestFeedLimit > 0 && posts.length >= guestFeedLimit ? (
+            <div className="ui-card guest-wall">
+              <div className="guest-wall-title">注册解锁全部内容</div>
+              <div className="guest-wall-sub">登录后可查看更多动态，并发帖、评论、参与互动。</div>
+              <button className="btn btn-primary" onClick={() => setAuthOpen(true)}>登录 / 注册</button>
+            </div>
+          ) : (
+            <>
+              <div ref={sentinelRef} />
+              {hasMore && <PostSkeleton />}
+              {!hasMore && <div className="empty" style={{ padding: '24px 0', fontSize: 13 }}>· 没有更多了 ·</div>}
+            </>
+          )}
         </>
       )}
     </Shell>

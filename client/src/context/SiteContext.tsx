@@ -19,6 +19,7 @@ export interface SiteConfig {
   registrationEnabled: boolean; // 注册开关；默认 true
   inviteRequired: boolean;      // 邀请码必填；默认 false
   allowGuest: boolean;          // 游客浏览；默认 false
+  guestFeedLimit: number;       // 游客信息流上限（注册墙）；0=不限，默认 8
   aboutContent: string;
   roadmapContent: string;
   changelogContent: string;
@@ -50,7 +51,7 @@ export interface SiteConfig {
 const DEFAULTS: SiteConfig = {
   name: 'HahaSNS', slogan: '轻社交社区', logo: '', logoOnly: false, logoHeight: 33,
   favicon: '', customCss: '', footerText: '', icpBeian: '', rechargeTiers: '', reportReasons: '',
-  registrationEnabled: true, inviteRequired: false, allowGuest: false,
+  registrationEnabled: true, inviteRequired: false, allowGuest: false, guestFeedLimit: 8,
   aboutContent: '', roadmapContent: '', changelogContent: '',
   pageAboutOn: true, pageRoadmapOn: true, pageChangelogOn: true,
   feedLayout: 'list', customThemes: '',

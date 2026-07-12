@@ -2192,6 +2192,14 @@ function Appearance() {
           <span style={{ fontSize: 13.5 }}>允许游客浏览</span>
           <Toggle on={cfg.allow_guest === '1'} onChange={(v) => setK('allow_guest', v ? '1' : '0')} />
         </div>
+        {cfg.allow_guest === '1' && (
+          <div className="row" style={{ justifyContent: 'space-between', marginTop: 12, alignItems: 'center' }}>
+            <span style={{ fontSize: 13.5 }}>游客信息流上限<span className="faint" style={{ fontSize: 12 }}>（0 = 不限；游客刷到此条数后出「注册解锁」卡）</span></span>
+            <input className="inp" style={{ width: 88, textAlign: 'right' }} type="number" min={0} max={200}
+              value={cfg.guest_feed_limit ?? ''} placeholder="8"
+              onChange={(e) => setK('guest_feed_limit', e.target.value)} />
+          </div>
+        )}
       </div>
 
       <ThemePackagesPanel cfg={cfg} setK={setK} />
