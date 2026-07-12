@@ -182,7 +182,7 @@ export function Footer() {
         <span>隐私</span>
       </div>
       <div style={{ marginTop: 6 }}>{site.footerText || `© 2026 ${site.name} · 轻社交 · 轻论坛 · 轻社区`} · {changelogRouteOpen ? <Link to="/changelog" className="num" style={{ color: 'var(--ink-3)' }}>{APP_VERSION}</Link> : <span className="num">{APP_VERSION}</span>}</div>
-      {site.icpBeian && <div style={{ marginTop: 4 }}><a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer noopener" style={{ color: 'var(--ink-4)' }}>{site.icpBeian}</a></div>}
+      {/* 备案号由 Layout 全站底栏统一承载（移动端也可见），此处不再重复渲染，避免桌面双显 */}
     </div>
   );
 }
