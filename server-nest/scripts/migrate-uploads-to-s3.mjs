@@ -67,6 +67,13 @@ function keyFromLocal(url) {
   return url.replace(/^\/?uploads\//, '');
 }
 
+// 按扩展名给对象设 Content-Type（否则 MinIO/S3 默认 octet-stream，浏览器可能不内联渲染）
+const MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', svg: 'image/svg+xml', mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime', mp3: 'audio/mpeg', m4a: 'audio/mp4', wav: 'audio/wav', ogg: 'audio/ogg' };
+function contentTypeFor(name) {
+  const ext = path.extname(name || '').slice(1).toLowerCase();
+  return MIME[ext] || 'application/octet-stream';
+}
+
 function connectDb() {
   const mysql = require('mysql2/promise');
   return mysql.createConnection({
@@ -96,7 +103,9 @@ async function runRollback(file) {
   const db = await connectDb();
   let n = 0;
   for (const e of entries) {
-    await db.query(`UPDATE \`${e.table}\` SET \`${e.column}\` = ? WHERE id = ?`, [e.from, e.id]);
+    const pkCol = e.pkCol || 'id';           // 兼容旧清单(只有 id)
+    const pk = e.pk !== undefined ? e.pk : e.id;
+    await db.query(`UPDATE \`${e.table}\` SET \`${e.column}\` = ? WHERE \`${pkCol}\` = ?`, [e.from, pk]);
     n++;
   }
   await db.end();
@@ -178,6 +187,7 @@ async function main() {
         Bucket: cfg.bucket,
         Key: f,
         Body: body,
+        ContentType: contentTypeFor(f),
       }),
     );
     uploaded++;
@@ -186,9 +196,9 @@ async function main() {
 
   // 重写常见媒体列
   const rewrites = [];
-  async function scanAndRewrite(table, column) {
+  async function scanAndRewrite(table, column, pk = 'id') {
     if (!db) return;
-    const [rows] = await db.query(`SELECT id, \`${column}\` AS val FROM \`${table}\` WHERE \`${column}\` IS NOT NULL AND \`${column}\` != ''`);
+    const [rows] = await db.query(`SELECT \`${pk}\` AS pk, \`${column}\` AS val FROM \`${table}\` WHERE \`${column}\` IS NOT NULL AND \`${column}\` != ''`);
     for (const row of rows) {
       let val = row.val;
       let changed = false;
@@ -213,7 +223,7 @@ async function main() {
           };
           const next = walk(parsed);
           if (changed) {
-            rewrites.push({ table, id: row.id, column, from: val, to: JSON.stringify(next) });
+            rewrites.push({ table, pk: row.pk, pkCol: pk, column, from: val, to: JSON.stringify(next) });
           }
           continue;
         } catch { /* fallthrough string */ }
@@ -221,27 +231,27 @@ async function main() {
       if (typeof val === 'string' && isLocalUploadPath(val)) {
         const k = keyFromLocal(val);
         const nu = keyToUrl.get(k) || publicUrlFor(k, cfg);
-        rewrites.push({ table, id: row.id, column, from: val, to: nu });
+        rewrites.push({ table, pk: row.pk, pkCol: pk, column, from: val, to: nu });
       }
     }
   }
 
   const targets = [
-    ['posts', 'media'],
-    ['users', 'avatar'],
-    ['users', 'cover'],
-    ['articles', 'cover'],
-    ['site_config', 'value'], // logo/favicon 等
+    ['posts', 'media', 'id'],
+    ['users', 'avatar', 'id'],
+    ['users', 'cover', 'id'],
+    ['articles', 'cover', 'id'],
+    ['site_config', 'value', 'key'], // logo/favicon 等；site_config 主键是 key 不是 id
   ];
-  for (const [t, c] of targets) {
-    try { await scanAndRewrite(t, c); } catch (e) {
+  for (const [t, c, pk] of targets) {
+    try { await scanAndRewrite(t, c, pk); } catch (e) {
       console.warn(`[migrate-uploads] skip ${t}.${c}: ${e.message}`);
     }
   }
 
   console.log(`[migrate-uploads] 待重写路径: ${rewrites.length}`);
   for (const r of rewrites.slice(0, 20)) {
-    console.log(`  ${r.table}#${r.id}.${r.column}: ${String(r.from).slice(0, 60)} → ${String(r.to).slice(0, 80)}`);
+    console.log(`  ${r.table}#${r.pk}.${r.column}: ${String(r.from).slice(0, 60)} → ${String(r.to).slice(0, 80)}`);
   }
   if (rewrites.length > 20) console.log(`  ... +${rewrites.length - 20} more`);
 
@@ -250,14 +260,14 @@ async function main() {
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     const manifestPath = path.resolve(process.cwd(), `migrate-rollback-${stamp}.json`);
     try {
-      fs.writeFileSync(manifestPath, JSON.stringify(rewrites.map((r) => ({ table: r.table, id: r.id, column: r.column, from: r.from })), null, 2));
+      fs.writeFileSync(manifestPath, JSON.stringify(rewrites.map((r) => ({ table: r.table, pk: r.pk, pkCol: r.pkCol, column: r.column, from: r.from })), null, 2));
       console.log(`[migrate-uploads] 回滚清单已写: ${manifestPath}`);
       console.log(`[migrate-uploads] 如需还原: node server-nest/scripts/migrate-uploads-to-s3.mjs --rollback ${manifestPath}`);
     } catch (e) {
       console.warn(`[migrate-uploads] 回滚清单写入失败（仍将继续改库）: ${e.message}`);
     }
     for (const r of rewrites) {
-      await db.query(`UPDATE \`${r.table}\` SET \`${r.column}\` = ? WHERE id = ?`, [r.to, r.id]);
+      await db.query(`UPDATE \`${r.table}\` SET \`${r.column}\` = ? WHERE \`${r.pkCol || 'id'}\` = ?`, [r.to, r.pk]);
     }
     console.log(`[migrate-uploads] 已重写 ${rewrites.length} 行`);
   }
