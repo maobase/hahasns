@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useSite } from './context/SiteContext';
 import AuthLanding from './pages/AuthLanding';
@@ -62,9 +62,11 @@ function GuestLoginGate({ children }: { children: React.ReactNode }) {
   const loc = useLocation();
   useEffect(() => {
     if (!user && isGuest && loginRequired(loc.pathname)) {
+      // 记住想去的页，登录后自动回去（见 AppRoutes 的回跳 effect）
+      try { sessionStorage.setItem('haha_login_return', loc.pathname + loc.search); } catch { /* */ }
       setAuthOpen(true);
     }
-  }, [user, isGuest, loc.pathname, setAuthOpen]);
+  }, [user, isGuest, loc.pathname, loc.search, setAuthOpen]);
   if (!user && isGuest && loginRequired(loc.pathname)) {
     return <Navigate to="/" replace />;
   }
@@ -88,10 +90,18 @@ function PageGate({ on, children }: { on: boolean; children: React.ReactNode }) 
 function AppRoutes() {
   const { user, loading, isGuest, exitGuest } = useAuth();
   const site = useSite();
+  const navigate = useNavigate();
   // 站长关闭游客浏览后，清掉本地残留的游客标记，避免日后重新开启时静默再入游客态（须点「游客浏览」重新进入）
   useEffect(() => {
     if (site.loaded && !site.allowGuest && isGuest) exitGuest();
   }, [site.loaded, site.allowGuest, isGuest, exitGuest]);
+  // 登录成功后回到被拦截前想去的页（游客点了需登录的页 → 登录后自动回去）
+  useEffect(() => {
+    if (!user) return;
+    let ret: string | null = null;
+    try { ret = sessionStorage.getItem('haha_login_return'); } catch { /* */ }
+    if (ret) { try { sessionStorage.removeItem('haha_login_return'); } catch { /* */ } navigate(ret, { replace: true }); }
+  }, [user, navigate]);
   if (loading) return <div className="auth-splash"><div className="ui-spinner" /></div>;
 
   // allow_guest 关 → 与现状一致：未登录整树 AuthLanding
