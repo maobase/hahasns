@@ -8,11 +8,20 @@
  * 环境变量：与 StorageService 一致
  *   S3_ENDPOINT S3_BUCKET S3_REGION S3_ACCESS_KEY S3_SECRET_KEY
  *   S3_PUBLIC_URL S3_FORCE_PATH_STYLE DB_* UPLOADS_DIR
+ * 凭据来源（后者不覆盖前者）：进程 env → 仓库根 .env → server-nest/.env →
+ *   server-nest/.nest-env（systemd EnvironmentFile）→ 库中 site_config 的 s3_* 键
  *
  * 用法：
  *   node server-nest/scripts/migrate-uploads-to-s3.mjs
  *   node server-nest/scripts/migrate-uploads-to-s3.mjs --execute
  *   node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
+ *   node server-nest/scripts/migrate-uploads-to-s3.mjs --rollback <manifest.json>
+ *
+ * 选项：
+ *   --execute          真正上传并改库（默认 dry-run，只预览不写）
+ *   --yes              配合 --execute，跳过确认
+ *   --rewrite-missing  库中引用了但本地 uploads 里没有的文件，也按 publicUrlFor 重写到桶
+ *                      （默认跳过并打印 missing 警告汇总；重写后这些对象在桶里 404，慎用）
  */
 
 import fs from 'node:fs';
@@ -26,6 +35,26 @@ const require = createRequire(import.meta.url);
 const args = new Set(process.argv.slice(2));
 const DRY_RUN = !args.has('--execute');
 const YES = args.has('--yes');
+const REWRITE_MISSING = args.has('--rewrite-missing');
+
+if (args.has('--help') || args.has('-h')) {
+  console.log(`将本地 /uploads 文件迁移到 S3 兼容桶，并重写库中媒体路径。默认 dry-run。
+
+用法: node server-nest/scripts/migrate-uploads-to-s3.mjs [选项]
+  --execute          真正上传并改库（默认 dry-run，只预览不写）
+  --yes              配合 --execute，跳过确认
+  --rewrite-missing  库中引用了但本地 uploads 里没有的文件，也按 publicUrlFor 重写到桶
+                     （默认跳过并打印 missing 警告汇总；重写后这些对象在桶里 404，慎用）
+  --rollback <file>  按回滚清单（执行时自动生成）还原库中路径
+  --help, -h         显示本帮助
+
+覆盖的库列: posts.media / threads.media / users.avatar / users.cover /
+  articles.cover / site_config.value / messages.content(type=image)
+环境变量: S3_ENDPOINT S3_BUCKET S3_REGION S3_ACCESS_KEY S3_SECRET_KEY
+  S3_PUBLIC_URL S3_FORCE_PATH_STYLE DB_* UPLOADS_DIR
+凭据来源: 进程 env → 根 .env → server-nest/.env → server-nest/.nest-env → site_config(s3_*)`);
+  process.exit(0);
+}
 
 const UPLOADS_DIR =
   process.env.UPLOADS_DIR ||
@@ -35,6 +64,7 @@ function loadEnvFiles() {
   for (const p of [
     path.resolve(__dirname, '../../.env'),
     path.resolve(__dirname, '../.env'),
+    path.resolve(__dirname, '../.nest-env'), // env1 的 systemd EnvironmentFile
   ]) {
     if (!fs.existsSync(p)) continue;
     for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
@@ -129,14 +159,6 @@ async function main() {
     forcePathStyle: (process.env.S3_FORCE_PATH_STYLE || 'true') === 'true',
   };
 
-  if (!DRY_RUN && (!cfg.accessKey || !cfg.secretKey)) {
-    console.error('[migrate-uploads] 缺少 S3_ACCESS_KEY / S3_SECRET_KEY，中止');
-    process.exit(1);
-  }
-  if (DRY_RUN && (!cfg.accessKey || !cfg.secretKey)) {
-    console.warn('[migrate-uploads] dry-run：未配置 S3 凭据，仅列出本地文件与将要生成的 URL 形态');
-  }
-
   let files = [];
   if (fs.existsSync(UPLOADS_DIR)) {
     files = fs.readdirSync(UPLOADS_DIR).filter((f) => {
@@ -150,6 +172,35 @@ async function main() {
   let db = null;
   try { db = await connectDb(); console.log('[migrate-uploads] DB 已连接'); }
   catch (e) { console.warn('[migrate-uploads] 无法连接 DB，将只处理文件（不重写路径）:', e.message); }
+
+  // 凭据回退：env/.env/.nest-env 都没配 S3 accessKey 时，读库中 site_config 的 s3_* 键
+  // （后台「存储设置」保存的那份；只读不写，dry-run 同样安全）
+  if (db && !cfg.accessKey) {
+    try {
+      const [rows] = await db.query("SELECT `key` AS k, `value` AS v FROM site_config WHERE `key` LIKE 's3\\_%'");
+      const site = Object.fromEntries(rows.map((r) => [r.k, r.v]));
+      if (site.s3_endpoint) cfg.endpoint = site.s3_endpoint;
+      if (site.s3_bucket) cfg.bucket = site.s3_bucket;
+      if (site.s3_region) cfg.region = site.s3_region;
+      if (site.s3_public_url) cfg.publicUrl = site.s3_public_url;
+      if (site.s3_force_path_style === '1' || site.s3_force_path_style === '0') {
+        cfg.forcePathStyle = site.s3_force_path_style === '1';
+      }
+      if (site.s3_access_key) cfg.accessKey = site.s3_access_key;
+      if (site.s3_secret_key) cfg.secretKey = site.s3_secret_key;
+      if (cfg.accessKey) console.log('[migrate-uploads] env 未提供 S3 凭据，已从 site_config(s3_*) 读取');
+    } catch (e) {
+      console.warn(`[migrate-uploads] site_config 读取 S3 配置失败: ${e.message}`);
+    }
+  }
+
+  if (!DRY_RUN && (!cfg.accessKey || !cfg.secretKey)) {
+    console.error('[migrate-uploads] 缺少 S3_ACCESS_KEY / S3_SECRET_KEY，中止');
+    process.exit(1);
+  }
+  if (DRY_RUN && (!cfg.accessKey || !cfg.secretKey)) {
+    console.warn('[migrate-uploads] dry-run：未配置 S3 凭据，仅列出本地文件与将要生成的 URL 形态');
+  }
 
   if (!DRY_RUN && !YES) {
     console.log('[migrate-uploads] 将真实上传并改库。若确认，请加 --yes');
@@ -196,9 +247,18 @@ async function main() {
 
   // 重写常见媒体列
   const rewrites = [];
-  async function scanAndRewrite(table, column, pk = 'id') {
+  const missing = new Map(); // key → 引用次数：库中引用了但本地 uploads 没有（即未实际上传成功）的文件
+  // 库路径 → 桶 URL。文件未上传成功时默认返回 null（跳过该条，避免把路径改到桶里不存在的对象）；
+  // 只有显式 --rewrite-missing 才按 publicUrlFor 重写。
+  const resolveUrl = (k) => {
+    const u = keyToUrl.get(k);
+    if (u) return u;
+    if (!REWRITE_MISSING) { missing.set(k, (missing.get(k) || 0) + 1); return null; }
+    return publicUrlFor(k, cfg);
+  };
+  async function scanAndRewrite(table, column, pk = 'id', where = '') {
     if (!db) return;
-    const [rows] = await db.query(`SELECT \`${pk}\` AS pk, \`${column}\` AS val FROM \`${table}\` WHERE \`${column}\` IS NOT NULL AND \`${column}\` != ''`);
+    const [rows] = await db.query(`SELECT \`${pk}\` AS pk, \`${column}\` AS val FROM \`${table}\` WHERE \`${column}\` IS NOT NULL AND \`${column}\` != ''${where}`);
     for (const row of rows) {
       let val = row.val;
       let changed = false;
@@ -208,8 +268,8 @@ async function main() {
           const parsed = JSON.parse(val);
           const walk = (node) => {
             if (typeof node === 'string' && isLocalUploadPath(node)) {
-              const k = keyFromLocal(node);
-              const nu = keyToUrl.get(k) || publicUrlFor(k, cfg);
+              const nu = resolveUrl(keyFromLocal(node));
+              if (nu == null) return node; // missing：保持原值不改
               changed = true;
               return nu;
             }
@@ -229,8 +289,8 @@ async function main() {
         } catch { /* fallthrough string */ }
       }
       if (typeof val === 'string' && isLocalUploadPath(val)) {
-        const k = keyFromLocal(val);
-        const nu = keyToUrl.get(k) || publicUrlFor(k, cfg);
+        const nu = resolveUrl(keyFromLocal(val));
+        if (nu == null) continue; // missing：跳过该条
         rewrites.push({ table, pk: row.pk, pkCol: pk, column, from: val, to: nu });
       }
     }
@@ -238,13 +298,16 @@ async function main() {
 
   const targets = [
     ['posts', 'media', 'id'],
+    ['threads', 'media', 'id'], // 论坛帖媒体，与 posts.media 同构的 JSON 数组
     ['users', 'avatar', 'id'],
     ['users', 'cover', 'id'],
     ['articles', 'cover', 'id'],
     ['site_config', 'value', 'key'], // logo/favicon 等；site_config 主键是 key 不是 id
+    // 私信图片：type='image' 时 content 存的是 /uploads/... 纯路径字符串（非 JSON）
+    ['messages', 'content', 'id', " AND type='image' AND content LIKE '/uploads/%'"],
   ];
-  for (const [t, c, pk] of targets) {
-    try { await scanAndRewrite(t, c, pk); } catch (e) {
+  for (const [t, c, pk, where] of targets) {
+    try { await scanAndRewrite(t, c, pk, where); } catch (e) {
       console.warn(`[migrate-uploads] skip ${t}.${c}: ${e.message}`);
     }
   }
@@ -254,6 +317,14 @@ async function main() {
     console.log(`  ${r.table}#${r.pk}.${r.column}: ${String(r.from).slice(0, 60)} → ${String(r.to).slice(0, 80)}`);
   }
   if (rewrites.length > 20) console.log(`  ... +${rewrites.length - 20} more`);
+
+  if (missing.size) {
+    const total = [...missing.values()].reduce((a, b) => a + b, 0);
+    console.warn(`[migrate-uploads] ⚠ missing: ${missing.size} 个 key（共 ${total} 处引用）在本地 uploads 中不存在、未上传成功，已跳过不改库：`);
+    for (const [k, n] of [...missing.entries()].slice(0, 20)) console.warn(`  missing ${k}${n > 1 ? ` (×${n})` : ''}`);
+    if (missing.size > 20) console.warn(`  ... +${missing.size - 20} more`);
+    console.warn('[migrate-uploads] 如确认要把这些路径也重写到桶（对象将 404），请加 --rewrite-missing');
+  }
 
   if (!DRY_RUN && db) {
     // 改库前先落回滚清单（记录每行改前的值），出问题可 --rollback 还原

@@ -39,6 +39,7 @@ ENV NODE_ENV=production \
 COPY --from=server /app/server-nest/dist ./server-nest/dist
 COPY --from=server /app/server-nest/node_modules ./server-nest/node_modules
 COPY --from=server /app/server-nest/package.json ./server-nest/package.json
+COPY --from=server /app/server-nest/scripts ./server-nest/scripts
 COPY --from=client /app/client/dist ./client/dist
 RUN mkdir -p /app/uploads
 EXPOSE 4000

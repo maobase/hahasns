@@ -45,7 +45,15 @@ services:
       # 可选：部署在反向代理（Nginx / 宝塔 / 1Panel / Cloudflare）后面时设为 1，让「按 IP 的注册/发帖限流」
       # 读取 X-Forwarded-For 拿到真实访客 IP；不设的话所有请求看起来都来自代理 IP，限流会失效。
       TRUST_PROXY: ${TRUST_PROXY:-}
-      # 可选：ANTHROPIC_API_KEY（配了才启用 AI 助手）、S3_* （配了走对象存储，否则上传走本地卷）
+      # 可选：ANTHROPIC_API_KEY（配了才启用 AI 助手）
+      # 可选：S3_* 对象存储（配了走对象存储，否则上传走本地卷）；在 .env 里配同名变量即可透传
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-}
     volumes:
       - hahasns-uploads:/app/uploads   # 上传的图片/视频（不配 S3 时存这里）
     healthcheck:
