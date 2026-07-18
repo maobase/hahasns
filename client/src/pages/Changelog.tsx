@@ -15,6 +15,7 @@ const TYPE: Record<string, { label: string; color: string }> = {
   improve: { label: '优化', color: 'primary' },
   fix: { label: '修复', color: 'warning' },
   change: { label: '调整', color: 'default' },
+  refactor: { label: '重构', color: 'secondary' },
 };
 const FB_STATUS: Record<string, { label: string; color: string }> = {
   open: { label: '待处理', color: 'default' },
@@ -25,6 +26,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 const RELEASES = [
+  {
+    ver: 'v5.46', date: '2026-07-18 22:49:36', items: [
+      ['refactor', '媒体上传逻辑去重收敛：动态、正文内联配图、论坛发帖三处共用的「压缩 → 超限拦截 → 上传」流程收敛为同一实现，行为与提示文案不变。'],
+    ],
+  },
   {
     ver: 'v5.45', date: '2026-07-18 22:24:58', items: [
       ['improve', '个人主页的「动态 / 赞过」列表改为滚动到底自动加载，与首页、论坛、专栏、收藏一致，到底显示统一尾标。'],

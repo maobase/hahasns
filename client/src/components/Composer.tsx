@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { VIS_LABELS } from '../lib/format';
-import { shrinkImage } from '../lib/resizeImage';
+import { uploadPickedFiles } from '../lib/upload';
 import { loadDraft, saveDraft, clearDraft as clearDraftStore, hasDraft } from '../lib/draft';
 import useMention from '../hooks/useMention';
 import { onCtrlEnter } from '../lib/kbd';
@@ -78,17 +78,8 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = [...(e.target.files as any)];
     if (!files.length) return;
-    const fd = new FormData();
-    const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
-    // 后台可配「单文件最大 MB」：前端先拦超限文件，给友好提示，避免直接吃后端报错
-    const okFiles = picked.filter((f) => (f as Blob).size <= maxSizeMb * 1024 * 1024);
-    if (okFiles.length < picked.length) toast.err(`部分文件超过 ${maxSizeMb}MB，已跳过`);
-    if (!okFiles.length) { e.target.value = ''; return; }
-    okFiles.forEach((f) => fd.append('files', f));
-    try {
-      const { data } = await api.post('/upload', fd);
-      setMedia((m) => [...m, ...data.files].slice(0, maxImages));
-    } catch (err: any) { toast.err(err.message); }
+    const uploaded = await uploadPickedFiles(files, { maxSizeMb, remaining: maxImages - media.length, onErr: toast.err });
+    if (uploaded.length) setMedia((m) => [...m, ...uploaded].slice(0, maxImages));
     e.target.value = '';
   };
 
@@ -200,15 +191,9 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const uploadInline = async (ev: React.ChangeEvent<HTMLInputElement>) => {
     const raw = (ev.target.files || [])[0];
     if (!raw) return;
-    const file = await shrinkImage(raw);
-    if ((file as Blob).size > maxSizeMb * 1024 * 1024) { toast.err(`文件超过 ${maxSizeMb}MB`); ev.target.value = ''; return; }
-    const fd = new FormData();
-    fd.append('files', file);
-    try {
-      const { data } = await api.post('/upload', fd);
-      const url = data.files?.[0]?.url;
-      if (url) insertAtCursor(`\n![图片](${url})\n`);
-    } catch (err: any) { toast.err(err.message); }
+    const uploaded = await uploadPickedFiles([raw], { maxSizeMb, remaining: 1, onErr: toast.err, single: true });
+    const url = uploaded[0]?.url;
+    if (url) insertAtCursor(`\n![图片](${url})\n`);
     ev.target.value = '';
   };
 

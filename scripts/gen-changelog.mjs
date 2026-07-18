@@ -35,7 +35,7 @@ const arrText = src.slice(arrStart, i);
 // 纯数据字面量（字符串 + 数组 + 对象），用 Function 求值即可
 const releases = new Function('return ' + arrText)();
 
-const LABEL = { improve: '改进', fix: '修复', new: '新增', change: '变更' };
+const LABEL = { improve: '改进', fix: '修复', new: '新增', change: '变更', refactor: '重构' };
 const out = ['# 更新日志', '',
   '> 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。',
   ''];

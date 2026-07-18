@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
 import api from '../api/client';
 import { onCtrlEnter } from '../lib/kbd';
-import { shrinkImage } from '../lib/resizeImage';
+import { uploadPickedFiles } from '../lib/upload';
 import { loadDraft, saveDraft, clearDraft } from '../lib/draft';
 
 const THREAD_DRAFT = 'thread'; // 帖子草稿槽（独立于动态 Composer 的默认草稿）
@@ -67,15 +67,8 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
   const upload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = [...(e.target.files as FileList)];
     if (!files.length) return;
-    const fd = new FormData();
-    const picked = await Promise.all(files.slice(0, maxImages - media.length).map((f) => shrinkImage(f)));
-    // 后台可配「单文件最大 MB」：前端先拦超限文件
-    const okFiles = picked.filter((f) => (f as Blob).size <= maxSizeMb * 1024 * 1024);
-    if (okFiles.length < picked.length) toast.err(`部分文件超过 ${maxSizeMb}MB，已跳过`);
-    if (!okFiles.length) { e.target.value = ''; return; }
-    okFiles.forEach((f) => fd.append('files', f));
-    try { const { data } = await api.post('/upload', fd); setMedia((m) => [...m, ...data.files].slice(0, maxImages)); }
-    catch (err: any) { toast.err(err.message); }
+    const uploaded = await uploadPickedFiles(files, { maxSizeMb, remaining: maxImages - media.length, onErr: toast.err });
+    if (uploaded.length) setMedia((m) => [...m, ...uploaded].slice(0, maxImages));
     e.target.value = '';
   };
 
