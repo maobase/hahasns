@@ -41,7 +41,9 @@ export default () => ({
   },
 
   s3: {
-    endpoint: process.env.S3_ENDPOINT || 'http://127.0.0.1:9000',
+    // 只保留显式值：默认地址由 storage-config.resolveStorageConfig 统一兜底，
+    // 若在此预填默认会掩盖「用户未配置」，导致 testConnection 预警失效。
+    endpoint: process.env.S3_ENDPOINT || '',
     bucket: process.env.S3_BUCKET || 'hahasns',
     accessKey: process.env.S3_ACCESS_KEY || '',
     secretKey: process.env.S3_SECRET_KEY || '',

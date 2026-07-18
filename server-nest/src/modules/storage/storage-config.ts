@@ -86,6 +86,29 @@ export function resolveStorageConfig(
   };
 }
 
+/**
+ * 配置缺陷预警（driver=s3 时的静默隐患），供后台「测试连接」展示。
+ * 纯函数，无 I/O；入参与 resolveStorageConfig 相同，保证驱动判定口径一致。
+ */
+export function storageConfigWarnings(
+  site: Record<string, string | null | undefined> = {},
+  env: StorageEnvLike = {},
+): string[] {
+  const cfg = resolveStorageConfig(site, env);
+  if (cfg.driver !== 's3') return [];
+  const warnings: string[] = [];
+  const siteEndpoint = site.s3_endpoint;
+  const endpointSet =
+    (siteEndpoint != null && String(siteEndpoint).length > 0) || !!env.S3_ENDPOINT;
+  if (!endpointSet) {
+    warnings.push('未配置 S3 Endpoint，正在使用默认地址 http://127.0.0.1:9000，仅供本地 MinIO 调试用。');
+  }
+  if (!cfg.publicUrl) {
+    warnings.push('未配置访问域名（Public URL）。七牛云等私有桶生成的文件地址无法公开访问，请填写 CDN 或桶绑定域名。');
+  }
+  return warnings;
+}
+
 /** 配置指纹：变化时重建 S3Client */
 export function storageConfigHash(c: StorageResolvedConfig): string {
   return [

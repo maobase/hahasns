@@ -1,10 +1,8 @@
 import {
   DeleteObjectCommand,
-  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
@@ -14,6 +12,8 @@ import { SiteService } from '../site/site.service';
 import {
   resolveStorageConfig,
   storageConfigHash,
+  storageConfigWarnings,
+  type StorageEnvLike,
   type StorageResolvedConfig,
 } from './storage-config';
 
@@ -29,6 +29,8 @@ export class StorageService implements OnModuleInit {
   private resolved: StorageResolvedConfig | null = null;
   private cfgHash = '';
   private cfgAt = 0; // 上次从 site_config 读取配置的时间戳
+  private lastSite: Record<string, string | null> = {}; // 最近一次 refresh 的原始 site 键（供 testConnection 预警判定）
+  private lastEnv: StorageEnvLike = {}; // 最近一次 refresh 的原始 env（同上）
   private static readonly CONFIG_TTL_MS = 5000; // 配置缓存窗口：避免一次多图上传每文件都打 8 次 DB
 
   constructor(
@@ -98,7 +100,7 @@ export class StorageService implements OnModuleInit {
     const site: Record<string, string | null> = {};
     for (const k of keys) site[k] = await this.site.getConfig(k);
     const envS3 = this.config.get('s3') || {};
-    const cfg = resolveStorageConfig(site, {
+    const env: StorageEnvLike = {
       STORAGE_DRIVER: process.env.STORAGE_DRIVER,
       S3_ENDPOINT: envS3.endpoint || process.env.S3_ENDPOINT,
       S3_BUCKET: envS3.bucket || process.env.S3_BUCKET,
@@ -110,7 +112,10 @@ export class StorageService implements OnModuleInit {
           : process.env.S3_FORCE_PATH_STYLE,
       S3_ACCESS_KEY: envS3.accessKey || process.env.S3_ACCESS_KEY,
       S3_SECRET_KEY: envS3.secretKey || process.env.S3_SECRET_KEY,
-    });
+    };
+    const cfg = resolveStorageConfig(site, env);
+    this.lastSite = site;
+    this.lastEnv = env;
     this.applyConfig(cfg);
     this.cfgAt = now;
     return cfg;
@@ -184,6 +189,7 @@ export class StorageService implements OnModuleInit {
     return Promise.all(files.map((f) => this.upload(f)));
   }
 
+  /** 预留：内容删除时清理对象（当前无调用方，探针删除走内联 DeleteObjectCommand）。 */
   async delete(key: string): Promise<void> {
     await this.refreshFromSite();
     if (this.driver === 'local') {
@@ -196,28 +202,19 @@ export class StorageService implements OnModuleInit {
     );
   }
 
-  async signedGetUrl(key: string, expiresIn = 3600): Promise<string> {
-    await this.refreshFromSite();
-    if (!this.client) throw new Error('S3 client not ready');
-    return getSignedUrl(
-      this.client,
-      new GetObjectCommand({ Bucket: this.resolved!.bucket, Key: key }),
-      { expiresIn },
-    );
-  }
-
-  /** 测试连接：上传并删除探针对象。 */
-  async testConnection(): Promise<{ ok: boolean; message: string; driver: string }> {
+  /** 测试连接：上传并删除探针对象；warnings 为配置缺陷预警（不阻断，仅提示）。 */
+  async testConnection(): Promise<{ ok: boolean; message: string; driver: string; warnings: string[] }> {
     const cfg = await this.refreshFromSite(true);
+    const warnings = storageConfigWarnings(this.lastSite, this.lastEnv);
     if (cfg.driver === 'local') {
       try {
         fs.mkdirSync(this.uploadsDir, { recursive: true });
         const probe = join(this.uploadsDir, `.probe-${Date.now()}`);
         await fs.promises.writeFile(probe, 'ok');
         await fs.promises.unlink(probe);
-        return { ok: true, message: '本地存储可写', driver: 'local' };
+        return { ok: true, message: '本地存储可写', driver: 'local', warnings };
       } catch (e: any) {
-        return { ok: false, message: e?.message || '本地存储不可写', driver: 'local' };
+        return { ok: false, message: e?.message || '本地存储不可写', driver: 'local', warnings };
       }
     }
     try {
@@ -233,9 +230,9 @@ export class StorageService implements OnModuleInit {
       await this.client!.send(
         new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }),
       );
-      return { ok: true, message: `S3 连接成功（${cfg.endpoint} / ${cfg.bucket}）`, driver: 's3' };
+      return { ok: true, message: `S3 连接成功（${cfg.endpoint} / ${cfg.bucket}）`, driver: 's3', warnings };
     } catch (e: any) {
-      return { ok: false, message: e?.message || 'S3 连接失败', driver: 's3' };
+      return { ok: false, message: e?.message || 'S3 连接失败', driver: 's3', warnings };
     }
   }
 }

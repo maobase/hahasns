@@ -2356,6 +2356,7 @@ function StorageAdmin() {
   const [secrets, setSecrets] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [testWarnings, setTestWarnings] = useState<string[]>([]);
   useEffect(() => {
     api.get('/admin/config').then(({ data }) => {
       setCfg(data.config || {});
@@ -2376,10 +2377,12 @@ function StorageAdmin() {
   };
   const test = async () => {
     setTesting(true);
+    setTestWarnings([]);
     try {
       const { data } = await api.post('/admin/storage/test');
       if (data.ok) toast.ok(data.message || '连接成功');
       else toast.err(data.message || '连接失败');
+      if (Array.isArray(data.warnings) && data.warnings.length) setTestWarnings(data.warnings);
     } catch (e: any) { toast.err(e.message); }
     finally { setTesting(false); }
   };
@@ -2416,7 +2419,8 @@ function StorageAdmin() {
             <input className="inp" value={cfg.s3_public_url ?? ''} onChange={(e) => setK('s3_public_url', e.target.value)} placeholder="https://cdn.example.com" />
           </label>
           <label className="sec-field row gap-8" style={{ alignItems: 'center' }}>
-            <input type="checkbox" checked={(cfg.s3_force_path_style ?? '0') === '1'} onChange={(e) => setK('s3_force_path_style', e.target.checked ? '1' : '0')} />
+            {/* 生效默认开（后端 env 未设时按 true）：仅显式 '0' 显示关；保存时未配置键不落库（undefined 不入 JSON），用户勾选后才是显式选择 */}
+            <input type="checkbox" checked={cfg.s3_force_path_style !== '0'} onChange={(e) => setK('s3_force_path_style', e.target.checked ? '1' : '0')} />
             <span className="sec-label" style={{ margin: 0 }}>Force path style（部分 MinIO 需要；七牛通常关）</span>
           </label>
           <label className="sec-field">
@@ -2440,6 +2444,14 @@ function StorageAdmin() {
           </code>
         </div>
       </div>
+      {testWarnings.length > 0 && (
+        <div className="ui-card" style={{ padding: '12px 18px', background: 'var(--gold-soft)' }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--gold-deep)' }}>配置预警</div>
+          {testWarnings.map((w, i) => (
+            <div key={i} style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.6, color: 'var(--gold-deep)' }}>{w}</div>
+          ))}
+        </div>
+      )}
       <div className="row gap-8" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-outline" onClick={test} disabled={testing}>{testing ? '测试中…' : '测试连接'}</button>
         <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存存储配置'}</button>
