@@ -26,7 +26,10 @@ export default function useInfiniteScroll<T>(
   const [hasMore, setHasMore] = useState(false);
   const offsetRef = useRef(0);
   const busyRef = useRef(false);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // 哨兵用回调 ref + state（而非 useRef）：多 tab 页面（Profile）里哨兵随 tab 卸载/重挂，
+  // state 变化会触发下方 observer effect 重新附着到新节点；哨兵恒在的页面行为不变。
+  const [sentinelEl, setSentinelEl] = useState<HTMLDivElement | null>(null);
+  const sentinelRef = useCallback((el: HTMLDivElement | null) => setSentinelEl(el), []);
 
   // generation：每次 deps 重置自增，用于丢弃切换分类/排序时仍在途的旧请求结果
   const genRef = useRef(0);
@@ -74,15 +77,14 @@ export default function useInfiniteScroll<T>(
 
   // 底部哨兵进入视口（提前 600px）→ 续拉
   useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
+    if (!sentinelEl) return;
     const io = new IntersectionObserver(
       (entries) => { if (entries[0].isIntersecting) loadMore(); },
       { rootMargin: '600px' },
     );
-    io.observe(el);
+    io.observe(sentinelEl);
     return () => io.disconnect();
-  }, [loadMore]);
+  }, [loadMore, sentinelEl]);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 

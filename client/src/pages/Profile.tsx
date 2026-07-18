@@ -8,7 +8,8 @@ import PostCard from '../components/PostCard';
 import FollowButton from '../components/FollowButton';
 import ThreadRow from '../components/ThreadRow';
 import { Badges } from '../components/Identity';
-import { Loading, Empty, ProfileSkeleton, PostSkeleton, LoadError } from '../components/States';
+import { Loading, Empty, ProfileSkeleton, PostSkeleton, ListEnd, LoadError } from '../components/States';
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { CheckinRank, TrendingSearch, Footer } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -56,50 +57,42 @@ export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [postsMore, setPostsMore] = useState(false);
-  const [moreBusy, setMoreBusy] = useState(false);
   const [tab, setTab] = useState('posts');
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
-  const [likedPosts, setLikedPosts] = useState<any>(null);
-  const [likedMore, setLikedMore] = useState(false);
-  const [likedBusy, setLikedBusy] = useState(false);
   const [threads, setThreads] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
   const [visitors, setVisitors] = useState<any[]>([]);
   const [followBusy, setFollowBusy] = useState(false);
   const [visitorTotal, setVisitorTotal] = useState(0);
 
+  // 动态 / 赞过两列 C 端信息流统一走 useInfiniteScroll（对齐 Home：按窗口推进 offset、
+  // 代次丢弃在途竞态、底部哨兵自动续拉），删掉手写「加载更多」。切用户 / 重试自动重置。
+  const { items: posts, loading: postsLoading, hasMore: postsMore, sentinelRef: postsSentinel, setItems: setPosts } = useInfiniteScroll<any>(
+    (offset, limit) => api.get(`/posts/user/${username}`, { params: { limit, offset } })
+      .then(({ data }) => ({ items: data.posts, hasMore: !!data.hasMore })),
+    [username, reloadKey],
+    20,
+  );
+  const { items: likedPosts, loading: likedLoading, hasMore: likedMore, sentinelRef: likedSentinel } = useInfiniteScroll<any>(
+    (offset, limit) => api.get(`/posts/liked/${username}`, { params: { limit, offset } })
+      .then(({ data }) => ({ items: data.posts, hasMore: !!data.hasMore })),
+    [username, reloadKey],
+    20,
+  );
+
   const loadProfile = () => api.get(`/users/${username}`).then(({ data }) => setUser(data.user)).catch((e: any) => { setUser(null); if (e?.status !== 404) setError(true); });
-  const loadMoreLiked = () => {
-    setLikedBusy(true);
-    api.get(`/posts/liked/${username}`, { params: { limit: 20, offset: (likedPosts || []).length } })
-      .then(({ data }) => { setLikedPosts((x: any[]) => [...(x || []), ...data.posts]); setLikedMore(!!data.hasMore); })
-      .catch(() => undefined)
-      .finally(() => setLikedBusy(false));
-  };
-  const loadMorePosts = () => {
-    setMoreBusy(true);
-    api.get(`/posts/user/${username}`, { params: { limit: 20, offset: posts.length } })
-      .then(({ data }) => { setPosts((x) => [...x, ...data.posts]); setPostsMore(!!data.hasMore); })
-      .catch(() => undefined)
-      .finally(() => setMoreBusy(false));
-  };
   useEffect(() => {
-    setLoading(true); setError(false); setTab('posts'); setLikedPosts(null); setThreads(null); setPostsMore(false);
-    Promise.all([loadProfile(), api.get(`/posts/user/${username}`, { params: { limit: 20 } }).then(({ data }) => { setPosts(data.posts); setPostsMore(!!data.hasMore); }).catch(() => setPosts([]))])
-      .finally(() => setLoading(false));
+    setLoading(true); setError(false); setTab('posts'); setThreads(null);
+    loadProfile().finally(() => setLoading(false));
   }, [username, reloadKey]);
 
   useEffect(() => {
-    if (tab === 'liked' && likedPosts === null)
-      api.get(`/posts/liked/${username}`, { params: { limit: 20 } }).then(({ data }) => { setLikedPosts(data.posts); setLikedMore(!!data.hasMore); }).catch(() => setLikedPosts([]));
     if (tab === 'threads' && threads === null)
       api.get(`/forum/threads/user/${username}`).then(({ data }) => setThreads(data.threads)).catch(() => setThreads([]));
-  }, [tab, username, likedPosts, threads]);
+  }, [tab, username, threads]);
 
   // earned achievement badges (a wall on the profile)
   useEffect(() => {
@@ -118,7 +111,7 @@ export default function Profile() {
       .catch(() => {});
   }, [user?.id, me?.id, user?.username]);
 
-  if (loading) return <Shell right={false}><ProfileSkeleton /><PostSkeleton /><PostSkeleton /></Shell>;
+  if (loading || postsLoading) return <Shell right={false}><ProfileSkeleton /><PostSkeleton /><PostSkeleton /></Shell>;
   if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={() => setReloadKey((k) => k + 1)} /></div></Shell>;
   if (!user) return <Shell right={false}><div className="ui-card"><Empty icon="🔍" text="用户不存在" /></div></Shell>;
 
@@ -276,18 +269,18 @@ export default function Profile() {
       </Empty></div>
         : <>
           {posts.map((p: any) => <PostCard key={p.id} post={p} onDelete={(id: number) => setPosts((x) => x.filter((y) => y.id !== id))} />)}
-          {postsMore && <div className="row" style={{ justifyContent: 'center', padding: '6px 0 2px' }}>
-            <button className="btn btn-ghost btn-sm" disabled={moreBusy} onClick={loadMorePosts}>{moreBusy ? '加载中…' : '加载更多'}</button>
-          </div>}
+          <div ref={postsSentinel} />
+          {postsMore && <PostSkeleton />}
+          {!postsMore && <ListEnd />}
         </>)}
 
-      {tab === 'liked' && (likedPosts === null ? <Loading />
+      {tab === 'liked' && (likedLoading ? <Loading />
         : likedPosts.length === 0 ? <div className="ui-card"><Empty icon="❤️" text={isMe ? '你还没有赞过动态' : 'TA 还没有公开的点赞'}>{isMe && <button className="btn btn-primary btn-sm" onClick={() => nav('/discover')}>去发现好内容</button>}</Empty></div>
         : <>
           {likedPosts.map((p: any) => <PostCard key={p.id} post={p} />)}
-          {likedMore && <div className="row" style={{ justifyContent: 'center', padding: '6px 0 2px' }}>
-            <button className="btn btn-ghost btn-sm" disabled={likedBusy} onClick={loadMoreLiked}>{likedBusy ? '加载中…' : '加载更多'}</button>
-          </div>}
+          <div ref={likedSentinel} />
+          {likedMore && <PostSkeleton />}
+          {!likedMore && <ListEnd />}
         </>)}
     </Shell>
   );

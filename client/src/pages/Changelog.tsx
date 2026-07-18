@@ -26,6 +26,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.45', date: '2026-07-18 22:24:58', items: [
+      ['improve', '个人主页的「动态 / 赞过」列表改为滚动到底自动加载，与首页、论坛、专栏、收藏一致，到底显示统一尾标。'],
+    ],
+  },
+  {
     ver: 'v5.44', date: '2026-07-18 21:36:40', items: [
       ['improve', '对象存储「测试连接」增加配置预警：用 S3 但没配 Endpoint（在用本地调试默认地址）或没配访问域名（Public URL）时，测试结果下方会逐条提醒，避免文件地址生成后打不开。'],
       ['fix', 'Force path style 开关显示与实际生效对齐：此前未配置时页面显示「关」但实际按「开」生效，现在未配置即显示「开」，与后端默认一致。'],
