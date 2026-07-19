@@ -3,16 +3,7 @@ import { Textarea, Button } from '../../components/heroui';
 import { RowSkeleton } from '../../components/States';
 import { useToast } from '../../context/ToastContext';
 import api from '../../api/client';
-
-// 与 Admin.tsx 内同款开关（该组件仍是 Admin 私有、被其余面板大量使用，本刀不搬走，这里自带一份保持零耦合）。
-function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
-  return (
-    <button type="button" role="switch" aria-checked={on} disabled={disabled} className={`ui-toggle${on ? ' on' : ''}`}
-      style={disabled ? { opacity: 0.45, cursor: 'not-allowed' } : undefined} onClick={() => onChange(!on)}>
-      <span className="ui-toggle-dot" />
-    </button>
-  );
-}
+import { Toggle } from './ui';
 
 export default function PagesPanel() {
   const toast = useToast();

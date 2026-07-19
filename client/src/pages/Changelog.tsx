@@ -27,6 +27,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.62', date: '2026-07-20 02:26:40', items: [
+      ['refactor', '管理后台代码拆分（第 3 刀）：「外观」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/AppearancePanel.tsx（站点品牌、主题默认、Logo/Favicon/默认头像上传、自定义 CSS/导航链接/导航改名、游客访问与自定义主题包一并迁出，组件自取配置、无外部依赖）；开关组件 Toggle 上提为 pages/admin/ui.tsx 共享（Admin 其余面板与 PagesPanel 统一引用，消除重复），Admin.tsx 瘦至 2244 行，功能与外观保持不变。'],
+    ],
+  },
+  {
     ver: 'v5.61', date: '2026-07-20 02:02:27', items: [
       ['refactor', '管理后台代码拆分（第 2 刀）：「页面内容」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/PagesPanel.tsx（关于 / 更新日志 / 开发计划的 Markdown 编辑、启用开关与保存逻辑一并迁出，组件自取配置、无外部依赖），Admin.tsx 瘦至 2522 行，功能与外观保持不变。'],
     ],
