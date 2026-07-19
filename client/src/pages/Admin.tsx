@@ -785,11 +785,11 @@ function Products() {
         <div style={{ fontWeight: 700, marginBottom: 12 }}>上架商品</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
           <Input className="haha-inp" value={form.icon} onChange={(e: any) => setForm((f: any) => ({ ...f, icon: e.target.value }))} style={{ width: 56, textAlign: 'center' }} />
-          <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="商品名（必填）" style={{ flex: 1, minWidth: 120 }} />
-          <select className="inp" value={form.category} onChange={(e) => setForm((f: any) => ({ ...f, category: e.target.value }))} style={{ width: 'auto' }}>
+          <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="商品名（必填）" style={{ flex: 1, minWidth: 120 }} />
+          <select className="haha-inp" value={form.category} onChange={(e) => setForm((f: any) => ({ ...f, category: e.target.value }))} style={{ width: 'auto' }}>
             {PRODUCT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
-          <input className="inp" type="number" value={form.price} onChange={(e) => setForm((f: any) => ({ ...f, price: e.target.value }))} placeholder="积分" style={{ width: 100 }} />
+          <Input className="haha-inp" type="number" value={form.price} onChange={(e: any) => setForm((f: any) => ({ ...f, price: e.target.value }))} placeholder="积分" style={{ width: 100 }} />
           <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.price}>上架</button>
         </div>
       </div>
@@ -933,7 +933,7 @@ function Security() {
         {isOn('sensitive_enabled') && (
           <label className="field" style={{ marginTop: 14, display: 'block' }}>
             <span className="sec-label">自定义敏感词（追加在内置词库之外）</span>
-            <textarea className="inp" value={cfg.sensitive_words ?? ''} onChange={(e) => setK('sensitive_words', e.target.value)} rows={5}
+            <Textarea className="haha-inp" value={cfg.sensitive_words ?? ''} onChange={(e: any) => setK('sensitive_words', e.target.value)} minRows={5}
               placeholder="每行一个，或用逗号 / 顿号分隔，例如：&#10;违禁词1，违禁词2&#10;违禁词3"
               style={{ width: '100%', marginTop: 8, lineHeight: 1.6 }} maxLength={8000} />
             <span className="faint" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>{(cfg.sensitive_words || '').length}/8000 字符 · 匹配会忽略大小写与词内空格/符号</span>
@@ -954,18 +954,18 @@ function Security() {
         </label>
         <label className="sec-field" style={{ marginTop: 14, display: 'block' }}>
           <span className="sec-label">用户名规则（正则，留空用默认 2-20 位字母/数字/下划线/中文）</span>
-          <input className="inp" maxLength={200} value={cfg.username_pattern ?? ''} onChange={(e) => setK('username_pattern', e.target.value)} placeholder="^[A-Za-z0-9_一-龥]{2,20}$" style={{ marginTop: 6, width: '100%' }} />
+          <Input className="haha-inp" maxLength={200} value={cfg.username_pattern ?? ''} onChange={(e: any) => setK('username_pattern', e.target.value)} placeholder="^[A-Za-z0-9_一-龥]{2,20}$" style={{ marginTop: 6, width: '100%' }} />
         </label>
         <label className="sec-field" style={{ marginTop: 10, display: 'block' }}>
           <span className="sec-label">用户名不符合时的提示文案</span>
-          <input className="inp" maxLength={100} value={cfg.username_hint ?? ''} onChange={(e) => setK('username_hint', e.target.value)} placeholder="用户名需为 2-20 位字母、数字、下划线或中文" style={{ marginTop: 6, width: '100%' }} />
+          <Input className="haha-inp" maxLength={100} value={cfg.username_hint ?? ''} onChange={(e: any) => setK('username_hint', e.target.value)} placeholder="用户名需为 2-20 位字母、数字、下划线或中文" style={{ marginTop: 6, width: '100%' }} />
         </label>
       </div>
 
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>举报理由</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户举报内容时可选的理由列表（每行一个，留空用内置默认）。含「其他」项时允许填写补充说明。</div>
-        <textarea className="inp" value={cfg.report_reasons ?? ''} onChange={(e) => setK('report_reasons', e.target.value)} rows={5}
+        <Textarea className="haha-inp" value={cfg.report_reasons ?? ''} onChange={(e: any) => setK('report_reasons', e.target.value)} minRows={5}
           placeholder="每行一个，例如：&#10;垃圾广告或营销&#10;色情低俗内容&#10;其他" style={{ width: '100%', marginTop: 10, lineHeight: 1.6 }} maxLength={500} />
       </div>
 
@@ -1066,7 +1066,7 @@ function Layouts() {
           {LAYOUT_PAGE_LIST.map(([k, label, def]) => (
             <div className="row" style={{ justifyContent: 'space-between', gap: 12 }} key={k}>
               <span style={{ fontSize: 13.5 }}>{label}</span>
-              <select className="inp" style={{ width: 150, flex: 'none' }} value={cfg[`layout_${k}`] || def} onChange={(e) => setK(`layout_${k}`, e.target.value)}>
+              <select className="haha-inp" style={{ width: 150, flex: 'none' }} value={cfg[`layout_${k}`] || def} onChange={(e) => setK(`layout_${k}`, e.target.value)}>
                 {LAYOUT_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
@@ -1076,7 +1076,7 @@ function Layouts() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>首页信息流布局</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>list = 现状单列；waterfall = 多列瀑布流（吸收右栏，左栏宽度不变）。默认 list。</div>
-        <select className="inp" style={{ marginTop: 12, maxWidth: 280 }} value={cfg.feed_layout || 'list'} onChange={(e) => setK('feed_layout', e.target.value)}>
+        <select className="haha-inp" style={{ marginTop: 12, maxWidth: 280 }} value={cfg.feed_layout || 'list'} onChange={(e) => setK('feed_layout', e.target.value)}>
           <option value="list">列表（默认）</option>
           <option value="waterfall">瀑布流</option>
         </select>
@@ -1129,7 +1129,7 @@ function AdminSearch({ value, onChange, onSearch, placeholder }: { value: string
     <>
       <div className="admin-search">
         <Icon name="search" size={15} />
-        <input className="inp" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSearch()} placeholder={placeholder} />
+        <Input className="haha-inp" value={value} onChange={(e: any) => onChange(e.target.value)} onKeyDown={(e: any) => e.key === 'Enter' && onSearch()} placeholder={placeholder} />
       </div>
       <button className="btn btn-ghost" onClick={onSearch}>搜索</button>
     </>
@@ -1163,10 +1163,10 @@ function FlashEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () => 
   return (
     <div style={{ padding: '0 18px 16px', background: 'var(--surface-2)' }}>
       <div className="sec-grid" style={{ paddingTop: 14 }}>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><input className="inp" maxLength={120} value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要</span><textarea className="inp" rows={2} maxLength={300} value={f.summary} onChange={(e) => setF((s) => ({ ...s, summary: e.target.value }))} /></label>
-        <label className="sec-field"><span className="sec-label">分类</span><select className="inp" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-        <label className="sec-field"><span className="sec-label">链接</span><input className="inp" maxLength={300} value={f.url} onChange={(e) => setF((s) => ({ ...s, url: e.target.value }))} placeholder="https://…" /></label>
+        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={f.title} onChange={(e: any) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
+        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要</span><Textarea className="haha-inp" minRows={2} maxLength={300} value={f.summary} onChange={(e: any) => setF((s) => ({ ...s, summary: e.target.value }))} /></label>
+        <label className="sec-field"><span className="sec-label">分类</span><select className="haha-inp" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+        <label className="sec-field"><span className="sec-label">链接</span><Input className="haha-inp" maxLength={300} value={f.url} onChange={(e: any) => setF((s) => ({ ...s, url: e.target.value }))} placeholder="https://…" /></label>
       </div>
       <div className="row" style={{ justifyContent: 'space-between', marginTop: 12, alignItems: 'center' }}>
         <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={f.pinned} onChange={(v) => setF((s) => ({ ...s, pinned: v }))} /> 置顶</label>
@@ -1204,10 +1204,10 @@ function FlashAdmin() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 12 }}>发布快报</div>
         <div className="sec-grid">
-          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><input className="inp" maxLength={120} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="一句话快报标题" /></label>
-          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要（可选）</span><textarea className="inp" rows={2} maxLength={300} value={form.summary} onChange={(e) => setForm((f) => ({ ...f, summary: e.target.value }))} placeholder="补充说明…" /></label>
-          <label className="sec-field"><span className="sec-label">分类</span><select className="inp" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-          <label className="sec-field"><span className="sec-label">链接（可选）</span><input className="inp" maxLength={300} value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="https://…" /></label>
+          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={form.title} onChange={(e: any) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="一句话快报标题" /></label>
+          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要（可选）</span><Textarea className="haha-inp" minRows={2} maxLength={300} value={form.summary} onChange={(e: any) => setForm((f) => ({ ...f, summary: e.target.value }))} placeholder="补充说明…" /></label>
+          <label className="sec-field"><span className="sec-label">分类</span><select className="haha-inp" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+          <label className="sec-field"><span className="sec-label">链接（可选）</span><Input className="haha-inp" maxLength={300} value={form.url} onChange={(e: any) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="https://…" /></label>
         </div>
         <div className="row" style={{ justifyContent: 'space-between', marginTop: 14 }}>
           <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={form.pinned} onChange={(v) => setForm((f) => ({ ...f, pinned: v }))} /> 置顶</label>
@@ -1287,8 +1287,8 @@ function NavAdmin() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 12 }}>新建分类</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <input className="inp" style={{ maxWidth: 220 }} maxLength={20} value={newCat.name} onChange={(e) => setNewCat((c) => ({ ...c, name: e.target.value }))} placeholder="分类名（如 开发工具）" />
-          <input className="inp" style={{ maxWidth: 150 }} value={newCat.icon} onChange={(e) => setNewCat((c) => ({ ...c, icon: e.target.value }))} placeholder="图标 如 compass" />
+          <Input className="haha-inp" style={{ maxWidth: 220 }} maxLength={20} value={newCat.name} onChange={(e: any) => setNewCat((c) => ({ ...c, name: e.target.value }))} placeholder="分类名（如 开发工具）" />
+          <Input className="haha-inp" style={{ maxWidth: 150 }} value={newCat.icon} onChange={(e: any) => setNewCat((c) => ({ ...c, icon: e.target.value }))} placeholder="图标 如 compass" />
           <button className="btn btn-primary" onClick={addCat} disabled={!newCat.name.trim()}><Icon name="plus" size={15} /> 添加分类</button>
         </div>
       </div>
@@ -1297,8 +1297,8 @@ function NavAdmin() {
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8, gap: 8, flexWrap: 'wrap' }}>
             {editCat === c.id ? (
               <span className="row gap-8" style={{ flexWrap: 'wrap' }}>
-                <input className="inp" style={{ maxWidth: 180 }} maxLength={20} value={editCatVals.name} onChange={(e) => setEditCatVals((v) => ({ ...v, name: e.target.value }))} placeholder="分类名" />
-                <input className="inp" style={{ maxWidth: 140 }} value={editCatVals.icon} onChange={(e) => setEditCatVals((v) => ({ ...v, icon: e.target.value }))} placeholder="图标" />
+                <Input className="haha-inp" style={{ maxWidth: 180 }} maxLength={20} value={editCatVals.name} onChange={(e: any) => setEditCatVals((v) => ({ ...v, name: e.target.value }))} placeholder="分类名" />
+                <Input className="haha-inp" style={{ maxWidth: 140 }} value={editCatVals.icon} onChange={(e: any) => setEditCatVals((v) => ({ ...v, icon: e.target.value }))} placeholder="图标" />
                 <SaveBtn onSave={() => saveCat(c.id)} />
                 <button className="btn btn-ghost btn-sm" onClick={() => setEditCat(null)}>取消</button>
               </span>
@@ -1315,8 +1315,8 @@ function NavAdmin() {
           {c.links.map((l: any) => (
             editLink === l.id ? (
               <div className="row gap-8" key={l.id} style={{ padding: '7px 0', borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
-                <input className="inp" style={{ maxWidth: 160 }} maxLength={40} value={editLinkVals.title} onChange={(e) => setEditLinkVals((v) => ({ ...v, title: e.target.value }))} placeholder="网站名" />
-                <input className="inp grow" maxLength={300} value={editLinkVals.url} onChange={(e) => setEditLinkVals((v) => ({ ...v, url: e.target.value }))} placeholder="https://…" />
+                <Input className="haha-inp" style={{ maxWidth: 160 }} maxLength={40} value={editLinkVals.title} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, title: e.target.value }))} placeholder="网站名" />
+                <Input className="haha-inp grow" maxLength={300} value={editLinkVals.url} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, url: e.target.value }))} placeholder="https://…" />
                 <SaveBtn onSave={() => saveLink(l.id)} />
                 <button className="btn btn-ghost btn-sm" onClick={() => setEditLink(null)}>取消</button>
               </div>
@@ -1329,8 +1329,8 @@ function NavAdmin() {
             )
           ))}
           <div className="row gap-8" style={{ marginTop: 10, flexWrap: 'wrap' }}>
-            <input className="inp" style={{ maxWidth: 160 }} value={newLink[c.id]?.title || ''} onChange={(e) => setLF(c.id, 'title', e.target.value)} placeholder="网站名" />
-            <input className="inp grow" value={newLink[c.id]?.url || ''} onChange={(e) => setLF(c.id, 'url', e.target.value)} placeholder="https://…" />
+            <Input className="haha-inp" style={{ maxWidth: 160 }} value={newLink[c.id]?.title || ''} onChange={(e: any) => setLF(c.id, 'title', e.target.value)} placeholder="网站名" />
+            <Input className="haha-inp grow" value={newLink[c.id]?.url || ''} onChange={(e: any) => setLF(c.id, 'url', e.target.value)} placeholder="https://…" />
             <SaveBtn onSave={() => addLink(c.id)} label="添加链接" />
           </div>
         </div>
@@ -1416,8 +1416,8 @@ function PaymentAdmin() {
       <label className="sec-field" style={area ? { gridColumn: '1 / -1' } : undefined}>
         <span className="sec-label">{label}{secret ? <Icon name="shield" size={12} style={{ color: 'var(--ink-4)', verticalAlign: '-1px', marginLeft: 4 }} /> : null}</span>
         {area
-          ? <textarea className="inp" rows={2} value={cfg[k] ?? ''} onChange={(e) => setK(k, e.target.value)} placeholder={placeholder} />
-          : <input className="inp" value={cfg[k] ?? ''} onChange={(e) => setK(k, e.target.value)} placeholder={placeholder} />}
+          ? <Textarea className="haha-inp" minRows={2} value={cfg[k] ?? ''} onChange={(e: any) => setK(k, e.target.value)} placeholder={placeholder} />
+          : <Input className="haha-inp" value={cfg[k] ?? ''} onChange={(e: any) => setK(k, e.target.value)} placeholder={placeholder} />}
       </label>
     );
   };
@@ -1468,7 +1468,7 @@ function PaymentAdmin() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>充值档位</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>会员中心充值页展示的金额按钮（单位：分，逗号分隔，最多 8 档；留空用内置默认 1000,3000,6800,19800）。例如 1000 显示为 ¥10。</div>
-        <input className="inp" value={cfg.recharge_tiers ?? ''} onChange={(e) => setK('recharge_tiers', e.target.value)} placeholder="1000,3000,6800,19800" maxLength={200} style={{ marginTop: 10 }} />
+        <Input className="haha-inp" value={cfg.recharge_tiers ?? ''} onChange={(e: any) => setK('recharge_tiers', e.target.value)} placeholder="1000,3000,6800,19800" maxLength={200} style={{ marginTop: 10 }} />
         <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 16 }}>付费内容价格上限</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>用户发「付费解锁」动态时允许的最高积分价格（留空用默认 100000）。</div>
         <label className="sec-field" style={{ marginTop: 10 }}><span className="sec-num"><input type="number" min={1} value={cfg.paid_price_max ?? ''} placeholder="100000" onChange={(e) => setK('paid_price_max', e.target.value)} /><i>积分</i></span></label>
@@ -1488,7 +1488,7 @@ function PaymentAdmin() {
           {([['vip1_name', 'VIP1 名称', '青铜会员'], ['vip1_tagline', 'VIP1 标语', '入门尊享，畅快互动'], ['vip2_name', 'VIP2 名称', '黄金会员'], ['vip2_tagline', 'VIP2 标语', '高频活跃用户之选'], ['vip3_name', 'VIP3 名称', '黑钻会员'], ['vip3_tagline', 'VIP3 标语', '至尊体验，全部解锁']] as [string, string, string][]).map(([k, label, ph]) => (
             <label className="sec-field" key={k}>
               <span className="sec-label">{label}</span>
-              <input className="inp" value={cfg[k] ?? ''} placeholder={ph} onChange={(e) => setK(k, e.target.value)} maxLength={k.includes('tagline') ? 60 : 40} />
+              <Input className="haha-inp" value={cfg[k] ?? ''} placeholder={ph} onChange={(e: any) => setK(k, e.target.value)} maxLength={k.includes('tagline') ? 60 : 40} />
             </label>
           ))}
         </div>
@@ -1498,7 +1498,7 @@ function PaymentAdmin() {
           {([['vip1_perks', '青铜 VIP1 权益'], ['vip2_perks', '黄金 VIP2 权益'], ['vip3_perks', '黑钻 VIP3 权益']] as [string, string][]).map(([k, label]) => (
             <label className="sec-field" key={k}>
               <span className="sec-label">{label}</span>
-              <textarea className="inp" rows={4} value={cfg[k] ?? ''} maxLength={600} onChange={(e) => setK(k, e.target.value)} placeholder="每行一条权益" style={{ lineHeight: 1.6 }} />
+              <Textarea className="haha-inp" minRows={4} value={cfg[k] ?? ''} maxLength={600} onChange={(e: any) => setK(k, e.target.value)} placeholder="每行一条权益" style={{ lineHeight: 1.6 }} />
             </label>
           ))}
         </div>
@@ -1607,8 +1607,8 @@ function LotteryAdmin() {
       {list.map((p, i) => (
         <div className="ui-card" style={{ padding: 14 }} key={p.id ?? 'new' + i}>
           <div className="sec-grid">
-            <label className="sec-field"><span className="sec-label">奖品名 <i className="sec-req">*</i></span><input className="inp" value={p.name} onChange={(e) => setField(i, 'name', e.target.value)} placeholder="如 100 积分" /></label>
-            <label className="sec-field"><span className="sec-label">类型</span><select className="inp" value={p.type} onChange={(e) => setField(i, 'type', e.target.value)}>{LOT_TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+            <label className="sec-field"><span className="sec-label">奖品名 <i className="sec-req">*</i></span><Input className="haha-inp" value={p.name} onChange={(e: any) => setField(i, 'name', e.target.value)} placeholder="如 100 积分" /></label>
+            <label className="sec-field"><span className="sec-label">类型</span><select className="haha-inp" value={p.type} onChange={(e) => setField(i, 'type', e.target.value)}>{LOT_TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
             <label className="sec-field"><span className="sec-label">奖品值（积分数 / 物品标识）</span><input className="inp" value={p.value} onChange={(e) => setField(i, 'value', e.target.value)} placeholder="积分填数字，如 100" /></label>
             <label className="sec-field"><span className="sec-label">权重</span><input className="inp" type="number" min={0} value={p.weight} onChange={(e) => setField(i, 'weight', e.target.value)} /></label>
           </div>

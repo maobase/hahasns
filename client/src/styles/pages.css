@@ -628,7 +628,9 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 /* v3 给 .input 自带 text-align:start，打断原生 input 的 text-align 继承链（图标框 textAlign:center 实测左偏 7px），
    inherit 还原原生继承行为；字号同理（内联 fontSize 经 wrap 继承，对齐 base.css input{…inherit}）。 */
 .admin-shell .haha-inp .haha-input { font-size: inherit; text-align: inherit; font-variant-numeric: tabular-nums; }
-.admin-shell textarea.haha-inp { font-size: 13.5px; }
+/* 36px 定高只针对单行 input wrap；textarea 由 rows 定高（height:auto），否则 rows=4/5 的多行框
+   会被 36px 声明压到 min-height:90px（Admin 批2 敏感词/举报理由/VIP 权益实测缩水 42px/处）。 */
+.admin-shell textarea.haha-inp { height: auto; font-size: 13.5px; }
 .admin-shell select.haha-inp { height: 36px; font-size: 13.5px; border-radius: var(--r-sm); border-color: var(--line-2);
   -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 30px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -702,7 +704,7 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 /* B 端搜索框（design.md「Arco 搜索」）：放大镜图标前缀 + 输入框铺满，搜索按钮与输入等高(36px)。仅 .admin-shell。 */
 .admin-shell .admin-search { position: relative; flex: 1; display: flex; align-items: center; min-width: 0; }
 .admin-shell .admin-search > svg { position: absolute; left: 11px; color: var(--ink-3); pointer-events: none; }
-.admin-shell .admin-search .inp { width: 100%; padding-left: 33px; }
+.admin-shell .admin-search .inp, .admin-shell .admin-search .haha-inp { width: 100%; padding-left: 33px; }
 
 /* ===== Auth wall (login/register landing) ===== */
 .auth-splash { min-height: 100vh; display: grid; place-items: center; background: var(--page); }
