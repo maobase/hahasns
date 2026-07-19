@@ -388,7 +388,7 @@
 .modal-mask { position: fixed; inset: 0; z-index: 100; background: var(--scrim); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 20px; animation: modal-backdrop .22s var(--ease-out) both; }
 /* Cap the dialog to the viewport and scroll inside it, so a tall modal on a short
    screen never clips its header/submit button off-screen. */
-.modal { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-lg); width: 100%; max-width: 420px; box-shadow: var(--shadow-pop); max-height: calc(100dvh - 40px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; transform-origin: center; animation: modal-in .28s cubic-bezier(.2,.8,.3,1) both; }
+.modal { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--r-lg); width: 100%; max-width: 420px; box-shadow: var(--shadow-pop); max-height: calc(100dvh - 40px); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; transform-origin: center; animation: modal-in .28s cubic-bezier(.2,.8,.3,1) both; padding: 0; /* padding 显式归零：压住 HeroUI v3 .modal__dialog 自带的 24px 内边距（内边距历来由 .modal-head/.modal-body 承担，旧实现本也是 0） */ }
 .modal::-webkit-scrollbar { width: 7px; }
 .modal::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; }
 @keyframes modal-backdrop { from { opacity: 0; } to { opacity: 1; } }
@@ -400,6 +400,27 @@
 .modal-body { padding: 18px 22px 22px; }
 .modal-close { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-3); }
 .modal-close:hover { background: var(--surface-2); }
+/* ── Modal 双轨收敛（spec01 §1.2）：自研 <Modal> 改由 HeroUI Modal 渲染，
+   以下规则把 v3 容器层中和为透明壳、把开关动画对齐回旧实现（视觉零变化）。── */
+/* v3 .modal__backdrop 自带 justify-content:center：display 被 .modal-mask 叠成 grid 后，
+   该声明会阻止 grid auto 轨道拉伸（默认 normal=stretch），弹层宽度塌成内容宽。
+   恢复 stretch，让轨道占满遮罩内容区（旧几何：.modal 宽 = min(max-width, 视口-40px)）。 */
+.modal-mask { justify-content: stretch; }
+/* v3 Container 自带 fit-content 宽度 / 40px 内边距 / 视口高度，中和为撑满遮罩
+   内容区（padding 20px 之内）的透明壳，让 .modal 的宽度与居中保持旧几何。 */
+.modal-shell { width: 100%; height: 100%; padding: 0; }
+/* 垂直居中：旧实现靠遮罩 grid place-items 居中；新结构里 .modal 是 flex(column) 壳的
+   子项，v3 自带的 [data-placement] margin-block:auto 未生效（margin 被 preflight 归零），
+   这里显式声明（只作用于弹层场景，无水平副作用——水平居中由壳的 align-items:center 保证）。 */
+.modal { margin-block: auto; }
+/* 关掉 v3 容器层的进入/退出动画：打开动画沿用 .modal 的 modal-in（避免双层缩放叠加），
+   关闭与旧实现一样立即卸载。 */
+.modal-shell[data-entering], .modal-shell[data-exiting] { animation: none; }
+/* 遮罩进入：覆盖 v3 [data-entering] 的 enter 关键帧，沿用旧的 modal-backdrop .22s；
+   同时也避免 data-entering 移除瞬间 animation 切换回 modal-backdrop 造成二次淡入。 */
+.modal-mask[data-entering] { animation: modal-backdrop .22s var(--ease-out) both; }
+/* 遮罩退出：旧实现关闭即卸载，不做淡出。 */
+.modal-mask[data-exiting] { animation: none; }
 
 /* form field */
 .field { margin-bottom: 14px; }

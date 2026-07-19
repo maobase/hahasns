@@ -399,6 +399,9 @@ export function Modal({
   placement = 'center',
   size = 'md',
   backdrop, // blur/opaque → v3 backdrop variant
+  classNames, // optional per-slot class pass-through: { backdrop, container, dialog }.
+              // Lets the app's legacy <Modal> (components/Modal.tsx) keep its exact
+              // .modal-mask/.modal chrome while rendering the v3 stack underneath.
   ...rest
 }) {
   // Pull the render-prop (or static node) out of the <ModalContent> child.
@@ -420,9 +423,9 @@ export function Modal({
 
   return (
     <V3Modal isOpen={isOpen} onOpenChange={handleOpenChange} {...rest}>
-      <V3Modal.Backdrop variant={backdrop === 'blur' ? 'blur' : undefined}>
-        <V3Modal.Container placement={placement} size={size}>
-          <V3Modal.Dialog className="haha-modal-dialog">{dialogChildren}</V3Modal.Dialog>
+      <V3Modal.Backdrop className={classNames?.backdrop} variant={backdrop === 'blur' ? 'blur' : undefined}>
+        <V3Modal.Container className={classNames?.container} placement={placement} size={size}>
+          <V3Modal.Dialog className={cx('haha-modal-dialog', classNames?.dialog)}>{dialogChildren}</V3Modal.Dialog>
         </V3Modal.Container>
       </V3Modal.Backdrop>
     </V3Modal>

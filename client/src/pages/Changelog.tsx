@@ -27,6 +27,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.49', date: '2026-07-19 12:59:15', items: [
+      ['refactor', '全站弹窗统一为 HeroUI Modal 实现：发帖、收藏、举报、确认框等 17 处弹窗收敛到同一底层，外观、动画与交互（ESC / 点遮罩关闭）保持不变。'],
+    ],
+  },
+  {
     ver: 'v5.48', date: '2026-07-19 11:43:44', items: [
       ['refactor', '信息流筛选标签统一为 HeroUI Tabs：首页、搜索、通知、积分商城、话题、专题、圈子详情 7 个页面的切换标签同一实现，外观与交互保持不变。'],
     ],
