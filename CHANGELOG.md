@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.67 — 2026-07-20 04:54:00
+
+- **[重构]** 管理后台代码拆分（第 8 刀）：「商城」「安全」「模块」「布局」四面板从 Admin.tsx 整体抽离为独立模块 pages/admin/MallPanel.tsx（商品上架 / 搜索 / 行内编辑 / 下架 + 兑换记录统计与导出 CSV）、pages/admin/SecurityPanel.tsx（注册验证、防批量注册、频率限制、权限门控、敏感词、注册控制、举报理由、上传限制）、pages/admin/ModulesPanel.tsx（功能模块开关）与 pages/admin/LayoutPanel.tsx（页面布局 / 信息流布局 / 右栏挂件），组件均自取自存、无外部 props，共享件沿用 pages/admin/ui.tsx（Toggle / ListHead / downloadCSV / SaveBtn / AdminSearch）、无新上提，Admin.tsx 瘦至 1041 行，功能与外观保持不变。
+
 ## v5.66 — 2026-07-20 04:22:30
 
 - **[重构]** 管理后台代码拆分（第 7 刀）：「快报」与「导航」两面板从 Admin.tsx 整体抽离为独立模块 pages/admin/FlashPanel.tsx（发布快报、搜索列表、行内编辑 / 置顶 / 删除）与 pages/admin/NavPanel.tsx（导航分类与链接的新建 / 编辑 / 删除），组件均自取自存、无外部 props；B 端搜索框 AdminSearch 上提 pages/admin/ui.tsx 共享（用户 / 话题 / 商品 / 快报 / 文章 / 活动 / 圈子 / 问答多处统一引用），Admin.tsx 瘦至 1465 行，功能与外观保持不变。
