@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
+import { Input } from './heroui';
 
 /**
  * 品牌化单行输入弹窗——替代原生 window.prompt（管理端设密码/设版主等）。模块级单例桥
@@ -47,14 +48,14 @@ export function PromptHost() {
       <div className="modal-head"><div className="modal-title">{st.title || '请输入'}</div></div>
       <div className="modal-body">
         {st.label && <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 8 }}>{st.label}</div>}
-        <input
-          className="inp"
+        <Input
+          className="haha-inp"
           type={st.type || 'text'}
           value={val}
           autoFocus
           placeholder={st.placeholder || ''}
-          onChange={(e) => setVal(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && ok) submit(); }}
+          onChange={(e: any) => setVal(e.target.value)}
+          onKeyDown={(e: any) => { if (e.key === 'Enter' && ok) submit(); }}
           style={{ width: '100%' }}
         />
         {tooShort && <div className="field-err" style={{ marginTop: 6 }}>至少 {min} 位</div>}

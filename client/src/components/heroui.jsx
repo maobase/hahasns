@@ -236,6 +236,8 @@ export function Input({
   onChange,
   isRequired,
   id,
+  style, // → 外层 wrap（可见的输入框本体是 wrap，不是内部裸 input）
+  ref,   // React 19 ref-as-prop → 原生 <input>
   ...rest
 }) {
   const autoId = useId();
@@ -245,11 +247,12 @@ export function Input({
     onValueChange?.(e?.target?.value ?? '');
   };
   const field = (
-    <div className={cx('haha-input-wrap', className)}>
+    <div className={cx('haha-input-wrap', className)} style={style}>
       {startContent && <span className="haha-input-start">{startContent}</span>}
       <V3Input
         className="haha-input"
         id={inputId}
+        ref={ref}
         value={value ?? ''}
         onChange={handleChange}
         required={isRequired}
@@ -278,6 +281,7 @@ export function Textarea({
   onChange,
   minRows,
   id,
+  ref, // React 19 ref-as-prop → 原生 <textarea>（自增高/选区操作依赖它）
   ...rest
 }) {
   const autoId = useId();
@@ -290,6 +294,7 @@ export function Textarea({
     <V3TextArea
       className={cx('haha-textarea', className)}
       id={inputId}
+      ref={ref}
       value={value ?? ''}
       onChange={handleChange}
       rows={minRows}

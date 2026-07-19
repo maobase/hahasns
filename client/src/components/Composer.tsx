@@ -9,6 +9,7 @@ import { VIS_LABELS } from '../lib/format';
 import { uploadPickedFiles } from '../lib/upload';
 import { loadDraft, saveDraft, clearDraft as clearDraftStore, hasDraft } from '../lib/draft';
 import useMention from '../hooks/useMention';
+import { Input } from './heroui';
 import { onCtrlEnter } from '../lib/kbd';
 
 const EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 😡 👍 👏 🙏 💪 🎉 🔥 ✨ 💯 ❤️ 💔 🌈 ☕ 🍜 🎵 📷 🌙 ⭐ 🐱 🐶 🌸 🍀 🚀 💎'.split(' ');
@@ -240,23 +241,23 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
           {vis === 'paid' && (
             <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
               <span className="muted">解锁价格</span>
-              <input type="number" min={1} max={paidPriceMax} value={price} onChange={(e) => setPrice(e.target.value)}
-                className="inp inp-sm" style={{ width: 96 }} />
+              <Input type="number" min={1} max={paidPriceMax} value={price} onChange={(e: any) => setPrice(e.target.value)}
+                className="haha-inp haha-inp-sm" style={{ width: 96 }} />
               <span className="muted">积分</span>
             </div>
           )}
           {vis === 'password' && (
             <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
               <span className="muted">访问密码</span>
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="设置查看密码"
-                className="inp inp-sm" style={{ width: 170 }} />
+              <Input value={password} onChange={(e: any) => setPassword(e.target.value)} placeholder="设置查看密码"
+                className="haha-inp haha-inp-sm" style={{ width: 170 }} />
             </div>
           )}
           {showLoc && (
             <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
               <Icon name="location" size={15} style={{ color: 'var(--brand)' }} />
-              <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="所在城市，如：上海" maxLength={20}
-                className="inp inp-sm" style={{ width: 210 }} />
+              <Input value={location} onChange={(e: any) => setLocation(e.target.value)} placeholder="所在城市，如：上海" maxLength={20}
+                className="haha-inp haha-inp-sm" style={{ width: 210 }} />
               {location && <button className="faint" style={{ fontSize: 12 }} onClick={() => { setLocation(''); setShowLoc(false); }}>清除</button>}
             </div>
           )}
@@ -308,12 +309,12 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
               </div>
               <div className="rp-editor-row">
                 <label className="rp-ef"><span>总积分</span>
-                  <input type="number" min={1} value={redPacket.points} onChange={(e) => setRedPacket((r: any) => ({ ...r, points: e.target.value }))} className="inp inp-sm" /></label>
+                  <Input type="number" min={1} value={redPacket.points} onChange={(e: any) => setRedPacket((r: any) => ({ ...r, points: e.target.value }))} className="haha-inp haha-inp-sm" /></label>
                 <label className="rp-ef"><span>红包个数</span>
-                  <input type="number" min={1} max={100} value={redPacket.count} onChange={(e) => setRedPacket((r: any) => ({ ...r, count: e.target.value }))} className="inp inp-sm" /></label>
+                  <Input type="number" min={1} max={100} value={redPacket.count} onChange={(e: any) => setRedPacket((r: any) => ({ ...r, count: e.target.value }))} className="haha-inp haha-inp-sm" /></label>
               </div>
-              <input className="inp inp-sm rp-ef-bless" maxLength={30} placeholder="祝福语（选填）" value={redPacket.blessing}
-                onChange={(e) => setRedPacket((r: any) => ({ ...r, blessing: e.target.value }))} />
+              <Input className="haha-inp haha-inp-sm rp-ef-bless" maxLength={30} placeholder="祝福语（选填）" value={redPacket.blessing}
+                onChange={(e: any) => setRedPacket((r: any) => ({ ...r, blessing: e.target.value }))} />
               <div className="rp-editor-hint">
                 {Number(redPacket.count) > 0 && `${redPacket.count} 个红包随机分配 ${Number(redPacket.points) || 0} 积分，先到先得 · `}
                 你当前 {user?.points ?? 0} 积分

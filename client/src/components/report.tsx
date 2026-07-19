@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
+import { Textarea } from './heroui';
 import { useSite } from '../context/SiteContext';
 
 /**
@@ -53,12 +54,12 @@ export function ReportHost() {
             </label>
           ))}
         </div>
-        <textarea
-          className="inp"
+        <Textarea
+          className="haha-inp"
           style={{ width: '100%', minHeight: 62, resize: 'vertical', marginTop: 12, fontSize: 14, lineHeight: 1.6, padding: '9px 11px' }}
           placeholder={reason === '其他' ? '请描述举报原因' : '补充说明（选填）'}
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e: any) => setNote(e.target.value)}
           maxLength={200}
         />
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 16 }}>

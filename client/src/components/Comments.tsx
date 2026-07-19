@@ -9,6 +9,7 @@ import { UserName } from './Identity';
 import { CommentSkeleton, LoadError } from './States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Textarea } from './heroui';
 import api from '../api/client';
 import { confirmDialog } from './confirm';
 import { reportDialog } from './report';
@@ -44,7 +45,7 @@ function CommentItem({ c, me, onReply, onLike, onDelete, onReport, onEdit }: {
         <div className="cname"><UserHoverCard user={c.author}><UserName user={c.author} /></UserHoverCard></div>
         {editing ? (
           <div className="comment-edit">
-            <textarea className="inp" value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} autoFocus />
+            <Textarea className="haha-inp" value={draft} onChange={(e: any) => setDraft(e.target.value)} minRows={2} autoFocus />
             <div className="comment-edit-actions">
               <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(false); setDraft(c.content); }}>取消</button>
               <button className="btn btn-primary btn-sm" disabled={saving || !draft.trim()} onClick={saveEdit}>{saving ? '保存中…' : '保存'}</button>
@@ -170,17 +171,17 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
       <div className="row gap-8" style={{ padding: '12px 0', alignItems: 'flex-end' }}>
         <Avatar user={user} size={34} emoji={user ? undefined : 'emoji:🙂:#cdd3dd'} />
         <div style={{ flex: 1, position: 'relative' }}>
-          <textarea
+          <Textarea
             ref={inputRef}
             maxLength={5000}
             value={text}
-            rows={1}
-            onChange={(e) => { setText(e.target.value); mention.scan(e.target.value, e.target.selectionStart ?? 0); }}
-            onKeyDown={(e) => { if (mention.onKeyDown(e)) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
+            minRows={1}
+            onChange={(e: any) => { setText(e.target.value); mention.scan(e.target.value, e.target.selectionStart ?? 0); }}
+            onKeyDown={(e: any) => { if (mention.onKeyDown(e)) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
             onBlur={() => setTimeout(mention.close, 120)}
             onFocus={() => !user && setAuthOpen(true)}
             placeholder={!user ? '登录后即可参与评论…' : (replyTarget ? `回复 @${replyTarget.author.nickname}：` : '友善评论，@ 提及好友…')}
-            className="inp"
+            className="haha-inp"
             style={{ height: 'auto', minHeight: 40, maxHeight: 120, padding: '9px 16px', lineHeight: 1.45, resize: 'none', overflowY: 'auto' }}
           />
           {mention.dropdown}

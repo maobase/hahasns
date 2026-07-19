@@ -288,7 +288,7 @@
 .comments-more:hover { background: var(--surface-2); }
 /* inline comment editing */
 .comment-edit { margin-top: 4px; }
-.comment-edit textarea.inp { width: 100%; min-height: 58px; resize: vertical; font-size: 14.5px; line-height: 1.6; }
+.comment-edit textarea.inp, .comment-edit .haha-textarea { width: 100%; min-height: 58px; resize: vertical; font-size: 14.5px; line-height: 1.6; }
 .comment-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .cmt-edited { color: var(--ink-4); }
 
@@ -641,6 +641,28 @@
   resize: vertical; min-height: 80px; outline: none; transition: border-color var(--dur-fast), box-shadow var(--dur-fast); font-family: inherit; }
 .haha-textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 .haha-textarea::placeholder { color: var(--ink-4); }
+
+/* ── .inp 双轨抹平层（spec01 §1.2，输入框收敛批 1：prompt/report/Comments/Composer）──
+   shim Input/Textarea 加 .haha-inp（紧凑款再叠 .haha-inp-sm）即逐像素对齐自研 .inp：
+   固定总高 44px/36px（不定内高——Chrome 会把 1.5px 边取整，派生高度会差 1px）、
+   0 14px / 0 11px 内距、hover 灰边、focus 品牌环、同款过渡；
+   textarea 对齐 textarea.inp（11px 14px 内距、90px 最小高、1.6 行高）。
+   页面层批次沿用本类；最后一批才删 .inp 本体。 */
+.haha-inp { height: 44px; padding: 0 14px; transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out), background .15s; }
+.haha-inp:hover { border-color: var(--ink-4); }
+/* focus 规则必须放在 hover 之后：聚焦+悬停时保持品牌边/环（对齐 .inp 里 :focus 后于 :hover 的次序） */
+.haha-inp:focus-within, .haha-inp:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+/* 基线怪癖对齐：base.css 的 input:focus-visible{border-radius:revert} 会把聚焦的 .inp 打成直角；
+   wrap 不是原生 input 吃不到该规则，用 :has 同步同一表现（环随直角走）。 */
+.haha-inp:has(:focus-visible) { border-radius: revert; }
+.haha-inp .haha-input { height: 100%; }
+.haha-inp-sm { height: 36px; padding: 0 11px; border-radius: var(--r-sm); }
+.haha-inp-sm .haha-input { height: 100%; font-size: 13.5px; }
+/* HeroUI v3 给 .textarea 盖了 field 全套 state chrome（默认 shadow-field、hover/focus 换底色），
+   与 .inp 语言（无阴影、hover 只换边色、focus 只品牌边+环、底色恒 --surface）不符，逐态抹掉。 */
+textarea.haha-inp { height: auto; padding: 11px 14px; min-height: 90px; line-height: 1.6; box-shadow: none; }
+textarea.haha-inp:hover { background: var(--surface); box-shadow: none; }
+textarea.haha-inp:focus { background: var(--surface); box-shadow: 0 0 0 3px var(--brand-soft); }
 
 /* Select — v3 compound; style the trigger + popover. */
 .haha-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
