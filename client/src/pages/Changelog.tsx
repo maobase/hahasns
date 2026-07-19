@@ -27,6 +27,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.72', date: '2026-07-20 06:27:16', items: [
+      ['refactor', '前台组件拆分（第 3 刀）：动态卡片 PostCard 的三张内嵌弹窗抽离为独立组件 components/postcard/ShareModal.tsx（转发：可选评论 + 原动态摘要 + 发布，shareText 随迁为弹窗局部 state、组件常驻挂载跨开关保留）、components/postcard/EditModal.tsx（编辑：纯受控 value / onChange / onSave 下传，editText 因操作菜单打开前需重置为当前正文而留在 PostCard）与 components/postcard/TipModal.tsx（打赏：预设金额 / 自定义积分 / 确认打赏，rewardAmt 随迁为弹窗局部 state，api 与积分补丁经 useAuth / useToast 自取），JSX 逐字搬移、公开 props 签名零变化（9 个页面调用点不受影响），PostCard.tsx 由 354 行瘦至 305 行，功能与外观保持不变。'],
+    ],
+  },
+  {
     ver: 'v5.71', date: '2026-07-20 06:06:58', items: [
       ['refactor', '前台组件拆分（第 2 刀·收尾）：动态发布器 Composer 的表情面板与高级选项行抽离为独立受控组件 components/composer/EmojiPanel.tsx（emoji 网格 + onPick 回调，插入与 textarea 焦点逻辑留 Composer）与 components/composer/AdvancedFields.tsx（解锁价格 / 访问密码 / 所在位置三行，vis / price / password / showLoc / location 受控下传，展开收起 state 留 Composer）；同步清理历史残留死代码（Composer 内未被调用的 format / prefixLine / insertLink / insertAtCursor / uploadInline / inlineImgRef / resizeTa，论坛 Markdown 工具条另有 MarkdownToolbar 组件承载），Composer.tsx 由 302 行瘦至 201 行，功能与外观保持不变。'],
     ],

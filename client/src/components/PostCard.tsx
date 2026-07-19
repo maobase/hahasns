@@ -9,8 +9,10 @@ import Poll from './Poll';
 import RedPacket from './RedPacket';
 import Reactions from './Reactions';
 import Comments from './Comments';
-import Modal from './Modal';
 import CollectModal from './CollectModal';
+import ShareModal from './postcard/ShareModal';
+import EditModal from './postcard/EditModal';
+import TipModal from './postcard/TipModal';
 import { Button } from './heroui';
 import { useDismiss } from '../lib/useDismiss';
 import { onImgError } from '../lib/img';
@@ -51,7 +53,6 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   const [showComments, setShowComments] = useState(defaultOpenComments);
   const [expanded, setExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [shareText, setShareText] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   useDismiss(menuOpen, () => setMenuOpen(false), menuRef);
@@ -61,7 +62,6 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   const [editOpen, setEditOpen] = useState(false);
   const [editText, setEditText] = useState(initial.content || '');
   const [rewardOpen, setRewardOpen] = useState(false);
-  const [rewardAmt, setRewardAmt] = useState<any>(18);
   const [collOpen, setCollOpen] = useState(false);
   const [posterOpen, setPosterOpen] = useState(false);
 
@@ -91,21 +91,6 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
   };
 
   const reward = () => { if (requireLogin()) return; setRewardOpen(true); };
-  const doReward = async () => {
-    const amt = Math.max(1, Number(rewardAmt) || 0);
-    if (amt > (user?.points || 0)) return toast.err('积分不足，先去签到赚积分吧');
-    try {
-      await api.post(`/posts/${post.id}/reward`, { amount: amt });
-      patchUser({ points: (user?.points || 0) - amt });
-      setRewardOpen(false);
-      toast.ok(`已打赏 ${amt} 积分 🎁`);
-    } catch (e: any) { toast.err(e.message); }
-  };
-
-  const doShare = async () => {
-    try { await api.post(`/posts/${post.id}/share`, { content: shareText }); setShareOpen(false); setShareText(''); toast.ok('转发成功'); }
-    catch (e: any) { toast.err(e.message); }
-  };
 
   const remove = async () => {
     if (!(await confirmDialog('删除后不可恢复', { title: '删除这条动态？', confirmText: '删除' }))) return;
@@ -312,43 +297,9 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
       <CollectModal open={collOpen} onClose={() => setCollOpen(false)} targetType="post" targetId={post.id} />
       {posterOpen && <Suspense fallback={null}><SharePoster open={posterOpen} onClose={() => setPosterOpen(false)} post={post} /></Suspense>}
 
-      <Modal open={shareOpen} onClose={() => setShareOpen(false)}>
-        <div className="modal-head"><div className="modal-title">转发动态</div></div>
-        <div className="modal-body">
-          <textarea className="field" style={{ width: '100%', minHeight: 80, padding: 12, border: '1.5px solid var(--line-2)', borderRadius: 10 }}
-            value={shareText} onChange={(e) => setShareText(e.target.value)} placeholder="说点什么…（可选）" />
-          <div className="repost" style={{ marginTop: 4 }}>
-            <UserName user={author} showBadges={false} />
-            <div className="post-body" style={{ fontSize: 13 }}>{(post.content || '').slice(0, 80)}</div>
-          </div>
-          <Button size="lg" color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 14 }} onClick={doShare}>转发</Button>
-        </div>
-      </Modal>
-
-      <Modal open={editOpen} onClose={() => setEditOpen(false)}>
-        <div className="modal-head"><div className="modal-title">编辑动态</div></div>
-        <div className="modal-body">
-          <textarea className="field" style={{ width: '100%', minHeight: 110, padding: 12, border: '1.5px solid var(--line-2)', borderRadius: 10, background: 'var(--surface)', color: 'var(--ink)' }}
-            value={editText} onChange={(e) => setEditText(e.target.value)} autoFocus />
-          <Button size="lg" color="primary" fullWidth className="haha-btn-app" onClick={saveEdit} isDisabled={!editText.trim()}>保存修改</Button>
-        </div>
-      </Modal>
-
-      <Modal open={rewardOpen} onClose={() => setRewardOpen(false)}>
-        <div className="modal-head"><div className="modal-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="gift" size={18} /> 打赏 {author?.nickname}</div><div className="modal-sub">你当前有 {user?.points ?? 0} 积分</div></div>
-        <div className="modal-body">
-          <div className="row gap-8" style={{ flexWrap: 'wrap', marginBottom: 12 }}>
-            {[6, 18, 66, 188, 520].map((a) => (
-              <Button key={a} color="primary" variant={Number(rewardAmt) === a ? 'solid' : 'bordered'} className="haha-btn-app" onClick={() => setRewardAmt(a)}>{a}</Button>
-            ))}
-          </div>
-          <div className="field">
-            <label>自定义积分</label>
-            <input type="number" min={1} value={rewardAmt} onChange={(e) => setRewardAmt(e.target.value)} />
-          </div>
-          <Button size="lg" color="primary" fullWidth className="haha-btn-app" onClick={doReward}>确认打赏 {rewardAmt} 积分</Button>
-        </div>
-      </Modal>
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} post={post} />
+      <EditModal open={editOpen} onClose={() => setEditOpen(false)} value={editText} onChange={setEditText} onSave={saveEdit} />
+      <TipModal open={rewardOpen} onClose={() => setRewardOpen(false)} postId={post.id} nickname={author?.nickname} />
     </article>
   );
 }
