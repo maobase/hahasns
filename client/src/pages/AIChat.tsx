@@ -4,7 +4,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Empty, Loading, ChatListSkeleton } from '../components/States';
 import AiMarkdown from '../components/AiMarkdown';
-import { Spinner } from '../components/heroui';
+import { Spinner, Textarea } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -387,14 +387,14 @@ export default function AIChat() {
               <span className="ai-composer-hint">Enter 发送 · Shift+Enter 换行</span>
             </div>
             <div className="ai-composer-row">
-              <textarea
+              <Textarea
                 ref={taRef}
-                className="inp ai-textarea"
+                className="haha-inp ai-textarea"
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e: any) => setText(e.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="问点什么，或让我帮你润色一条动态…"
-                rows={1}
+                minRows={1}
               />
               <button className="ai-send" onClick={send} disabled={!text.trim() || streaming} aria-label="发送">
                 {streaming ? <Spinner size="sm" color="current" /> : <Icon name="send" size={18} />}

@@ -648,21 +648,33 @@
    0 14px / 0 11px 内距、hover 灰边、focus 品牌环、同款过渡；
    textarea 对齐 textarea.inp（11px 14px 内距、90px 最小高、1.6 行高）。
    页面层批次沿用本类；最后一批才删 .inp 本体。 */
-.haha-inp { height: 44px; padding: 0 14px; transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out), background .15s; }
+/* wrap 默认 position:relative（hero shim 基座）会把自己抬进 positioned 绘制层，聚焦环因此盖住
+   相邻按钮投影——原生 .inp 是普通流，环在按钮投影之下；归位 static 逐像素对齐基线（nav/mall 实测）。 */
+.haha-inp { position: static; height: 44px; padding: 0 14px; transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out), background .15s; }
 .haha-inp:hover { border-color: var(--ink-4); }
 /* focus 规则必须放在 hover 之后：聚焦+悬停时保持品牌边/环（对齐 .inp 里 :focus 后于 :hover 的次序） */
 .haha-inp:focus-within, .haha-inp:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 /* 基线怪癖对齐：base.css 的 input:focus-visible{border-radius:revert} 会把聚焦的 .inp 打成直角；
    wrap 不是原生 input 吃不到该规则，用 :has 同步同一表现（环随直角走）。 */
 .haha-inp:has(:focus-visible) { border-radius: revert; }
-.haha-inp .haha-input { height: 100%; }
+/* HeroUI v3 给 .input 自带 21.75px 行高，会推开 datetime-local 内部编辑器的垂直居中（390 下整行字偏 1px）；
+   line-height 归一到 body 的 1.6（23.2px@14.5px），与原生 .inp 的行高继承结果一致。 */
+.haha-inp .haha-input { height: 100%; line-height: 1.6; }
 .haha-inp-sm { height: 36px; padding: 0 11px; border-radius: var(--r-sm); }
 .haha-inp-sm .haha-input { height: 100%; font-size: 13.5px; }
 /* HeroUI v3 给 .textarea 盖了 field 全套 state chrome（默认 shadow-field、hover/focus 换底色），
    与 .inp 语言（无阴影、hover 只换边色、focus 只品牌边+环、底色恒 --surface）不符，逐态抹掉。 */
-textarea.haha-inp { height: auto; padding: 11px 14px; min-height: 90px; line-height: 1.6; box-shadow: none; }
+textarea.haha-inp { height: auto; padding: 11px 14px; resize: vertical; min-height: 90px; line-height: 1.6; box-shadow: none; }
 textarea.haha-inp:hover { background: var(--surface); box-shadow: none; }
 textarea.haha-inp:focus { background: var(--surface); box-shadow: 0 0 0 3px var(--brand-soft); }
+/* 批 2 页面层补充两种形态：
+   ① .field 容器（Collections 创建专题）——`.field input` 后代选择器仍会命中 wrap 里的裸 input，
+      边框/内距已在 wrap 上，内部抹零防止双边框双内距（高度由 .haha-inp .haha-input 接管）。 */
+.field .haha-input-wrap .haha-input { border: 0; padding: 0; }
+/* ② 原生 <select>（Mall 充值渠道）——shim 只覆盖 Input/Textarea，原生下拉直挂 .haha-inp 时
+      补全 .inp 基座声明（边/圆角/底/字/宽），hover/focus 态沿用上方 .haha-inp 通用规则。 */
+select.haha-inp { width: 100%; border: 1.5px solid var(--line-2); border-radius: var(--r-md); outline: none;
+  background: var(--surface); color: var(--ink); font-size: 14.5px; font-family: inherit; }
 
 /* Select — v3 compound; style the trigger + popover. */
 .haha-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;

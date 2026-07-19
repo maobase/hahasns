@@ -4,6 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Modal from '../components/Modal';
 import { Empty, EventListSkeleton, LoadError } from '../components/States';
+import { Input } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -193,7 +194,7 @@ function CreateEvent({ open, onClose, onCreated }: { open: boolean; onClose: () 
     <Modal open={open} onClose={onClose} large>
       <div className="modal-head"><div className="modal-title">发起活动</div></div>
       <div className="modal-body ev-form">
-        <input className="inp" placeholder="活动标题" value={f.title} maxLength={50} onChange={(e) => set('title', e.target.value)} />
+        <Input className="haha-inp" placeholder="活动标题" value={f.title} maxLength={50} onChange={(e: any) => set('title', e.target.value)} />
         <div className="ev-form-cats">
           {CATS.map((c) => (
             <button key={c} type="button" className={`ev-cat-pill${f.category === c ? ' on' : ''}`} onClick={() => set('category', c)} style={{ '--cc': evColor(c) } as React.CSSProperties}>
@@ -202,16 +203,16 @@ function CreateEvent({ open, onClose, onCreated }: { open: boolean; onClose: () 
           ))}
         </div>
         <div className="ev-form-row">
-          <label className="ev-field"><span>开始时间</span><input className="inp" type="datetime-local" value={f.startAt} onChange={(e) => set('startAt', e.target.value)} /></label>
-          <label className="ev-field"><span>结束时间（选填）</span><input className="inp" type="datetime-local" value={f.endAt} onChange={(e) => set('endAt', e.target.value)} /></label>
+          <label className="ev-field"><span>开始时间</span><Input className="haha-inp" type="datetime-local" value={f.startAt} onChange={(e: any) => set('startAt', e.target.value)} /></label>
+          <label className="ev-field"><span>结束时间（选填）</span><Input className="haha-inp" type="datetime-local" value={f.endAt} onChange={(e: any) => set('endAt', e.target.value)} /></label>
         </div>
         <label className="ev-checkbox"><input type="checkbox" checked={f.online} onChange={(e) => set('online', e.target.checked)} /> 线上活动</label>
-        <input className="inp" placeholder={f.online ? '会议链接 / 平台' : '活动地点'} value={f.location} onChange={(e) => set('location', e.target.value)} />
+        <Input className="haha-inp" placeholder={f.online ? '会议链接 / 平台' : '活动地点'} value={f.location} onChange={(e: any) => set('location', e.target.value)} />
         <div className="ev-form-row">
-          <label className="ev-field"><span>名额上限（0 不限）</span><input className="inp" type="number" min={0} value={f.capacity} onChange={(e) => set('capacity', e.target.value)} /></label>
-          <label className="ev-field"><span>报名积分（0 免费）</span><input className="inp" type="number" min={0} value={f.fee} onChange={(e) => set('fee', e.target.value)} /></label>
+          <label className="ev-field"><span>名额上限（0 不限）</span><Input className="haha-inp" type="number" min={0} value={f.capacity} onChange={(e: any) => set('capacity', e.target.value)} /></label>
+          <label className="ev-field"><span>报名积分（0 免费）</span><Input className="haha-inp" type="number" min={0} value={f.fee} onChange={(e: any) => set('fee', e.target.value)} /></label>
         </div>
-        <input className="inp" placeholder="封面图链接（选填）" value={f.cover} onChange={(e) => set('cover', e.target.value)} />
+        <Input className="haha-inp" placeholder="封面图链接（选填）" value={f.cover} onChange={(e: any) => set('cover', e.target.value)} />
         <textarea className="art-ed-body" style={{ minHeight: 120 }} placeholder="活动介绍：流程、注意事项、报名要求…" value={f.description} onChange={(e) => set('description', e.target.value)} />
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 6 }}>
           <button className="btn btn-ghost" onClick={onClose}>取消</button>

@@ -6,6 +6,7 @@ import Icon from '../components/Icon';
 import Modal from '../components/Modal';
 import { Badges } from '../components/Identity';
 import { Empty, Loading } from '../components/States';
+import { Input } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout, useSite } from '../context/SiteContext';
@@ -166,7 +167,7 @@ export default function Member() {
         </div>
         <p className="mc-invite-sub">好友用你的邀请链接注册，<b>你 +{invites?.rewardPerInvite ?? 50} 积分</b>、好友得 +30 积分见面礼。</p>
         <div className="mc-invite-row">
-          <input className="inp" readOnly value={inviteLink} onFocus={(e) => e.currentTarget.select()} aria-label="邀请链接" />
+          <Input className="haha-inp" readOnly value={inviteLink} onFocus={(e: any) => e.currentTarget.select()} aria-label="邀请链接" />
           <button type="button" className="btn btn-primary" onClick={copyInvite} style={{ flex: 'none' }}><Icon name="copy" size={15} /> 复制</button>
         </div>
         {invites?.invitees?.length > 0 && (

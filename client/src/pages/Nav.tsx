@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardBody, Spinner, Chip } from '../components/heroui';
+import { Card, CardBody, Spinner, Chip, Input } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Empty } from '../components/States';
@@ -98,8 +98,8 @@ function MyBookmarks() {
           {adding && (
             <div className="ui-card" style={{ padding: 14, marginBottom: 10 }}>
               <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-                <input className="inp" style={{ maxWidth: 160 }} maxLength={40} value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="网站名" />
-                <input className="inp grow" maxLength={300} value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="https://… 或直接粘贴网址" onKeyDown={(e) => { if (e.key === 'Enter') add(); }} />
+                <Input className="haha-inp" style={{ maxWidth: 160 }} maxLength={40} value={form.title} onChange={(e: any) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="网站名" />
+                <Input className="haha-inp grow" maxLength={300} value={form.url} onChange={(e: any) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="https://… 或直接粘贴网址" onKeyDown={(e: any) => { if (e.key === 'Enter') add(); }} />
                 <button className="btn btn-primary btn-sm" onClick={add}>收藏</button>
               </div>
             </div>

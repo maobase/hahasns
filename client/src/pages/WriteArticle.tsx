@@ -6,6 +6,7 @@ import MarkdownToolbar from '../components/MarkdownToolbar';
 import RichBody from '../components/RichBody';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { Input } from '../components/heroui';
 import api from '../api/client';
 import type { Article } from '../types';
 import { CAT_META } from './Articles';
@@ -72,7 +73,7 @@ export default function WriteArticle() {
 
         <label className="art-ed-field">
           <span className="art-ed-label"><Icon name="image" size={14} /> 封面图链接（选填）</span>
-          <input className="inp" placeholder="https://… 留空将使用分类配色封面" value={cover} onChange={(e) => setCover(e.target.value)} />
+          <Input className="haha-inp" placeholder="https://… 留空将使用分类配色封面" value={cover} onChange={(e: any) => setCover(e.target.value)} />
         </label>
 
         <div className="row gap-8 art-ed-toolbar" style={{ justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 8px' }}>
@@ -90,7 +91,7 @@ export default function WriteArticle() {
 
         <label className="art-ed-field">
           <span className="art-ed-label"><Icon name="edit" size={14} /> 摘要（选填，留空自动截取）</span>
-          <input className="inp" placeholder="一句话概括这篇文章" value={summary} maxLength={120} onChange={(e) => setSummary(e.target.value)} />
+          <Input className="haha-inp" placeholder="一句话概括这篇文章" value={summary} maxLength={120} onChange={(e: any) => setSummary(e.target.value)} />
         </label>
 
         <div className="art-ed-footer">

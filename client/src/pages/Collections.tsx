@@ -8,7 +8,7 @@ import { Empty, CardGridSkeleton } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout } from '../context/SiteContext';
-import { Tabs, Tab } from '../components/heroui';
+import { Tabs, Tab, Input, Textarea } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -89,15 +89,15 @@ export default function Collections() {
           <h3 style={{ margin: '0 0 16px' }}>创建专题</h3>
           <div className="field">
             <label>标题</label>
-            <input className="inp" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="给专题起个名字" maxLength={80} autoFocus />
+            <Input className="haha-inp" value={form.title} onChange={(e: any) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="给专题起个名字" maxLength={80} autoFocus />
           </div>
           <div className="field">
             <label>简介（可选）</label>
-            <textarea className="inp" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="这个专题收录什么？" maxLength={300} />
+            <Textarea className="haha-inp" value={form.description} onChange={(e: any) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="这个专题收录什么？" maxLength={300} />
           </div>
           <div className="field">
             <label>封面图链接（可选）</label>
-            <input className="inp" value={form.cover} onChange={(e) => setForm((f) => ({ ...f, cover: e.target.value }))} placeholder="留空则用首个收录内容的图" maxLength={500} />
+            <Input className="haha-inp" value={form.cover} onChange={(e: any) => setForm((f) => ({ ...f, cover: e.target.value }))} placeholder="留空则用首个收录内容的图" maxLength={500} />
           </div>
           <button className="btn btn-primary btn-lg btn-block" disabled={busy} onClick={create}>{busy ? '创建中…' : '创建'}</button>
         </div>

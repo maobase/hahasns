@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab } from '../components/heroui';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab, Input } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Loading, Empty, CardGridSkeleton } from '../components/States';
@@ -150,8 +150,8 @@ export default function Mall() {
               <div className="faint" style={{ fontSize: 12.5, marginTop: 2 }}>1 元 = 100 积分，支付成功后自动到账</div>
             </div>
             <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-              <input className="inp" type="number" min={1} value={rechargeAmt} onChange={(e) => setRechargeAmt(e.target.value)} style={{ maxWidth: 110 }} placeholder="金额(元)" />
-              <select className="inp" value={rechargeCh} onChange={(e) => setRechargeCh(e.target.value)} style={{ maxWidth: 130 }}>
+              <Input className="haha-inp" type="number" min={1} value={rechargeAmt} onChange={(e: any) => setRechargeAmt(e.target.value)} style={{ maxWidth: 110 }} placeholder="金额(元)" />
+              <select className="haha-inp" value={rechargeCh} onChange={(e) => setRechargeCh(e.target.value)} style={{ maxWidth: 130 }}>
                 {epayOn && <option value="alipay">支付宝</option>}
                 {epayOn && <option value="wxpay">微信</option>}
                 {alipayOn && <option value="alipay_direct">支付宝（官方）</option>}
