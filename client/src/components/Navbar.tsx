@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSite, moduleOn } from '../context/SiteContext';
+import { Button } from './heroui';
 import api from '../api/client';
 
 export function BrandMark({ size = 33, logo }: { size?: number; logo?: string }) {
@@ -127,9 +128,10 @@ export default function Navbar() {
 
         {user ? (
           <>
-            <button type="button" className={`btn btn-sm nav-checkin ${checkedToday ? 'btn-ghost' : 'btn-outline'}`} onClick={checkin} disabled={checkedToday} style={{ gap: 5 }}>
-              <Icon name="checkin" size={15} /> {checkedToday ? '已签到' : '签到'}
-            </button>
+            <Button type="button" size="sm" variant={checkedToday ? 'flat' : 'bordered'} className="haha-btn-app nav-checkin" onClick={checkin} isDisabled={checkedToday} style={{ gap: 5 }}>
+              {/* 内联尺寸：v3 .button 会强制内部 svg 16px，基线此图标为 15px，钉住保持像素一致 */}
+              <Icon name="checkin" size={15} style={{ width: 15, height: 15 }} /> {checkedToday ? '已签到' : '签到'}
+            </Button>
             <Link to="/notifications" className="nav-icon-btn" title="通知">
               <Icon name="bell" size={21} />
               {unread.notif > 0 && <span className="nav-dot">{unread.notif > 99 ? '99+' : unread.notif}</span>}
@@ -168,8 +170,8 @@ export default function Navbar() {
           </>
         ) : (
           <div className="row gap-8">
-            <button className="btn btn-ghost" onClick={() => setAuthOpen(true)}>登录</button>
-            <button className="btn btn-primary" onClick={() => setAuthOpen(true)}>注册</button>
+            <Button variant="flat" className="haha-btn-app" onClick={() => setAuthOpen(true)}>登录</Button>
+            <Button color="primary" className="haha-btn-app" onClick={() => setAuthOpen(true)}>注册</Button>
           </div>
         )}
       </div>

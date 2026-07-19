@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import Icon from './Icon';
+import { Button } from './heroui';
 import MarkdownToolbar from './MarkdownToolbar';
 import RichBody from './RichBody';
 import { useAuth } from '../context/AuthContext';
@@ -104,7 +105,7 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
         <div className="field">
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <label style={{ margin: 0 }}>正文</label>
-            <button type="button" className="btn btn-ghost btn-sm" style={{ padding: '3px 12px', fontSize: 12.5 }} onClick={() => setPreview((p) => !p)}>{preview ? '继续编辑' : '预览'}</button>
+            <Button type="button" size="sm" variant="flat" className="haha-btn-app" style={{ padding: '3px 12px', fontSize: 12.5 }} onClick={() => setPreview((p) => !p)}>{preview ? '继续编辑' : '预览'}</Button>
           </div>
           {!preview && <MarkdownToolbar taRef={taRef} value={content} onChange={setContent} />}
           {preview ? (
@@ -126,10 +127,10 @@ export default function NewThreadModal({ open, onClose, boards, defaultBoardId, 
           </div>
         )}
         <div className="row gap-8" style={{ marginBottom: 14 }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()}><Icon name="image" size={16} /> 添加图片</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => fileRef.current?.click()}><Icon name="image" size={16} /> 添加图片</Button>
           <span className="faint" style={{ fontSize: 12 }}>最多 9 张</span>
         </div>
-        <button className="btn btn-primary btn-lg btn-block" disabled={busy} onClick={submit}>{busy ? '发布中…' : '发布'}</button>
+        <Button size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy} onClick={submit}>{busy ? '发布中…' : '发布'}</Button>
       </div>
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={upload} />
     </Modal>

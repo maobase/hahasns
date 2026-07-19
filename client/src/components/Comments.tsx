@@ -9,7 +9,7 @@ import { UserName } from './Identity';
 import { CommentSkeleton, LoadError } from './States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Textarea } from './heroui';
+import { Textarea, Button } from './heroui';
 import api from '../api/client';
 import { confirmDialog } from './confirm';
 import { reportDialog } from './report';
@@ -47,8 +47,8 @@ function CommentItem({ c, me, onReply, onLike, onDelete, onReport, onEdit }: {
           <div className="comment-edit">
             <Textarea className="haha-inp" value={draft} onChange={(e: any) => setDraft(e.target.value)} minRows={2} autoFocus />
             <div className="comment-edit-actions">
-              <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(false); setDraft(c.content); }}>取消</button>
-              <button className="btn btn-primary btn-sm" disabled={saving || !draft.trim()} onClick={saveEdit}>{saving ? '保存中…' : '保存'}</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => { setEditing(false); setDraft(c.content); }}>取消</Button>
+              <Button size="sm" color="primary" className="haha-btn-app" isDisabled={saving || !draft.trim()} onClick={saveEdit}>{saving ? '保存中…' : '保存'}</Button>
             </div>
           </div>
         ) : (
@@ -186,8 +186,8 @@ export default function Comments({ postId, threadId, articleId, onCountChange }:
           />
           {mention.dropdown}
         </div>
-        {replyTarget && <button className="btn btn-ghost btn-sm" onClick={() => setReplyTarget(null)}>取消</button>}
-        <button className="btn btn-primary btn-sm" disabled={busy || !text.trim()} onClick={submit}>发送</button>
+        {replyTarget && <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setReplyTarget(null)}>取消</Button>}
+        <Button size="sm" color="primary" className="haha-btn-app" isDisabled={busy || !text.trim()} onClick={submit}>发送</Button>
       </div>
 
       {loading ? (

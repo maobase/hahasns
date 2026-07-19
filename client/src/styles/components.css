@@ -732,6 +732,49 @@ select.haha-inp { width: 100%; border: 1.5px solid var(--line-2); border-radius:
 .haha-btn.haha-btn-warning { background-color: var(--gold-soft); color: var(--gold-deep); }
 .haha-btn.haha-btn-warning:hover, .haha-btn.haha-btn-warning[data-hovered="true"] { background-color: color-mix(in srgb, var(--gold) 18%, transparent); }
 
+/* ============================================================
+   .btn 自研轨道 → shim Button 抹平层（按钮双轨收敛·批 1）。
+   shim Button 挂 haha-btn-app 后逐态复刻 base.css:69-87 的 .btn 语言：
+   38px 高 / --r-pill 胶囊 / 600 字重 / gap 6 / :active scale(.96) /
+   primary 投影+hover 上浮 / ghost 灰底 / outline 1.5px 描边 / disabled .55。
+   只影响挂此类的按钮；未挂的既有 shim Button（QA/Settings 等）保持 v3 原貌。
+   transition 取 styles.css:10 对 .btn 的生效值（radius/bg .2s，其余瞬时）。
+   修饰类 --ghost/--sm 给非 v3 元素用：ThreadRow「查看完整帖子」是
+   react-router <Link>（RAC Button 只渲染 <button>），挂修饰类共享同一外观。 */
+.haha-btn-app {
+  align-items: center; justify-content: center; gap: 6px;
+  height: 38px; padding: 0 18px; border-radius: var(--r-pill);
+  font-size: 14px; font-weight: 600; line-height: 1.6; letter-spacing: -.01em;
+  white-space: nowrap; user-select: none;
+  transition: border-radius .2s var(--ease-out), background-color .2s var(--ease-out);
+}
+/* display 不进基座：v3 .button 自带 inline-flex；写在这里会压过 layout.css:177
+   移动端 .nav-checkin{display:none}（同特异性、components.css 更靠后）把签到按钮顶出来。
+   仅 <Link> 形态（ThreadRow 查看完整帖子）需要补 display，元素选择器限定不影响 button。 */
+a.haha-btn-app { display: inline-flex; }
+.haha-btn-app:active, .haha-btn-app[data-pressed="true"] { transform: scale(.96); }
+/* pointer-events:auto：旧 .btn:disabled 仍响应 hover 样式与 not-allowed 光标（v3 status-disabled 是 none，抹回） */
+.haha-btn-app:disabled { opacity: .55; cursor: not-allowed; pointer-events: auto; }
+/* primary ≈ .btn-primary：品牌底 + 投影 + hover 上浮。
+   hover 用 background 简写（顺带复位 background-image），非 anime 皮肤下与旧规则一致；
+   anime 皮肤的渐变规则（styles.css）特异性更高/更靠后，依旧胜出——与基线行为相同。 */
+.haha-btn-app.button--primary { background-color: var(--brand); color: var(--on-brand); box-shadow: var(--shadow-brand); }
+.haha-btn-app.button--primary:hover, .haha-btn-app.button--primary[data-hovered="true"] { background: var(--brand-strong); box-shadow: var(--shadow-brand); transform: translateY(-1px); }
+.haha-btn-app.button--primary:active, .haha-btn-app.button--primary[data-pressed="true"] { transform: translateY(0) scale(.97); }
+/* ghost ≈ .btn-ghost：surface-2 灰底。v3 secondary 把文字染成品牌色（--accent-soft-foreground），拉回 --ink-2 */
+.haha-btn-app.button--secondary, .haha-btn-app--ghost { background-color: var(--surface-2); color: var(--ink-2); }
+.haha-btn-app.button--secondary:hover, .haha-btn-app.button--secondary[data-hovered="true"], .haha-btn-app--ghost:hover { background-color: var(--surface-3); color: var(--ink); }
+/* outline ≈ .btn-outline：1.5px 描边，hover 品牌化（v3 outline 是 1px --border，抹成 1.5px --line-2） */
+.haha-btn-app.button--outline { background-color: transparent; border: 1.5px solid var(--line-2); color: var(--ink-2); }
+.haha-btn-app.button--outline:hover, .haha-btn-app.button--outline[data-hovered="true"] { background-color: var(--brand-tint); border-color: var(--brand); color: var(--brand); }
+/* 尺寸 ≈ .btn-sm / .btn-lg（v3 sm=36/32px、lg=44/40px，与自研不同，统一抹平） */
+.haha-btn-app.button--sm, .haha-btn-app--sm { height: 32px; padding: 0 14px; font-size: 13px; }
+.haha-btn-app.button--lg { height: 46px; padding: 0 24px; font-size: 15px; }
+@media (max-width: 880px) {
+  /* 沿用上方 .btn-sm 的移动端触控加高（components.css:483） */
+  .haha-btn-app.button--sm, .haha-btn-app--sm { height: 36px; }
+}
+
 /* 结构化举报弹窗（report.tsx）——预设理由单选列表 */
 .report-reasons { display: flex; flex-direction: column; gap: 2px; }
 .report-reason { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--r-md); cursor: pointer; font-size: 14px; color: var(--ink-2); transition: background var(--dur-fast); }

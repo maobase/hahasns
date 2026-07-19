@@ -11,6 +11,7 @@ import Reactions from './Reactions';
 import Comments from './Comments';
 import Modal from './Modal';
 import CollectModal from './CollectModal';
+import { Button } from './heroui';
 import { useDismiss } from '../lib/useDismiss';
 import { onImgError } from '../lib/img';
 import { copyText } from '../lib/clipboard';
@@ -262,7 +263,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
           {post.locked.type === 'paid' ? (
             <>
               <div className="lk-text">这是付费内容，{post.locked.price} 积分解锁查看</div>
-              <button className="btn btn-primary btn-sm" onClick={unlock}>支付 {post.locked.price} 积分解锁</button>
+              <Button size="sm" color="primary" className="haha-btn-app" onClick={unlock}>支付 {post.locked.price} 积分解锁</Button>
             </>
           ) : (
             <>
@@ -270,7 +271,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
               <div className="row gap-8 center">
                 <input value={pwd} onChange={(e) => setPwd(e.target.value)} placeholder="访问密码"
                   style={{ height: 36, width: 160, border: '1.5px solid var(--line-2)', borderRadius: 8, padding: '0 12px' }} />
-                <button className="btn btn-primary btn-sm" onClick={unlock}>解锁</button>
+                <Button size="sm" color="primary" className="haha-btn-app" onClick={unlock}>解锁</Button>
               </div>
             </>
           )}
@@ -320,7 +321,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
             <UserName user={author} showBadges={false} />
             <div className="post-body" style={{ fontSize: 13 }}>{(post.content || '').slice(0, 80)}</div>
           </div>
-          <button className="btn btn-primary btn-block btn-lg" style={{ marginTop: 14 }} onClick={doShare}>转发</button>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 14 }} onClick={doShare}>转发</Button>
         </div>
       </Modal>
 
@@ -329,7 +330,7 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
         <div className="modal-body">
           <textarea className="field" style={{ width: '100%', minHeight: 110, padding: 12, border: '1.5px solid var(--line-2)', borderRadius: 10, background: 'var(--surface)', color: 'var(--ink)' }}
             value={editText} onChange={(e) => setEditText(e.target.value)} autoFocus />
-          <button className="btn btn-primary btn-block btn-lg" onClick={saveEdit} disabled={!editText.trim()}>保存修改</button>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" onClick={saveEdit} isDisabled={!editText.trim()}>保存修改</Button>
         </div>
       </Modal>
 
@@ -338,14 +339,14 @@ export default function PostCard({ post: initial, onDelete, defaultOpenComments 
         <div className="modal-body">
           <div className="row gap-8" style={{ flexWrap: 'wrap', marginBottom: 12 }}>
             {[6, 18, 66, 188, 520].map((a) => (
-              <button key={a} className={`btn ${Number(rewardAmt) === a ? 'btn-primary' : 'btn-outline'}`} onClick={() => setRewardAmt(a)}>{a}</button>
+              <Button key={a} color="primary" variant={Number(rewardAmt) === a ? 'solid' : 'bordered'} className="haha-btn-app" onClick={() => setRewardAmt(a)}>{a}</Button>
             ))}
           </div>
           <div className="field">
             <label>自定义积分</label>
             <input type="number" min={1} value={rewardAmt} onChange={(e) => setRewardAmt(e.target.value)} />
           </div>
-          <button className="btn btn-primary btn-block btn-lg" onClick={doReward}>确认打赏 {rewardAmt} 积分</button>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" onClick={doReward}>确认打赏 {rewardAmt} 积分</Button>
         </div>
       </Modal>
     </article>
