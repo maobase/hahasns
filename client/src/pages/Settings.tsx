@@ -127,8 +127,8 @@ function SettingsForm() {
               <Avatar user={previewUser} size={84} />
               <button className="avatar-upload" onClick={() => avatarFile.current?.click()} aria-label="上传头像"><Icon name="image" size={14} /></button>
             </div>
-            <button className="btn btn-outline btn-sm" onClick={() => avatarFile.current?.click()} style={{ marginBottom: 6 }}><Icon name="image" size={14} /> 上传头像</button>
-            <button className={`btn btn-sm ${mode === 'emoji' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setMode(mode === 'emoji' ? 'image' : 'emoji')} style={{ marginBottom: 6 }}>表情头像</button>
+            <Button size="sm" variant="bordered" className="haha-btn-app" onClick={() => avatarFile.current?.click()} style={{ marginBottom: 6 }}><Icon name="image" size={14} style={{ width: 14, height: 14 }} /> 上传头像</Button>
+            <Button size="sm" color="primary" variant={mode === 'emoji' ? 'solid' : 'bordered'} className="haha-btn-app" onClick={() => setMode(mode === 'emoji' ? 'image' : 'emoji')} style={{ marginBottom: 6 }}>表情头像</Button>
           </div>
 
           {mode === 'emoji' && (
@@ -186,7 +186,7 @@ function SettingsForm() {
             <div className="user-row" key={u.id} style={{ borderTop: '1px solid var(--line)' }}>
               <Avatar user={u} size={42} showV />
               <div className="meta nowrap"><Link to={`/u/${u.username}`} className="nm uname">{u.nickname} <Badges user={u} showLevel={false} /></Link><div className="sub nowrap">@{u.username}</div></div>
-              <button className="btn btn-ghost btn-sm" onClick={() => unblock(u)}>解除拉黑</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => unblock(u)}>解除拉黑</Button>
             </div>
           ))}
         </div>

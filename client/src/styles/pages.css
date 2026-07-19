@@ -40,13 +40,13 @@
 @container (max-width: 560px) {
   .profile-top { flex-wrap: wrap; }
   .profile-top > .row { flex-basis: 100%; padding-bottom: 0; margin-top: 4px; }
-  .profile-top > .row .btn { flex: 1; justify-content: center; }
+  .profile-top > .row .btn, .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
 }
 @supports not (container-type: inline-size) {
   @media (max-width: 560px) {
     .profile-top { flex-wrap: wrap; }
     .profile-top > .row { flex-basis: 100%; padding-bottom: 0; margin-top: 4px; }
-    .profile-top > .row .btn { flex: 1; justify-content: center; }
+    .profile-top > .row .btn, .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
   }
 }
 .profile-bio { margin-top: 12px; font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
@@ -111,7 +111,7 @@
 .vip-tier-perks { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .vip-tier-perks li { display: flex; align-items: flex-start; gap: 6px; font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
 .vip-tier-perks li svg { color: var(--tc); flex: none; margin-top: 2px; }
-.vip-tier .btn-block { margin-top: auto; }
+.vip-tier .btn-block, .vip-tier .haha-btn-app { margin-top: auto; }
 @media (max-width: 620px) { .vip-tiers { grid-template-columns: 1fr; } }
 
 /* 创作数据 / creator stats */

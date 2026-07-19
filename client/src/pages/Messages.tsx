@@ -5,6 +5,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { UserName } from '../components/Identity';
 import { Empty, Loading, ChatListSkeleton } from '../components/States';
+import { Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -138,7 +139,7 @@ export default function Messages() {
       </div>
       <div className={`ui-card chat-shell${active ? ' has-active' : ''}`} style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, marginTop: -1 }}>
         <div className="chat-list">
-          {loadingList ? <ChatListSkeleton /> : convos.length === 0 ? <div style={{ padding: 24 }}><Empty icon="💬" text="还没有会话"><button className="btn btn-primary btn-sm" onClick={() => nav('/discover')}>找人聊聊</button></Empty></div> :
+          {loadingList ? <ChatListSkeleton /> : convos.length === 0 ? <div style={{ padding: 24 }}><Empty icon="💬" text="还没有会话"><Button size="sm" color="primary" className="haha-btn-app" onClick={() => nav('/discover')}>找人聊聊</Button></Empty></div> :
             convos.map((c) => (
               <div key={c.peer.id} className={`chat-list-item${active?.peer.id === c.peer.id ? ' active' : ''}${c.pinned ? ' pinned' : ''}`} onClick={() => nav(`/messages/${c.peer.id}`)}>
                 <Avatar user={c.peer} size={46} showV />
@@ -220,7 +221,7 @@ export default function Messages() {
                 <textarea ref={textRef} maxLength={5000} rows={1} value={text} onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="输入消息…" />
-                <button className="btn btn-primary" onClick={send} disabled={!text.trim() || sending}>发送</button>
+                <Button color="primary" className="haha-btn-app" onClick={send} isDisabled={!text.trim() || sending}>发送</Button>
               </div>
               <input ref={imageFile} type="file" accept="image/*" hidden onChange={sendImage} />
             </>

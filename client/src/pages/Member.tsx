@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import Modal from '../components/Modal';
 import { Badges } from '../components/Identity';
 import { Empty, Loading } from '../components/States';
-import { Input } from '../components/heroui';
+import { Input, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout, useSite } from '../context/SiteContext';
@@ -94,9 +94,9 @@ export default function Member() {
             <div className="row gap-6" style={{ fontSize: 19, fontWeight: 800, flexWrap: 'wrap' }}>{user.nickname} <Badges user={user} /></div>
             <div className="nowrap" style={{ opacity: .85, fontSize: 13, marginTop: 2 }}>@{user.username} · {myTier ? myTier.name : '普通会员'}</div>
           </div>
-          <button className="btn" style={{ background: 'rgba(255,255,255,.16)', color: '#fff', flex: 'none' }} onClick={() => setRechargeOpen(true)}>
-            <Icon name="coin" size={16} /> 充值
-          </button>
+          <Button variant="ghost" className="haha-btn-app" style={{ background: 'rgba(255,255,255,.16)', color: '#fff', flex: 'none' }} onClick={() => setRechargeOpen(true)}>
+            <Icon name="coin" size={16} style={{ width: 16, height: 16 }} /> 充值
+          </Button>
         </div>
         <div className="level-bar" style={{ background: 'rgba(255,255,255,.12)', marginTop: 16 }}>
           <div className="lh" style={{ color: 'rgba(255,255,255,.85)' }}><span>Lv.{user.level}</span><span className="num">{lp.exp} / {lp.nextLevelExp} EXP</span></div>
@@ -129,9 +129,9 @@ export default function Member() {
                 <ul className="vip-tier-perks">
                   {perksOf(t).map((p) => <li key={p}><Icon name="check" size={13} /> <span>{p}</span></li>)}
                 </ul>
-                <button className={`btn ${owned ? 'btn-ghost' : 'btn-primary'} btn-block`} disabled={owned} onClick={() => buyVip(t)}>
+                <Button fullWidth color="primary" variant={owned ? 'flat' : 'solid'} className="haha-btn-app" isDisabled={owned} onClick={() => buyVip(t)}>
                   {owned ? '已开通' : upgrade ? '升级' : '开通'}
-                </button>
+                </Button>
               </div>
             );
           })}
@@ -168,7 +168,7 @@ export default function Member() {
         <p className="mc-invite-sub">好友用你的邀请链接注册，<b>你 +{invites?.rewardPerInvite ?? 50} 积分</b>、好友得 +30 积分见面礼。</p>
         <div className="mc-invite-row">
           <Input className="haha-inp" readOnly value={inviteLink} onFocus={(e: any) => e.currentTarget.select()} aria-label="邀请链接" />
-          <button type="button" className="btn btn-primary" onClick={copyInvite} style={{ flex: 'none' }}><Icon name="copy" size={15} /> 复制</button>
+          <Button type="button" color="primary" className="haha-btn-app" onClick={copyInvite} style={{ flex: 'none' }}><Icon name="copy" size={15} style={{ width: 15, height: 15 }} /> 复制</Button>
         </div>
         {invites?.invitees?.length > 0 && (
           <div className="mc-invite-avatars">
@@ -186,9 +186,9 @@ export default function Member() {
             <div key={d} className={`checkin-day${i < (streak % 7 || (streak ? 7 : 0)) ? ' done' : ''}`}>{i < (streak % 7 || (streak ? 7 : 0)) ? <Icon name="check" size={15} /> : d}</div>
           ))}
         </div>
-        <button className={`btn ${checkedToday ? 'btn-ghost' : 'btn-primary'} btn-lg`} onClick={checkin} disabled={checkedToday} style={{ minWidth: 160 }}>
+        <Button size="lg" color="primary" variant={checkedToday ? 'flat' : 'solid'} className="haha-btn-app" onClick={checkin} isDisabled={checkedToday} style={{ minWidth: 160 }}>
           {checkedToday ? '今日已签到' : '立即签到 +积分'}
-        </button>
+        </Button>
         <div className="muted" style={{ fontSize: 12, marginTop: 10 }}>连续签到积分更多，断签重新计算哦</div>
       </div>
 
@@ -210,11 +210,11 @@ export default function Member() {
             <label>选择充值金额</label>
             <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
               {tiers.map((a) => (
-                <button key={a} className={`btn ${amount === a ? 'btn-primary' : 'btn-outline'} btn-sm`} onClick={() => setAmount(a)}>¥{(a/100).toFixed(0)}</button>
+                <Button key={a} size="sm" color="primary" variant={amount === a ? 'solid' : 'bordered'} className="haha-btn-app" onClick={() => setAmount(a)}>¥{(a/100).toFixed(0)}</Button>
               ))}
             </div>
           </div>
-          <button className="btn btn-primary btn-lg btn-block" onClick={recharge}>确认充值 ¥{(amount/100).toFixed(2)}</button>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" onClick={recharge}>确认充值 ¥{(amount/100).toFixed(2)}</Button>
           <div className="muted" style={{ fontSize: 12, textAlign: 'center', marginTop: 10 }}>演示环境，充值为模拟操作，不会产生真实扣费</div>
         </div>
       </Modal>

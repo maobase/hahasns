@@ -747,6 +747,10 @@ select.haha-inp { width: 100%; border: 1.5px solid var(--line-2); border-radius:
   font-size: 14px; font-weight: 600; line-height: 1.6; letter-spacing: -.01em;
   white-space: nowrap; user-select: none;
   transition: border-radius .2s var(--ease-out), background-color .2s var(--ease-out);
+  /* v3 transform-gpu(translateZ(0)) 会把按钮提升为合成层，分数坐标下文字栅格化与旧 .btn
+     直绘不同（亚像素~1px 字形偏移）。抹回 none；:active/hover 的 scale/translate 规则
+     特异性更高不受影响（批 2 门 3 实测：注入 none 后基线 diff 归零）。 */
+  transform: none;
 }
 /* display 不进基座：v3 .button 自带 inline-flex；写在这里会压过 layout.css:177
    移动端 .nav-checkin{display:none}（同特异性、components.css 更靠后）把签到按钮顶出来。
@@ -769,7 +773,15 @@ a.haha-btn-app { display: inline-flex; }
 .haha-btn-app.button--outline:hover, .haha-btn-app.button--outline[data-hovered="true"] { background-color: var(--brand-tint); border-color: var(--brand); color: var(--brand); }
 /* 尺寸 ≈ .btn-sm / .btn-lg（v3 sm=36/32px、lg=44/40px，与自研不同，统一抹平） */
 .haha-btn-app.button--sm, .haha-btn-app--sm { height: 32px; padding: 0 14px; font-size: 13px; }
-.haha-btn-app.button--lg { height: 46px; padding: 0 24px; font-size: 15px; }
+.haha-btn-app.button--lg, .haha-btn-app--lg { height: 46px; padding: 0 24px; font-size: 15px; }
+/* Link 形态补充修饰类（批 2：ThreadDetail 付费墙「前往解锁板块」是 <Link>，共享 primary 外观；
+   规则置于 .haha-btn-app:active 之后，同特异性下 :active 胜出 scale(.97) 与旧 .btn-primary 一致） */
+.haha-btn-app--primary { background-color: var(--brand); color: var(--on-brand); box-shadow: var(--shadow-brand); }
+.haha-btn-app--primary:hover { background: var(--brand-strong); box-shadow: var(--shadow-brand); transform: translateY(-1px); }
+.haha-btn-app--primary:active { transform: translateY(0) scale(.97); }
+/* Profile 关注按钮「已关注」悬停红化（批 2）：原 .follow-btn.following:hover（上方 :42）与抹平层
+   ghost hover 同特异性且位置更前会被压过，后置恢复；v3 悬停走 data-hovered，一并覆盖 */
+.haha-btn-app.follow-btn.following:hover, .haha-btn-app.follow-btn.following[data-hovered="true"] { background-color: var(--like-soft); color: var(--like); border-color: var(--like); }
 @media (max-width: 880px) {
   /* 沿用上方 .btn-sm 的移动端触控加高（components.css:483） */
   .haha-btn-app.button--sm, .haha-btn-app--sm { height: 36px; }

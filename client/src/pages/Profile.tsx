@@ -9,6 +9,7 @@ import FollowButton from '../components/FollowButton';
 import ThreadRow from '../components/ThreadRow';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, ProfileSkeleton, PostSkeleton, ListEnd, LoadError } from '../components/States';
+import { Button } from '../components/heroui';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { CheckinRank, TrendingSearch, Footer } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
@@ -28,7 +29,7 @@ function UserList({ username, rel, isMe }: { username: any; rel: string; isMe: b
   if (loading) return <Loading />;
   if (!users.length) return (
     <Empty icon="👥" text={rel === 'followers' ? '还没有粉丝' : '还没有关注任何人'}>
-      {isMe && rel === 'following' && <button className="btn btn-primary btn-sm" onClick={() => nav('/discover')}>去发现感兴趣的人</button>}
+      {isMe && rel === 'following' && <Button size="sm" color="primary" className="haha-btn-app" onClick={() => nav('/discover')}>去发现感兴趣的人</Button>}
     </Empty>
   );
   return (
@@ -171,15 +172,15 @@ export default function Profile() {
             </div>
             <div className="row gap-8" style={{ paddingBottom: 4 }}>
               {isMe ? (
-                <button className="btn btn-outline" onClick={() => nav('/settings')}><Icon name="edit" size={15} /> 编辑资料</button>
+                <Button variant="bordered" className="haha-btn-app" onClick={() => nav('/settings')}><Icon name="edit" size={15} style={{ width: 15, height: 15 }} /> 编辑资料</Button>
               ) : (
                 <>
-                  <button className="btn btn-ghost" onClick={() => nav(`/messages/${user.id}`)}><Icon name="mail" size={15} /> 私信</button>
-                  <button className={`btn follow-btn ${user.isFollowing ? 'btn-ghost following' : 'btn-primary'}`} onClick={follow} disabled={followBusy}>
+                  <Button variant="flat" className="haha-btn-app" onClick={() => nav(`/messages/${user.id}`)}><Icon name="mail" size={15} style={{ width: 15, height: 15 }} /> 私信</Button>
+                  <Button color="primary" variant={user.isFollowing ? 'flat' : 'solid'} className={`haha-btn-app follow-btn${user.isFollowing ? ' following' : ''}`} onClick={follow} isDisabled={followBusy}>
                     {user.isFollowing
                       ? <><span className="fb-on">已关注</span><span className="fb-off">取消关注</span></>
-                      : <><Icon name="plus" size={15} /> 关注</>}
-                  </button>
+                      : <><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 关注</>}
+                  </Button>
                   {me && (
                     <div style={{ position: 'relative' }} ref={menuRef}>
                       <button className="post-menu" onClick={() => setMenuOpen((m) => !m)} aria-label="更多操作"><Icon name="more" size={18} /></button>
@@ -260,12 +261,12 @@ export default function Profile() {
         </div>
         {(tab === 'following' || tab === 'followers') && <UserList username={username} rel={tab} isMe={isMe} />}
         {tab === 'threads' && (threads === null ? <Loading />
-          : threads.length === 0 ? <Empty icon="📋" text={isMe ? '你还没有发过帖子' : 'TA 还没有发过帖子'}>{isMe && <button className="btn btn-primary btn-sm" onClick={() => nav('/forum')}>去论坛发帖</button>}</Empty>
+          : threads.length === 0 ? <Empty icon="📋" text={isMe ? '你还没有发过帖子' : 'TA 还没有发过帖子'}>{isMe && <Button size="sm" color="primary" className="haha-btn-app" onClick={() => nav('/forum')}>去论坛发帖</Button>}</Empty>
           : threads.map((t: any, i: number) => <div key={t.id}>{i > 0 && <div className="divider" />}<ThreadRow thread={t} /></div>))}
       </div>
 
       {tab === 'posts' && (posts.length === 0 ? <div className="ui-card"><Empty icon="✍️" text={isMe ? '你还没有发布动态' : 'TA 还没有发布动态'}>
-        {isMe && <button className="btn btn-primary btn-sm" onClick={openCompose}><Icon name="edit" size={14} /> 发布第一条动态</button>}
+        {isMe && <Button size="sm" color="primary" className="haha-btn-app" onClick={openCompose}><Icon name="edit" size={14} style={{ width: 14, height: 14 }} /> 发布第一条动态</Button>}
       </Empty></div>
         : <>
           {posts.map((p: any) => <PostCard key={p.id} post={p} onDelete={(id: number) => setPosts((x) => x.filter((y) => y.id !== id))} />)}
@@ -275,7 +276,7 @@ export default function Profile() {
         </>)}
 
       {tab === 'liked' && (likedLoading ? <Loading />
-        : likedPosts.length === 0 ? <div className="ui-card"><Empty icon="❤️" text={isMe ? '你还没有赞过动态' : 'TA 还没有公开的点赞'}>{isMe && <button className="btn btn-primary btn-sm" onClick={() => nav('/discover')}>去发现好内容</button>}</Empty></div>
+        : likedPosts.length === 0 ? <div className="ui-card"><Empty icon="❤️" text={isMe ? '你还没有赞过动态' : 'TA 还没有公开的点赞'}>{isMe && <Button size="sm" color="primary" className="haha-btn-app" onClick={() => nav('/discover')}>去发现好内容</Button>}</Empty></div>
         : <>
           {likedPosts.map((p: any) => <PostCard key={p.id} post={p} />)}
           <div ref={likedSentinel} />

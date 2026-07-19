@@ -40,7 +40,8 @@
   --r-xs: 9px; --r-sm: 13px; --r-md: 16px; --r-lg: 22px;
 }
 [data-style="anime"] .btn-primary,
-[data-style="anime"] .haha-btn-app.button--primary {
+[data-style="anime"] .haha-btn-app.button--primary,
+[data-style="anime"] .haha-btn-app--primary {
   background-image: linear-gradient(135deg, var(--brand-strong), var(--brand-deep));
   border-color: transparent;
 }
