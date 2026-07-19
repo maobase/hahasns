@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../../components/heroui';
+import Icon from '../../components/Icon';
+import { Input, Button } from '../../components/heroui';
 
 // 管理后台共享小组件。Toggle 此前是 Admin.tsx 私有组件（其余面板 15+ 处在用），
 // 第 2 刀时 PagesPanel 曾内联自带一份；本刀（第 3 刀）上提到此处统一共享，实现逐字不变。
@@ -47,5 +48,19 @@ export function SaveBtn({ onSave, label = '保存' }: { onSave: () => Promise<an
       setBusy(true);
       try { await onSave(); } finally { if (mounted.current) setBusy(false); }
     }}>{busy ? '保存中…' : label}</Button>
+  );
+}
+
+// B 端搜索框（design.md Arco 搜索）：放大镜图标前缀 + 控件等高 36px。各 tab 列表搜索统一用它。
+// 第 7 刀自 Admin.tsx 上提：用户 / 话题 / 商品 / 快报 / 文章 / 活动 / 圈子 / 问答多处共用，实现逐字不变。
+export function AdminSearch({ value, onChange, onSearch, placeholder }: { value: string; onChange: (v: string) => void; onSearch: () => void; placeholder: string }) {
+  return (
+    <>
+      <div className="admin-search">
+        <Icon name="search" size={15} />
+        <Input className="haha-inp" value={value} onChange={(e: any) => onChange(e.target.value)} onKeyDown={(e: any) => e.key === 'Enter' && onSearch()} placeholder={placeholder} />
+      </div>
+      <Button variant="flat" className="haha-btn-app" onClick={onSearch}>搜索</Button>
+    </>
   );
 }

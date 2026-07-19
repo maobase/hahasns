@@ -19,10 +19,13 @@ import SystemPanel from './admin/SystemPanel';
 import PaymentPanel from './admin/PaymentPanel';
 import LotteryPanel from './admin/LotteryPanel';
 import CheckinPanel from './admin/CheckinPanel';
-import { Toggle, ListHead, downloadCSV, SaveBtn } from './admin/ui';
+import FlashPanel from './admin/FlashPanel';
+import NavPanel from './admin/NavPanel';
+import { Toggle, ListHead, downloadCSV, SaveBtn, AdminSearch } from './admin/ui';
 // 品牌化二次确认已抽到 ../components/confirm（全站共用，<ConfirmHost/> 挂在 App 根）。
 // downloadCSV / ListHead 第 5 刀上提 ./admin/ui（支付面板抽离后多处共用）；
 // SaveBtn 第 6 刀上提 ./admin/ui（抽奖面板抽离后用户/板块/快报/导航/抽奖多处共用）。
+// AdminSearch 第 7 刀上提 ./admin/ui（快报面板抽离后用户/话题/商品/文章/活动/圈子/问答多处共用）。
 
 const TABS = [
   { k: 'overview', l: '概览', icon: 'trend', d: '站点数据总览与今日动态' },
@@ -1098,208 +1101,6 @@ function Layouts() {
   );
 }
 
-// B 端搜索框（design.md Arco 搜索）：放大镜图标前缀 + 控件等高 36px。各 tab 列表搜索统一用它。
-function AdminSearch({ value, onChange, onSearch, placeholder }: { value: string; onChange: (v: string) => void; onSearch: () => void; placeholder: string }) {
-  return (
-    <>
-      <div className="admin-search">
-        <Icon name="search" size={15} />
-        <Input className="haha-inp" value={value} onChange={(e: any) => onChange(e.target.value)} onKeyDown={(e: any) => e.key === 'Enter' && onSearch()} placeholder={placeholder} />
-      </div>
-      <Button variant="flat" className="haha-btn-app" onClick={onSearch}>搜索</Button>
-    </>
-  );
-}
-
-// 资讯快报后台：发布 / 置顶 / 删除快报（前台 /flash 展示）。
-const FLASH_CATS = ['公告', '功能', '活动', '精选', '教程', '动态'];
-function FlashEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () => void; onCancel: () => void }) {
-  const toast = useToast();
-  const [f, setF] = useState({ title: item.title || '', summary: item.summary || '', category: item.category || '公告', url: item.url || '', pinned: !!item.pinned });
-  const save = async () => {
-    if (f.title.trim().length < 2) return toast.err('标题至少 2 个字');
-    try { await api.put(`/flash/${item.id}`, { title: f.title, summary: f.summary, category: f.category, url: f.url, pinned: f.pinned }); toast.ok('快报已更新'); onSaved(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  return (
-    <div style={{ padding: '0 18px 16px', background: 'var(--surface-2)' }}>
-      <div className="sec-grid" style={{ paddingTop: 14 }}>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={f.title} onChange={(e: any) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要</span><Textarea className="haha-inp" minRows={2} maxLength={300} value={f.summary} onChange={(e: any) => setF((s) => ({ ...s, summary: e.target.value }))} /></label>
-        <label className="sec-field"><span className="sec-label">分类</span><select className="haha-inp" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-        <label className="sec-field"><span className="sec-label">链接</span><Input className="haha-inp" maxLength={300} value={f.url} onChange={(e: any) => setF((s) => ({ ...s, url: e.target.value }))} placeholder="https://…" /></label>
-      </div>
-      <div className="row" style={{ justifyContent: 'space-between', marginTop: 12, alignItems: 'center' }}>
-        <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={f.pinned} onChange={(v) => setF((s) => ({ ...s, pinned: v }))} /> 置顶</label>
-        <div className="row gap-4">
-          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
-          <SaveBtn onSave={save} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FlashAdmin() {
-  const toast = useToast();
-  const [list, setList] = useState<any[] | null>(null);
-  const [form, setForm] = useState({ title: '', summary: '', category: '公告', url: '', pinned: false });
-  const [saving, setSaving] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [q, setQ] = useState('');
-  const load = (query = q) => api.get('/flash', { params: { limit: 50, q: query || undefined } }).then(({ data }) => setList(data.flash)).catch(() => setList([]));
-  useEffect(() => { load(); }, []);
-  const publish = async () => {
-    if (form.title.trim().length < 2) return toast.err('标题至少 2 个字');
-    setSaving(true);
-    try { await api.post('/flash', form); toast.ok('快报已发布'); setForm({ title: '', summary: '', category: form.category, url: '', pinned: false }); load(); }
-    catch (e: any) { toast.err(e.message); } finally { setSaving(false); }
-  };
-  const remove = async (id: number) => {
-    if (!(await confirmDialog('删除这条快报？'))) return;
-    try { await api.delete(`/flash/${id}`); setList((l) => (l || []).filter((x) => x.id !== id)); toast.ok('已删除'); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="ui-card" style={{ padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 12 }}>发布快报</div>
-        <div className="sec-grid">
-          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={form.title} onChange={(e: any) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="一句话快报标题" /></label>
-          <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">摘要（可选）</span><Textarea className="haha-inp" minRows={2} maxLength={300} value={form.summary} onChange={(e: any) => setForm((f) => ({ ...f, summary: e.target.value }))} placeholder="补充说明…" /></label>
-          <label className="sec-field"><span className="sec-label">分类</span><select className="haha-inp" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>{FLASH_CATS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-          <label className="sec-field"><span className="sec-label">链接（可选）</span><Input className="haha-inp" maxLength={300} value={form.url} onChange={(e: any) => setForm((f) => ({ ...f, url: e.target.value }))} placeholder="https://…" /></label>
-        </div>
-        <div className="row" style={{ justifyContent: 'space-between', marginTop: 14 }}>
-          <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={form.pinned} onChange={(v) => setForm((f) => ({ ...f, pinned: v }))} /> 置顶</label>
-          <Button color="primary" className="haha-btn-app" onClick={publish} isDisabled={saving}>{saving ? '发布中…' : '发布快报'}</Button>
-        </div>
-      </div>
-      <div className="ui-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: 14, borderBottom: '1px solid var(--line)' }}>
-          <div className="row gap-8"><AdminSearch value={q} onChange={setQ} onSearch={() => load(q)} placeholder="搜索快报标题…" /></div>
-        </div>
-        <ListHead title="已发布" count={list?.length ?? 0} />
-        {list === null ? <RowSkeleton rows={5} /> : list.length === 0 ? <Empty text={q.trim() ? '没有匹配的快报' : '还没有快报，发布第一条吧'} /> : list.map((f, i) => (
-          <div key={f.id}>
-            {i > 0 && <div className="divider" />}
-            <div className="row gap-12" style={{ padding: '12px 18px', alignItems: 'flex-start' }}>
-              <div className="grow" style={{ minWidth: 0 }}>
-                <div className="row gap-6" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
-                  {f.pinned ? <span className="ui-badge" style={{ background: 'var(--brand-soft)', color: 'var(--brand-strong)' }}>置顶</span> : null}
-                  <span className="ui-badge">{f.category}</span>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>{f.title}</span>
-                </div>
-                {f.summary && <div className="faint" style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.5 }}>{f.summary}</div>}
-              </div>
-              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === f.id ? null : f.id)}>{editId === f.id ? '收起' : '编辑'}</Button>
-              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => remove(f.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
-            </div>
-            {editId === f.id && <FlashEditForm item={f} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// 网址导航后台：分类 + 链接 的增删（前台 /nav 展示）。
-function NavAdmin() {
-  const toast = useToast();
-  const [cats, setCats] = useState<any[] | null>(null);
-  const [newCat, setNewCat] = useState({ name: '', icon: 'compass' });
-  const [newLink, setNewLink] = useState<Record<number, { title: string; url: string }>>({});
-  const load = () => api.get('/nav').then(({ data }) => setCats(data.categories)).catch(() => setCats([]));
-  useEffect(() => { load(); }, []);
-  const addCat = async () => {
-    if (newCat.name.trim().length < 1) return toast.err('请输入分类名');
-    try { await api.post('/nav/categories', { name: newCat.name, icon: newCat.icon || 'compass' }); setNewCat({ name: '', icon: 'compass' }); toast.ok('已添加分类'); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const delCat = async (id: number) => { if (!(await confirmDialog('删除该分类及其下所有链接？'))) return; try { await api.delete(`/nav/categories/${id}`); toast.ok('已删除'); load(); } catch (e: any) { toast.err(e.message); } };
-  const setLF = (cid: number, k: string, v: string) => setNewLink((s) => {
-    const prev = s[cid] || { title: '', url: '' }; // 缺省保证 title/url 存在，再合并已填值与本次编辑
-    return { ...s, [cid]: { ...prev, [k]: v } };
-  });
-  const addLink = async (cid: number) => {
-    const f = newLink[cid] || { title: '', url: '' };
-    if (!f.title?.trim() || !f.url?.trim()) return toast.err('网站名和链接必填');
-    try { await api.post('/nav/links', { categoryId: cid, title: f.title, url: f.url }); setNewLink((s) => ({ ...s, [cid]: { title: '', url: '' } })); toast.ok('已添加链接'); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const delLink = async (id: number) => { try { await api.delete(`/nav/links/${id}`); toast.ok('已删除'); load(); } catch (e: any) { toast.err(e.message); } };
-  const [editLink, setEditLink] = useState<number | null>(null);
-  const [editLinkVals, setEditLinkVals] = useState({ title: '', url: '' });
-  const saveLink = async (id: number) => {
-    if (!editLinkVals.title.trim() || !editLinkVals.url.trim()) return toast.err('网站名和链接必填');
-    try { await api.put(`/nav/links/${id}`, { title: editLinkVals.title, url: editLinkVals.url }); setEditLink(null); toast.ok('链接已更新'); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const [editCat, setEditCat] = useState<number | null>(null);
-  const [editCatVals, setEditCatVals] = useState({ name: '', icon: '' });
-  const saveCat = async (id: number) => {
-    if (!editCatVals.name.trim()) return toast.err('分类名必填');
-    try { await api.put(`/nav/categories/${id}`, { name: editCatVals.name, icon: editCatVals.icon || 'compass' }); setEditCat(null); toast.ok('分类已更新'); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  if (cats === null) return <RowSkeleton rows={6} />;
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="ui-card" style={{ padding: 18 }}>
-        <div style={{ fontWeight: 700, fontSize: 14.5, marginBottom: 12 }}>新建分类</div>
-        <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <Input className="haha-inp" style={{ maxWidth: 220 }} maxLength={20} value={newCat.name} onChange={(e: any) => setNewCat((c) => ({ ...c, name: e.target.value }))} placeholder="分类名（如 开发工具）" />
-          <Input className="haha-inp" style={{ maxWidth: 150 }} value={newCat.icon} onChange={(e: any) => setNewCat((c) => ({ ...c, icon: e.target.value }))} placeholder="图标 如 compass" />
-          <Button color="primary" className="haha-btn-app" onClick={addCat} isDisabled={!newCat.name.trim()}><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 添加分类</Button>
-        </div>
-      </div>
-      {cats.length === 0 ? <div className="ui-card"><Empty text="还没有导航分类，先新建一个" /></div> : cats.map((c) => (
-        <div className="ui-card" style={{ padding: 18 }} key={c.id}>
-          <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8, gap: 8, flexWrap: 'wrap' }}>
-            {editCat === c.id ? (
-              <span className="row gap-8" style={{ flexWrap: 'wrap' }}>
-                <Input className="haha-inp" style={{ maxWidth: 180 }} maxLength={20} value={editCatVals.name} onChange={(e: any) => setEditCatVals((v) => ({ ...v, name: e.target.value }))} placeholder="分类名" />
-                <Input className="haha-inp" style={{ maxWidth: 140 }} value={editCatVals.icon} onChange={(e: any) => setEditCatVals((v) => ({ ...v, icon: e.target.value }))} placeholder="图标" />
-                <SaveBtn onSave={() => saveCat(c.id)} />
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditCat(null)}>取消</Button>
-              </span>
-            ) : (
-              <span className="row gap-8" style={{ fontWeight: 700 }}><Icon name={c.icon || 'compass'} size={16} /> {c.name} <span className="faint" style={{ fontSize: 12 }}>（{c.links.length}）</span></span>
-            )}
-            {editCat !== c.id && (
-              <span className="row gap-4">
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => { setEditCat(c.id); setEditCatVals({ name: c.name, icon: c.icon || 'compass' }); }}>编辑</Button>
-                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delCat(c.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删分类</Button>
-              </span>
-            )}
-          </div>
-          {c.links.map((l: any) => (
-            editLink === l.id ? (
-              <div className="row gap-8" key={l.id} style={{ padding: '7px 0', borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
-                <Input className="haha-inp" style={{ maxWidth: 160 }} maxLength={40} value={editLinkVals.title} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, title: e.target.value }))} placeholder="网站名" />
-                <Input className="haha-inp grow" maxLength={300} value={editLinkVals.url} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, url: e.target.value }))} placeholder="https://…" />
-                <SaveBtn onSave={() => saveLink(l.id)} />
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditLink(null)}>取消</Button>
-              </div>
-            ) : (
-              <div className="row gap-8" key={l.id} style={{ padding: '7px 0', borderTop: '1px solid var(--line)' }}>
-                <span className="grow nowrap" style={{ minWidth: 0, fontSize: 13.5 }}>{l.title} <span className="faint" style={{ fontSize: 12 }}>· {l.url}</span></span>
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => { setEditLink(l.id); setEditLinkVals({ title: l.title, url: l.url }); }}>编辑</Button>
-                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delLink(l.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
-              </div>
-            )
-          ))}
-          <div className="row gap-8" style={{ marginTop: 10, flexWrap: 'wrap' }}>
-            <Input className="haha-inp" style={{ maxWidth: 160 }} value={newLink[c.id]?.title || ''} onChange={(e: any) => setLF(c.id, 'title', e.target.value)} placeholder="网站名" />
-            <Input className="haha-inp grow" value={newLink[c.id]?.url || ''} onChange={(e: any) => setLF(c.id, 'url', e.target.value)} placeholder="https://…" />
-            <SaveBtn onSave={() => addLink(c.id)} label="添加链接" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // 专栏文章后台：精选 / 取消精选 / 删除（前台 /articles 展示，精选进首页编辑精选位）。
 function ArticlesAdmin() {
   const toast = useToast();
@@ -1638,8 +1439,8 @@ export default function Admin() {
           {tab === 'topics' && <Topics />}
           {tab === 'reports' && <Reports />}
           {tab === 'notices' && <Notices />}
-          {tab === 'flash' && <FlashAdmin />}
-          {tab === 'nav' && <NavAdmin />}
+          {tab === 'flash' && <FlashPanel />}
+          {tab === 'nav' && <NavPanel />}
           {tab === 'articles' && <ArticlesAdmin />}
           {tab === 'events' && <EventsAdmin />}
           {tab === 'circles' && <CirclesAdmin />}
