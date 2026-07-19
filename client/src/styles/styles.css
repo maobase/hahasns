@@ -7,7 +7,7 @@
    ============================================================ */
 
 /* 圆角切换需要平滑一点，避免切风格时生硬跳变 */
-.ui-card, .btn, .haha-feed-tabs .tabs__tab, .inp, .chip, input, textarea {
+.ui-card, .btn, .haha-feed-tabs .tabs__tab, .chip, input, textarea {
   transition: border-radius .2s var(--ease-out), background-color .2s var(--ease-out);
 }
 
@@ -49,5 +49,5 @@
 
 /* 尊重减少动效偏好：切风格不做圆角过渡 */
 @media (prefers-reduced-motion: reduce) {
-  .ui-card, .btn, .haha-feed-tabs .tabs__tab, .inp, .chip, input, textarea { transition: none; }
+  .ui-card, .btn, .haha-feed-tabs .tabs__tab, .chip, input, textarea { transition: none; }
 }

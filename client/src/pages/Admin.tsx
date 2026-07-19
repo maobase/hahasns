@@ -1609,8 +1609,8 @@ function LotteryAdmin() {
           <div className="sec-grid">
             <label className="sec-field"><span className="sec-label">奖品名 <i className="sec-req">*</i></span><Input className="haha-inp" value={p.name} onChange={(e: any) => setField(i, 'name', e.target.value)} placeholder="如 100 积分" /></label>
             <label className="sec-field"><span className="sec-label">类型</span><select className="haha-inp" value={p.type} onChange={(e) => setField(i, 'type', e.target.value)}>{LOT_TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
-            <label className="sec-field"><span className="sec-label">奖品值（积分数 / 物品标识）</span><input className="inp" value={p.value} onChange={(e) => setField(i, 'value', e.target.value)} placeholder="积分填数字，如 100" /></label>
-            <label className="sec-field"><span className="sec-label">权重</span><input className="inp" type="number" min={0} value={p.weight} onChange={(e) => setField(i, 'weight', e.target.value)} /></label>
+            <label className="sec-field"><span className="sec-label">奖品值（积分数 / 物品标识）</span><Input className="haha-inp" value={p.value} onChange={(e: any) => setField(i, 'value', e.target.value)} placeholder="积分填数字，如 100" /></label>
+            <label className="sec-field"><span className="sec-label">权重</span><Input className="haha-inp" type="number" min={0} value={p.weight} onChange={(e: any) => setField(i, 'weight', e.target.value)} /></label>
           </div>
           <div className="row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: 10, alignItems: 'center' }}>
             <span className="faint" style={{ marginRight: 'auto', fontSize: 12.5 }}>中奖概率 <b className="num" style={{ color: 'var(--brand)' }}>{totalW > 0 ? ((Math.max(0, Number(p.weight) || 0) / totalW) * 100).toFixed(1) : '0.0'}%</b></span>
@@ -2071,38 +2071,38 @@ function Appearance() {
         <div className="sec-grid" style={{ marginTop: 14 }}>
           <label className="sec-field">
             <span className="sec-label">站点名称</span>
-            <input className="inp" maxLength={40} value={cfg.site_name ?? ''} onChange={(e) => setK('site_name', e.target.value)} placeholder="HahaSNS" />
+            <Input className="haha-inp" maxLength={40} value={cfg.site_name ?? ''} onChange={(e: any) => setK('site_name', e.target.value)} placeholder="HahaSNS" />
           </label>
           <label className="sec-field">
             <span className="sec-label">副标题 / Slogan</span>
-            <input className="inp" maxLength={60} value={cfg.site_slogan ?? ''} onChange={(e) => setK('site_slogan', e.target.value)} placeholder="轻社交社区" />
+            <Input className="haha-inp" maxLength={60} value={cfg.site_slogan ?? ''} onChange={(e: any) => setK('site_slogan', e.target.value)} placeholder="轻社交社区" />
           </label>
           <label className="sec-field">
             <span className="sec-label">页脚版权文案</span>
-            <input className="inp" maxLength={200} value={cfg.footer_text ?? ''} onChange={(e) => setK('footer_text', e.target.value)} placeholder="© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区（留空用默认）" />
+            <Input className="haha-inp" maxLength={200} value={cfg.footer_text ?? ''} onChange={(e: any) => setK('footer_text', e.target.value)} placeholder="© 2026 HahaSNS · 轻社交 · 轻论坛 · 轻社区（留空用默认）" />
           </label>
           <label className="sec-field">
             <span className="sec-label">ICP 备案号（页脚显示，链到工信部）</span>
-            <input className="inp" maxLength={100} value={cfg.icp_beian ?? ''} onChange={(e) => setK('icp_beian', e.target.value)} placeholder="如：京ICP备12345678号（留空不显示）" />
+            <Input className="haha-inp" maxLength={100} value={cfg.icp_beian ?? ''} onChange={(e: any) => setK('icp_beian', e.target.value)} placeholder="如：京ICP备12345678号（留空不显示）" />
           </label>
           <label className="sec-field">
             <span className="sec-label">登录页主标题（可用换行，留空用默认）</span>
-            <textarea className="inp" maxLength={80} value={cfg.landing_title ?? ''} onChange={(e) => setK('landing_title', e.target.value)} rows={2} placeholder={'连接有趣的人\n与值得分享的内容'} style={{ lineHeight: 1.5 }} />
+            <Textarea className="haha-inp" maxLength={80} value={cfg.landing_title ?? ''} onChange={(e: any) => setK('landing_title', e.target.value)} minRows={2} placeholder={'连接有趣的人\n与值得分享的内容'} style={{ lineHeight: 1.5 }} />
           </label>
           <label className="sec-field">
             <span className="sec-label">登录页副标题（留空用默认）</span>
-            <input className="inp" maxLength={60} value={cfg.landing_subtitle ?? ''} onChange={(e) => setK('landing_subtitle', e.target.value)} placeholder="轻社交 · 轻论坛 · 轻社区" />
+            <Input className="haha-inp" maxLength={60} value={cfg.landing_subtitle ?? ''} onChange={(e: any) => setK('landing_subtitle', e.target.value)} placeholder="轻社交 · 轻论坛 · 轻社区" />
           </label>
           <label className="sec-field">
             <span className="sec-label">默认皮肤（新访客，用户可自选覆盖）</span>
-            <select className="inp" value={cfg.default_skin ?? ''} onChange={(e) => setK('default_skin', e.target.value)}>
+            <select className="haha-inp" value={cfg.default_skin ?? ''} onChange={(e) => setK('default_skin', e.target.value)}>
               <option value="">内置默认（经典蓝）</option>
               {SKINS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </label>
           <label className="sec-field">
             <span className="sec-label">默认亮暗（新访客）</span>
-            <select className="inp" value={cfg.default_mode ?? ''} onChange={(e) => setK('default_mode', e.target.value)}>
+            <select className="haha-inp" value={cfg.default_mode ?? ''} onChange={(e) => setK('default_mode', e.target.value)}>
               <option value="">跟随系统</option>
               <option value="light">浅色</option>
               <option value="dark">深色</option>
@@ -2110,7 +2110,7 @@ function Appearance() {
           </label>
           <label className="sec-field">
             <span className="sec-label">默认视觉风格（新访客）</span>
-            <select className="inp" value={cfg.default_style ?? ''} onChange={(e) => setK('default_style', e.target.value)}>
+            <select className="haha-inp" value={cfg.default_style ?? ''} onChange={(e) => setK('default_style', e.target.value)}>
               <option value="">内置默认（现代）</option>
               {STYLES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
@@ -2122,7 +2122,7 @@ function Appearance() {
             {cfg.site_logo
               ? <img src={cfg.site_logo} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
-            <input className="inp" maxLength={500} value={cfg.site_logo ?? ''} onChange={(e) => setK('site_logo', e.target.value)} placeholder="上传或粘贴 URL（留空用内置标记）" style={{ flex: 1 }} />
+            <Input className="haha-inp" maxLength={500} value={cfg.site_logo ?? ''} onChange={(e: any) => setK('site_logo', e.target.value)} placeholder="上传或粘贴 URL（留空用内置标记）" style={{ flex: 1 }} />
             <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_logo', e)} /></label>
           </div>
         </label>
@@ -2133,8 +2133,8 @@ function Appearance() {
           </label>
           <label className="sec-field">
             <span className="sec-label">Logo 高度（px，24–64，默认 33）</span>
-            <input className="inp" type="number" min={24} max={64} value={cfg.site_logo_height ?? '33'}
-              onChange={(e) => setK('site_logo_height', e.target.value)} />
+            <Input className="haha-inp" type="number" min={24} max={64} value={cfg.site_logo_height ?? '33'}
+              onChange={(e: any) => setK('site_logo_height', e.target.value)} />
           </label>
         </div>
         <label className="sec-field" style={{ marginTop: 12 }}>
@@ -2143,7 +2143,7 @@ function Appearance() {
             {cfg.site_favicon
               ? <img src={cfg.site_favicon} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
-            <input className="inp" maxLength={500} value={cfg.site_favicon ?? ''} onChange={(e) => setK('site_favicon', e.target.value)} placeholder="上传或粘贴 URL（留空用内置图标）" style={{ flex: 1 }} />
+            <Input className="haha-inp" maxLength={500} value={cfg.site_favicon ?? ''} onChange={(e: any) => setK('site_favicon', e.target.value)} placeholder="上传或粘贴 URL（留空用内置图标）" style={{ flex: 1 }} />
             <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_favicon', e)} /></label>
           </div>
         </label>
@@ -2153,7 +2153,7 @@ function Appearance() {
             {cfg.default_avatar && /^(https?:|\/uploads)/.test(cfg.default_avatar)
               ? <img src={cfg.default_avatar} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
-            <input className="inp" maxLength={500} value={cfg.default_avatar ?? ''} onChange={(e) => setK('default_avatar', e.target.value)} placeholder="上传/粘贴 URL（留空按昵称生成渐变头像）" style={{ flex: 1 }} />
+            <Input className="haha-inp" maxLength={500} value={cfg.default_avatar ?? ''} onChange={(e: any) => setK('default_avatar', e.target.value)} placeholder="上传/粘贴 URL（留空按昵称生成渐变头像）" style={{ flex: 1 }} />
             <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('default_avatar', e)} /></label>
           </div>
         </label>
@@ -2162,8 +2162,8 @@ function Appearance() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>自定义 CSS</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>全站注入到页面 <code>&lt;head&gt;</code>，可覆盖任意样式做二次开发装饰；系统升级不会重置此处内容。请谨慎使用，错误的 CSS 可能影响页面显示。</div>
-        <textarea className="inp" value={cfg.site_custom_css ?? ''} maxLength={20000} spellCheck={false}
-          onChange={(e) => setK('site_custom_css', e.target.value)}
+        <Textarea className="haha-inp" value={cfg.site_custom_css ?? ''} maxLength={20000} spellCheck={false}
+          onChange={(e: any) => setK('site_custom_css', e.target.value)}
           placeholder={'/* 例如：把主按钮换成圆角胶囊 */\n.btn-primary { border-radius: 999px; }'}
           style={{ marginTop: 12, minHeight: 220, fontFamily: 'var(--font-mono, ui-monospace, monospace)', fontSize: 12.5, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
@@ -2171,8 +2171,8 @@ function Appearance() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>自定义导航链接</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>在左栏与移动抽屉导航底部追加自定义链接，每行一条「标题|网址」，最多 8 条。网址以 http(s):// 开头为外链（新标签打开），以 / 开头为站内路径。例：<code>官网|https://example.com</code></div>
-        <textarea className="inp" value={cfg.custom_nav_links ?? ''} maxLength={800} spellCheck={false}
-          onChange={(e) => setK('custom_nav_links', e.target.value)}
+        <Textarea className="haha-inp" value={cfg.custom_nav_links ?? ''} maxLength={800} spellCheck={false}
+          onChange={(e: any) => setK('custom_nav_links', e.target.value)}
           placeholder={'官网|https://example.com\n帮助中心|https://help.example.com'}
           style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
@@ -2180,8 +2180,8 @@ function Appearance() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>导航项改名</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>重命名内置导航项，每行一条「/路径|新名称」。常见路径：/discover 发现、/forum 论坛、/qa 问答、/circles 圈子、/flash 快报、/articles 专栏、/mall 积分商城、/leaderboard 排行榜、/member 会员中心。例：<code>/forum|讨论区</code></div>
-        <textarea className="inp" value={cfg.nav_labels ?? ''} maxLength={600} spellCheck={false}
-          onChange={(e) => setK('nav_labels', e.target.value)}
+        <Textarea className="haha-inp" value={cfg.nav_labels ?? ''} maxLength={600} spellCheck={false}
+          onChange={(e: any) => setK('nav_labels', e.target.value)}
           placeholder={'/forum|讨论区\n/discover|发现精选'}
           style={{ marginTop: 12, minHeight: 100, fontSize: 13, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
@@ -2196,9 +2196,9 @@ function Appearance() {
         {cfg.allow_guest === '1' && (
           <div className="row" style={{ justifyContent: 'space-between', marginTop: 12, alignItems: 'center' }}>
             <span style={{ fontSize: 13.5 }}>游客信息流上限<span className="faint" style={{ fontSize: 12 }}>（0 = 不限；游客刷到此条数后出「注册解锁」卡）</span></span>
-            <input className="inp" style={{ width: 88, textAlign: 'right' }} type="number" min={0} max={200}
+            <Input className="haha-inp" style={{ width: 88, textAlign: 'right' }} type="number" min={0} max={200}
               value={cfg.guest_feed_limit ?? ''} placeholder="8"
-              onChange={(e) => setK('guest_feed_limit', e.target.value)} />
+              onChange={(e: any) => setK('guest_feed_limit', e.target.value)} />
           </div>
         )}
       </div>
@@ -2285,7 +2285,7 @@ function ThemePackagesPanel({ cfg, setK }: { cfg: Record<string, string>; setK: 
           ))}
         </div>
       )}
-      <textarea className="inp" value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} spellCheck={false}
+      <Textarea className="haha-inp" value={draft} onChange={(e: any) => setDraft(e.target.value)} minRows={8} spellCheck={false}
         placeholder={'{\n  "id": "ocean",\n  "name": "深海蓝",\n  "version": "1.0.0",\n  "tokens": { "--brand": "#0e7490", "--brand-strong": "#155e75", "--page": "#f0f9ff" }\n}'}
         style={{ marginTop: 12, fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, lineHeight: 1.5 }} />
       {editErr && <div className="form-err" style={{ marginTop: 8 }}>{editErr}</div>}
@@ -2337,8 +2337,8 @@ function PagesContent() {
                 <Toggle on={(cfg[toggleKey] ?? '1') !== '0'} onChange={(v) => setK(toggleKey, v ? '1' : '0')} />
               </label>
             </div>
-            <textarea className="inp" maxLength={20000} rows={8} value={cfg[contentKey] ?? ''}
-              onChange={(e) => setK(contentKey, e.target.value)}
+            <Textarea className="haha-inp" maxLength={20000} minRows={8} value={cfg[contentKey] ?? ''}
+              onChange={(e: any) => setK(contentKey, e.target.value)}
               placeholder={`${label} Markdown（留空用内置）`}
               style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: 12.5, lineHeight: 1.55 }} />
           </div>
@@ -2398,26 +2398,26 @@ function StorageAdmin() {
         <div className="sec-grid" style={{ marginTop: 14 }}>
           <label className="sec-field">
             <span className="sec-label">存储驱动</span>
-            <select className="inp" value={cfg.storage_driver || 'local'} onChange={(e) => setK('storage_driver', e.target.value)}>
+            <select className="haha-inp" value={cfg.storage_driver || 'local'} onChange={(e) => setK('storage_driver', e.target.value)}>
               <option value="local">本地磁盘</option>
               <option value="s3">S3 兼容</option>
             </select>
           </label>
           <label className="sec-field">
             <span className="sec-label">S3 Endpoint</span>
-            <input className="inp" value={cfg.s3_endpoint ?? ''} onChange={(e) => setK('s3_endpoint', e.target.value)} placeholder="https://s3-cn-east-1.qiniucs.com" />
+            <Input className="haha-inp" value={cfg.s3_endpoint ?? ''} onChange={(e: any) => setK('s3_endpoint', e.target.value)} placeholder="https://s3-cn-east-1.qiniucs.com" />
           </label>
           <label className="sec-field">
             <span className="sec-label">Bucket</span>
-            <input className="inp" value={cfg.s3_bucket ?? ''} onChange={(e) => setK('s3_bucket', e.target.value)} placeholder="hahasns" />
+            <Input className="haha-inp" value={cfg.s3_bucket ?? ''} onChange={(e: any) => setK('s3_bucket', e.target.value)} placeholder="hahasns" />
           </label>
           <label className="sec-field">
             <span className="sec-label">Region</span>
-            <input className="inp" value={cfg.s3_region ?? ''} onChange={(e) => setK('s3_region', e.target.value)} placeholder="cn-east-1" />
+            <Input className="haha-inp" value={cfg.s3_region ?? ''} onChange={(e: any) => setK('s3_region', e.target.value)} placeholder="cn-east-1" />
           </label>
           <label className="sec-field">
             <span className="sec-label">Public URL（CDN）</span>
-            <input className="inp" value={cfg.s3_public_url ?? ''} onChange={(e) => setK('s3_public_url', e.target.value)} placeholder="https://cdn.example.com" />
+            <Input className="haha-inp" value={cfg.s3_public_url ?? ''} onChange={(e: any) => setK('s3_public_url', e.target.value)} placeholder="https://cdn.example.com" />
           </label>
           <label className="sec-field row gap-8" style={{ alignItems: 'center' }}>
             {/* 生效默认开（后端 env 未设时按 true）：仅显式 '0' 显示关；保存时未配置键不落库（undefined 不入 JSON），用户勾选后才是显式选择 */}
@@ -2426,14 +2426,14 @@ function StorageAdmin() {
           </label>
           <label className="sec-field">
             <span className="sec-label">Access Key {secrets.s3_access_key ? '（已配置）' : ''}</span>
-            <input className="inp" type="password" autoComplete="new-password"
-              value={cfg.s3_access_key ?? ''} onChange={(e) => setK('s3_access_key', e.target.value)}
+            <Input className="haha-inp" type="password" autoComplete="new-password"
+              value={cfg.s3_access_key ?? ''} onChange={(e: any) => setK('s3_access_key', e.target.value)}
               placeholder={secrets.s3_access_key ? '••••（留空保留）' : 'Access Key'} />
           </label>
           <label className="sec-field">
             <span className="sec-label">Secret Key {secrets.s3_secret_key ? '（已配置）' : ''}</span>
-            <input className="inp" type="password" autoComplete="new-password"
-              value={cfg.s3_secret_key ?? ''} onChange={(e) => setK('s3_secret_key', e.target.value)}
+            <Input className="haha-inp" type="password" autoComplete="new-password"
+              value={cfg.s3_secret_key ?? ''} onChange={(e: any) => setK('s3_secret_key', e.target.value)}
               placeholder={secrets.s3_secret_key ? '••••（留空保留）' : 'Secret Key'} />
           </label>
         </div>
@@ -2482,8 +2482,8 @@ function AdminLogin() {
         <div style={{ fontWeight: 800, fontSize: 19, marginTop: 12 }}>HahaSNS 管理后台</div>
         <div className="muted" style={{ fontSize: 13, marginTop: 4, marginBottom: 18 }}>请使用管理员账号登录</div>
         {err && <div className="form-err">{err}</div>}
-        <input className="inp" placeholder="管理员用户名" value={u} onChange={(e) => setU(e.target.value)} autoFocus />
-        <input className="inp" type="password" placeholder="密码" value={p} onChange={(e) => setP(e.target.value)} style={{ marginTop: 10 }} />
+        <Input className="haha-inp" placeholder="管理员用户名" value={u} onChange={(e: any) => setU(e.target.value)} autoFocus />
+        <Input className="haha-inp" type="password" placeholder="密码" value={p} onChange={(e: any) => setP(e.target.value)} style={{ marginTop: 10 }} />
         <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy} style={{ marginTop: 14, fontWeight: 700 }}>
           {busy ? '登录中…' : '登录'}
         </button>
