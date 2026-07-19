@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Avatar from './Avatar';
 import Icon from './Icon';
+import PollEditor from './composer/PollEditor';
+import RedPacketEditor from './composer/RedPacketEditor';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
@@ -261,71 +263,8 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
               {location && <button className="faint" style={{ fontSize: 12 }} onClick={() => { setLocation(''); setShowLoc(false); }}>清除</button>}
             </div>
           )}
-          {poll && (
-            <div className="poll-editor">
-              <div className="poll-editor-head">
-                <span><Icon name="poll" size={15} /> 发起投票</span>
-                <button className="faint" style={{ fontSize: 12.5 }} onClick={() => setPoll(null)}>移除</button>
-              </div>
-              {poll.options.map((opt: any, i: number) => (
-                <div className="poll-editor-row" key={i}>
-                  <input value={opt} maxLength={60} placeholder={`选项 ${i + 1}`}
-                    onChange={(e) => setPoll((p: any) => ({ ...p, options: p.options.map((o: any, j: number) => j === i ? e.target.value : o) }))} />
-                  {poll.options.length > 2 && (
-                    <button className="poll-editor-rm" title="删除选项"
-                      onClick={() => setPoll((p: any) => ({ ...p, options: p.options.filter((_: any, j: number) => j !== i) }))}>
-                      <Icon name="close" size={15} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {poll.options.filter((o: any) => (o || '').trim()).length < 2 && (
-                <div style={{ fontSize: 12, color: 'var(--danger, #d64545)', padding: '2px 2px 6px' }}>至少填写 2 个选项才能发起投票</div>
-              )}
-              <div className="poll-editor-foot">
-                {poll.options.length < 6 && (
-                  <button className="poll-add" onClick={() => setPoll((p: any) => ({ ...p, options: [...p.options, ''] }))}>
-                    <Icon name="plus" size={14} /> 添加选项
-                  </button>
-                )}
-                <div className="spacer" />
-                <label className="poll-multi"><input type="checkbox" checked={poll.multi}
-                  onChange={(e) => setPoll((p: any) => ({ ...p, multi: e.target.checked }))} /> 多选</label>
-                <select className="vis-select" value={poll.days}
-                  onChange={(e) => setPoll((p: any) => ({ ...p, days: Number(e.target.value) }))} title="截止时间">
-                  <option value={0}>长期</option>
-                  <option value={1}>1 天</option>
-                  <option value={3}>3 天</option>
-                  <option value={7}>7 天</option>
-                </select>
-              </div>
-            </div>
-          )}
-          {redPacket && (
-            <div className="rp-editor">
-              <div className="rp-editor-head">
-                <span><Icon name="redpacket" size={15} /> 积分红包</span>
-                <button className="faint" style={{ fontSize: 12.5 }} onClick={() => setRedPacket(null)}>移除</button>
-              </div>
-              <div className="rp-editor-row">
-                <label className="rp-ef"><span>总积分</span>
-                  <Input type="number" min={1} value={redPacket.points} onChange={(e: any) => setRedPacket((r: any) => ({ ...r, points: e.target.value }))} className="haha-inp haha-inp-sm" /></label>
-                <label className="rp-ef"><span>红包个数</span>
-                  <Input type="number" min={1} max={100} value={redPacket.count} onChange={(e: any) => setRedPacket((r: any) => ({ ...r, count: e.target.value }))} className="haha-inp haha-inp-sm" /></label>
-              </div>
-              <Input className="haha-inp haha-inp-sm rp-ef-bless" maxLength={30} placeholder="祝福语（选填）" value={redPacket.blessing}
-                onChange={(e: any) => setRedPacket((r: any) => ({ ...r, blessing: e.target.value }))} />
-              <div className="rp-editor-hint">
-                {Number(redPacket.count) > 0 && `${redPacket.count} 个红包随机分配 ${Number(redPacket.points) || 0} 积分，先到先得 · `}
-                你当前 {user?.points ?? 0} 积分
-              </div>
-              {(() => {
-                const c = Number(redPacket.count) || 0, p = Number(redPacket.points) || 0;
-                const err = c < 1 ? '红包个数至少 1 个' : p < c ? `${c} 个红包至少需要 ${c} 积分` : (user?.points || 0) < p ? '积分不足，发不出这么大的红包' : '';
-                return err ? <div style={{ fontSize: 12, color: 'var(--danger, #d64545)', padding: '2px 2px 0' }}>{err}</div> : null;
-              })()}
-            </div>
-          )}
+          {poll && <PollEditor value={poll} onChange={setPoll} />}
+          {redPacket && <RedPacketEditor value={redPacket} onChange={setRedPacket} userPoints={user?.points ?? 0} />}
           <div className="composer-bar">
             <button className="tool" onClick={() => fileRef.current?.click()} title="图片"><Icon name="image" size={19} /></button>
             <button className="tool" onClick={() => fileRef.current?.click()} title="视频"><Icon name="video" size={19} /></button>
