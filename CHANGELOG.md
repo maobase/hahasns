@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.65 — 2026-07-20 03:53:22
+
+- **[重构]** 管理后台代码拆分（第 6 刀）：「抽奖」与「签到」两面板从 Admin.tsx 整体抽离为独立模块 pages/admin/LotteryPanel.tsx（抽奖规则、奖品新增/编辑/删除、权重中奖概率实时预览、导出 CSV、抽奖记录）与 pages/admin/CheckinPanel.tsx（签到奖励、内容奖励、VIP 签到加成、等级曲线、每日任务、徽章阈值、7 日预览与签到统计），组件均自取自存、无外部 props；带忙碌态保存按钮 SaveBtn 上提 pages/admin/ui.tsx 共享（用户 / 板块 / 快报 / 导航 / 抽奖多处统一引用），Admin.tsx 瘦至 1664 行，功能与外观保持不变。
+
 ## v5.64 — 2026-07-20 03:20:13
 
 - **[重构]** 管理后台代码拆分（第 5 刀）：「支付」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/PaymentPanel.tsx（支付宝 / 微信支付 / 易支付三家网关开关与凭据、演示充值开关、充值档位、付费内容价格上限、VIP 档位月价 / 名称标语 / 权益、保存支付配置与充值订单对账一并迁出，组件自取自存、无外部 props）；通用 CSV 导出 downloadCSV 与列表表头 ListHead 上提 pages/admin/ui.tsx 共享（用户 / 订单 / 抽奖 / 审计等多处统一引用），Admin.tsx 瘦至 1977 行，功能与外观保持不变。

@@ -1,3 +1,6 @@
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '../../components/heroui';
+
 // 管理后台共享小组件。Toggle 此前是 Admin.tsx 私有组件（其余面板 15+ 处在用），
 // 第 2 刀时 PagesPanel 曾内联自带一份；本刀（第 3 刀）上提到此处统一共享，实现逐字不变。
 export function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -29,5 +32,20 @@ export function ListHead({ title, count, action }: { title: string; count?: numb
       {count != null && <span className="alh-count">{count}</span>}
       {action && <span className="alh-action">{action}</span>}
     </div>
+  );
+}
+
+// 带忙碌态的保存按钮：点击后禁用 + 显示「保存中…」，避免重复提交；卸载安全（行内编辑保存成功会收起表单）。
+// 第 6 刀自 Admin.tsx 上提：用户 / 板块 / 快报 / 导航 / 抽奖多处共用，实现逐字不变。
+export function SaveBtn({ onSave, label = '保存' }: { onSave: () => Promise<any> | void; label?: string }) {
+  const [busy, setBusy] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
+  return (
+    <Button size="sm" color="primary" className="haha-btn-app" isDisabled={busy} onClick={async () => {
+      if (busy) return;
+      setBusy(true);
+      try { await onSave(); } finally { if (mounted.current) setBusy(false); }
+    }}>{busy ? '保存中…' : label}</Button>
   );
 }
