@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import Avatar from './Avatar';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { timeAgo } from '../lib/format';
@@ -101,7 +102,7 @@ export default function CircleChat({ slug, joined, onJoin }: { slug: string; joi
     <div className="ui-card cchat">
       <div className="cchat-list" ref={listRef} onScroll={onScroll}>
         {msgs === null ? (
-          <div className="cchat-empty"><span className="ui-spinner" /></div>
+          <div className="cchat-empty"><Spinner /></div>
         ) : msgs.length === 0 ? (
           <div className="cchat-empty">还没有人说话，来开个头吧 👋</div>
         ) : (

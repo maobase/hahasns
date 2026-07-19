@@ -497,7 +497,7 @@ function brandChip({ children, className, size, startContent, endContent, rest }
 
 /* ---- Spinner -------------------------------------------------------- */
 export function Spinner({ color, size = 'md', className, ...rest }) {
-  return <V3Spinner className={cx('haha-spinner', className)} size={size} {...rest} />;
+  return <V3Spinner className={cx('haha-spinner', className)} color={color} size={size} {...rest} />;
 }
 
 /* ---- Progress ------------------------------------------------------- */

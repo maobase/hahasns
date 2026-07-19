@@ -377,8 +377,6 @@
 .empty .e-action { margin-top: 16px; display: flex; justify-content: center; }
 .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 37%, var(--skeleton-base) 63%); background-size: 400% 100%; animation: sk 1.3s ease infinite; border-radius: var(--r-xs); }
 @keyframes sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-.ui-spinner { width: 26px; height: 26px; border: 3px solid var(--line-2); border-top-color: var(--brand); border-radius: 50%; animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- Modal ---------- */
 /* Backdrop just fades; the dialog scales + rises in from its center (proper dialog motion). */
@@ -638,6 +636,9 @@
 
 /* Button spinner alignment when isLoading */
 .haha-btn-spinner { margin-right: 6px; }
+/* v3 Spinner 默认 color=accent，而 --accent 只在 .haha-btn 内有映射；
+   这里给独立使用的 shim <Spinner> 补上同样的品牌色映射（6 皮肤 + 暗色随 token 自动换）。 */
+.haha-spinner { --accent: var(--brand); }
 
 /* HeroUI v3 buttons rendered as no-fill dark text (e.g. Settings「保存修改」
    主按钮) for TWO reasons, both fixed here (scoped to .haha-btn so no other

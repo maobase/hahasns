@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { useSite } from './context/SiteContext';
 import AuthLanding from './pages/AuthLanding';
 import Layout from './components/Layout';
+import { Spinner } from './components/heroui';
 import { RAIL_ITEMS } from './components/LeftRail';
 import Home from './pages/Home';
 import Discover from './pages/Discover';
@@ -102,7 +103,7 @@ function AppRoutes() {
     try { ret = sessionStorage.getItem('haha_login_return'); } catch { /* */ }
     if (ret) { try { sessionStorage.removeItem('haha_login_return'); } catch { /* */ } navigate(ret, { replace: true }); }
   }, [user, navigate]);
-  if (loading) return <div className="auth-splash"><div className="ui-spinner" /></div>;
+  if (loading) return <div className="auth-splash"><Spinner /></div>;
 
   // allow_guest 关 → 与现状一致：未登录整树 AuthLanding
   // allow_guest 开 + 游客态 → Layout 只读；未进游客仍 AuthLanding
@@ -110,7 +111,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/admin/*" element={<Suspense fallback={<div className="auth-splash"><div className="ui-spinner" /></div>}><Admin /></Suspense>} />
+      <Route path="/admin/*" element={<Suspense fallback={<div className="auth-splash"><Spinner /></div>}><Admin /></Suspense>} />
       <Route path="/about" element={
         <PageGate on={site.pageAboutOn}><About /></PageGate>
       } />
@@ -130,13 +131,13 @@ function AppRoutes() {
         <Route path="/messages/:peerId" element={<Messages />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/member" element={<Member />} />
-        <Route path="/ai" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><AIChat /></Suspense>} />
-        <Route path="/mall" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Mall /></Suspense>} />
+        <Route path="/ai" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><Spinner /></div>}><AIChat /></Suspense>} />
+        <Route path="/mall" element={<Suspense fallback={<div className="center" style={{ padding: 48 }}><Spinner /></div>}><Mall /></Suspense>} />
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/history" element={<History />} />
         <Route path="/changelog" element={
           <PageGate on={site.pageChangelogOn || site.pageRoadmapOn}>
-            <Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Changelog /></Suspense>
+            <Suspense fallback={<div className="center" style={{ padding: 48 }}><Spinner /></div>}><Changelog /></Suspense>
           </PageGate>
         } />
         <Route path="/leaderboard" element={<Leaderboard />} />

@@ -4,6 +4,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Empty, Loading, ChatListSkeleton } from '../components/States';
 import AiMarkdown from '../components/AiMarkdown';
+import { Spinner } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -396,7 +397,7 @@ export default function AIChat() {
                 rows={1}
               />
               <button className="ai-send" onClick={send} disabled={!text.trim() || streaming} aria-label="发送">
-                {streaming ? <span className="ui-spinner ai-send-spin" /> : <Icon name="send" size={18} />}
+                {streaming ? <Spinner size="sm" color="current" /> : <Icon name="send" size={18} />}
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { toPng } from 'html-to-image';
 import QRCode from 'qrcode';
 import Modal from './Modal';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
 
@@ -89,7 +90,7 @@ export default function SharePoster({ open, onClose, post }: { open: boolean; on
           <img src={img} alt="分享海报" style={{ width: 280, borderRadius: 14, boxShadow: 'var(--shadow-pop)' }} />
         ) : (
           <div style={{ width: 280, height: 360, display: 'grid', placeItems: 'center' }}>
-            <span className="ui-spinner" />
+            <Spinner />
           </div>
         )}
         <button className="btn btn-primary btn-lg btn-block" disabled={busy || !img} onClick={download}>

@@ -10,6 +10,7 @@ import BackToTop from './BackToTop';
 import ComposeFab from './ComposeFab';
 import Shell from './Shell';
 import { Empty } from './States';
+import { Spinner } from './heroui';
 
 type TitleLabel = string | ((m: RegExpMatchArray) => string);
 
@@ -123,7 +124,7 @@ export default function Layout() {
           换页自动恢复、导航栏保持在位，而不是整页白屏。 */}
       {blocked ? <ModuleClosed /> : (
         <ErrorBoundary key={loc.pathname}>
-          <Suspense fallback={<div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>}><Outlet /></Suspense>
+          <Suspense fallback={<div className="center" style={{ padding: 48 }}><Spinner /></div>}><Outlet /></Suspense>
         </ErrorBoundary>
       )}
       {/* 全局 ICP 条：移动端/无右栏页也能看到备案号；空值不占位 */}

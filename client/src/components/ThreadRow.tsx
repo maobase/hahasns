@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Avatar from './Avatar';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 import MediaGrid from './MediaGrid';
 import Comments from './Comments';
 import { useAuth } from '../context/AuthContext';
@@ -71,7 +72,7 @@ export default function ThreadRow({ thread: initial, showBoard = true, defaultOp
       {open && (
         <div className="thread-expand">
           {loading ? (
-            <div className="center" style={{ padding: 24 }}><div className="ui-spinner" /></div>
+            <div className="center" style={{ padding: 24 }}><Spinner /></div>
           ) : (
             <>
               <div className="thread-content">{full?.content || t.content}</div>

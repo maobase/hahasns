@@ -1,9 +1,10 @@
 import type { CSSProperties, ReactNode } from 'react';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 
 export function Loading({ label = '加载中…' }: { label?: string } = {}) {
   void label;
-  return <div className="center" style={{ padding: 48 }}><div className="ui-spinner" /></div>;
+  return <div className="center" style={{ padding: 48 }}><Spinner /></div>;
 }
 
 // Map the emoji that call sites pass to a real stroke icon (less "AI" than emoji-as-icon)

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 import Avatar from './Avatar';
 import Modal from './Modal';
 import { useAuth } from '../context/AuthContext';
@@ -129,7 +130,7 @@ export default function Reactions({ id, target = 'post', initialReaction, initia
             ))}
           </div>
           <div className="rx-who-list">
-            {reactors === null ? <div className="rx-who-loading"><span className="ui-spinner" /></div>
+            {reactors === null ? <div className="rx-who-loading"><Spinner /></div>
               : reactors.filter((x) => filter === 'all' || x.reaction === filter).length === 0
                 ? <div className="faint" style={{ padding: 20, textAlign: 'center', fontSize: 13 }}>还没有人回应</div>
                 : reactors.filter((x) => filter === 'all' || x.reaction === filter).map((x) => {

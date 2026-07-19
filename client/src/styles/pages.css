@@ -376,7 +376,6 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 .ai-send:hover:not(:disabled) { filter: brightness(1.06); }
 .ai-send:active:not(:disabled) { transform: scale(.94); }
 .ai-send:disabled { opacity: .5; box-shadow: none; cursor: default; }
-.ai-send-spin { width: 18px; height: 18px; border-width: 2px; border-top-color: var(--on-brand); border-color: color-mix(in srgb, var(--on-brand) 35%, transparent); border-top-color: var(--on-brand); }
 
 /* notifications */
 .notif-row { display: flex; gap: 12px; padding: 14px 20px; transition: background .14s; }

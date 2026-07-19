@@ -6,6 +6,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
+import { Spinner } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
@@ -2540,7 +2541,7 @@ function SystemAdmin() {
         </div>
         <div style={{ marginTop: 14 }}>
           {st.upgrading ? (
-            <div className="row gap-8" style={{ alignItems: 'center', color: 'var(--brand)', fontWeight: 600 }}><div className="ui-spinner" style={{ width: 16, height: 16 }} /> 升级进行中，完成后服务会自动重启，请稍候…</div>
+            <div className="row gap-8" style={{ alignItems: 'center', color: 'var(--brand)', fontWeight: 600 }}><Spinner size="sm" /> 升级进行中，完成后服务会自动重启，请稍候…</div>
           ) : up ? (
             <div className="row gap-8" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--like)', fontWeight: 700 }}>● 有新版本可用</span>

@@ -27,6 +27,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.47', date: '2026-07-19 10:44:11', items: [
+      ['refactor', '全站加载指示器统一为 HeroUI Spinner：登录/注册按钮、AI 发送、评论回应列表、收藏弹窗、圈子聊天、帖子展开、后台升级等 16 处加载态同一外观，删除旧自研样式。'],
+    ],
+  },
+  {
     ver: 'v5.46', date: '2026-07-18 22:49:36', items: [
       ['refactor', '媒体上传逻辑去重收敛：动态、正文内联配图、论坛发帖三处共用的「压缩 → 超限拦截 → 上传」流程收敛为同一实现，行为与提示文案不变。'],
     ],

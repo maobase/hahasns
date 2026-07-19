@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Tabs, Tab } from '../components/heroui';
+import { Input, Tabs, Tab, Spinner } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
@@ -124,7 +124,7 @@ export default function AuthLanding() {
               <div className="faint" style={{ fontSize: 13, textAlign: 'center', color: 'var(--ink-3)' }}>本站暂未开放注册</div>
             )}
             <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy || (mode === 'register' && !site.registrationEnabled)} style={{ marginTop: 4, fontWeight: 700 }}>
-              {busy ? <span className="ui-spinner" style={{ width: 18, height: 18, borderWidth: 2, borderTopColor: '#fff' }} /> : (mode === 'login' ? '登录' : '注册')}
+              {busy ? <Spinner size="sm" color="current" /> : (mode === 'login' ? '登录' : '注册')}
             </button>
           </form>
           {site.allowGuest && (

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from './Modal';
 import Icon from './Icon';
+import { Spinner } from './heroui';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 
@@ -36,7 +37,7 @@ export default function CollectModal({
       <div className="modal-head"><div className="modal-title">加入专题</div></div>
       <div className="modal-body">
         {colls === null ? (
-          <div style={{ padding: 16, textAlign: 'center' }}><span className="ui-spinner" /></div>
+          <div style={{ padding: 16, textAlign: 'center' }}><Spinner /></div>
         ) : colls.length === 0 ? (
           <div className="faint" style={{ textAlign: 'center', padding: '8px 0 14px', fontSize: 14 }}>
             你还没有专题。<Link to="/collections" onClick={onClose} style={{ color: 'var(--brand)' }}>去创建一个</Link>
