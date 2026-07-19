@@ -6,7 +6,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
-import { Spinner, Input, Textarea } from '../components/heroui';
+import { Spinner, Input, Textarea, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
@@ -115,13 +115,13 @@ function AuditLog() {
             ))}
           </div>
         ) : <span />}
-        <button className="btn btn-ghost btn-sm" disabled={!shown.length} title="导出当前筛选的操作日志为 CSV" onClick={() => downloadCSV(`管理日志_${filter}.csv`, [
+        <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={!shown.length} title="导出当前筛选的操作日志为 CSV" onClick={() => downloadCSV(`管理日志_${filter}.csv`, [
           { label: '时间', get: (l: any) => l.createdAt },
           { label: '管理员', get: (l: any) => l.admin?.nickname || '管理员' },
           { label: '操作', get: (l: any) => l.actionLabel },
           { label: '动作类型', get: (l: any) => l.action },
           { label: '详情', get: (l: any) => l.detail || '' },
-        ], shown)}>导出 CSV</button>
+        ], shown)}>导出 CSV</Button>
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
         {shown.length === 0 ? <Empty text="该类型暂无记录" /> : shown.map((l, i) => (
@@ -284,14 +284,14 @@ function Overview({ onNav }: { onNav?: (tab: string) => void }) {
 function PointsEdit({ value, onSave }: { value: number; onSave: (n: number) => void }) {
   const [editing, setEditing] = useState(false);
   const [v, setV] = useState(String(value));
-  if (!editing) return <button className="btn btn-sm btn-outline" onClick={() => { setV(String(value)); setEditing(true); }} title="调整积分">积分</button>;
+  if (!editing) return <Button size="sm" variant="bordered" className="haha-btn-app" onClick={() => { setV(String(value)); setEditing(true); }} title="调整积分">积分</Button>;
   return (
     <span className="row gap-4" style={{ alignItems: 'center' }}>
       <Input className="haha-inp" type="number" min={0} value={v} autoFocus onChange={(e: any) => setV(e.target.value)}
         onKeyDown={(e: any) => { if (e.key === 'Enter') { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
         style={{ width: 96, height: 30, fontSize: 13 }} />
-      <button className="btn btn-sm btn-primary" onClick={() => { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); }}>确定</button>
-      <button className="btn btn-sm btn-ghost" onClick={() => setEditing(false)}>取消</button>
+      <Button size="sm" color="primary" className="haha-btn-app" onClick={() => { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); }}>确定</Button>
+      <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditing(false)}>取消</Button>
     </span>
   );
 }
@@ -328,11 +328,11 @@ function Users() {
       <div className="col gap-8" style={{ padding: 14 }}>
         <div className="row gap-8">
           <AdminSearch value={q} onChange={setQ} onSearch={() => load(q, filter)} placeholder="搜索用户名/昵称…" />
-          <button className="btn btn-ghost" disabled={!users.length} title="导出当前列表为 CSV" onClick={() => downloadCSV(`用户_${filter}.csv`, [
+          <Button variant="flat" className="haha-btn-app" isDisabled={!users.length} title="导出当前列表为 CSV" onClick={() => downloadCSV(`用户_${filter}.csv`, [
             { label: '昵称', get: (u) => u.nickname }, { label: '用户名', get: (u) => u.username }, { label: '等级', get: (u) => u.level },
             { label: '积分', get: (u) => u.points }, { label: 'VIP等级', get: (u) => u.vipLevel ?? (u.vip ? 1 : 0) }, { label: '角色', get: (u) => u.role || 'user' },
             { label: '封禁', get: (u) => (u.banned ? '是' : '否') },
-          ], users)}>导出 CSV</button>
+          ], users)}>导出 CSV</Button>
         </div>
         <div className="audit-filters">
           {USER_FILTERS.map(([k, l]) => <button key={k} className={`audit-chip${filter === k ? ' active' : ''}`} onClick={() => pickFilter(k)}>{l}</button>)}
@@ -347,7 +347,7 @@ function Users() {
               <div className="faint" style={{ fontSize: 12 }}>@{u.username} · Lv.{u.level} · {fmtNum(u.points)}积分 {u.banned && <span style={{ color: 'var(--like)' }}>· 已封禁</span>}</div>
             </div>
             <div className="row gap-4" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
-              <button className={`btn btn-sm ${u.verified ? 'btn-ghost' : 'btn-outline'}`} onClick={() => patch(u, { verified: !u.verified }, u.verified ? '已取消认证' : '已认证')}>V认证</button>
+              <Button size="sm" variant={u.verified ? 'flat' : 'bordered'} className="haha-btn-app" onClick={() => patch(u, { verified: !u.verified }, u.verified ? '已取消认证' : '已认证')}>V认证</Button>
               <select className="haha-inp" value={u.vipLevel ?? (u.vip ? 1 : 0)} onChange={(e) => patch(u, { vipLevel: Number(e.target.value) }, 'VIP 等级已更新')} style={{ height: 30, width: 'auto', padding: '0 8px', fontSize: 13 }} title="VIP 等级">
                 <option value={0}>非会员</option>
                 <option value={1}>VIP1 青铜</option>
@@ -355,16 +355,16 @@ function Users() {
                 <option value={3}>VIP3 黑钻</option>
               </select>
               <PointsEdit value={u.points} onSave={(n) => patch(u, { points: n }, '积分已更新')} />
-              <button className={`btn btn-sm ${u.role === 'admin' ? 'btn-ghost' : 'btn-outline'}`} onClick={() => patch(u, { role: u.role === 'admin' ? 'user' : 'admin' }, '角色已更新')}>管理员</button>
-              <button className="btn btn-sm btn-ghost" onClick={() => resetPw(u)} title="重置该用户登录密码">重置密码</button>
-              <button className="btn btn-sm btn-outline" style={{ color: u.banned ? 'var(--good)' : 'var(--like)', borderColor: 'currentColor' }} onClick={() => patch(u, { banned: !u.banned }, u.banned ? '已解封' : '已封禁')}>{u.banned ? '解封' : '封禁'}</button>
+              <Button size="sm" variant={u.role === 'admin' ? 'flat' : 'bordered'} className="haha-btn-app" onClick={() => patch(u, { role: u.role === 'admin' ? 'user' : 'admin' }, '角色已更新')}>管理员</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => resetPw(u)} title="重置该用户登录密码">重置密码</Button>
+              <Button size="sm" variant="bordered" className="haha-btn-app" style={{ color: u.banned ? 'var(--good)' : 'var(--like)', borderColor: 'currentColor' }} onClick={() => patch(u, { banned: !u.banned }, u.banned ? '已解封' : '已封禁')}>{u.banned ? '解封' : '封禁'}</Button>
             </div>
           </div>
         </div>
       ))}
       {hasMore && (
         <div className="row" style={{ justifyContent: 'center', padding: 12, borderTop: '1px solid var(--line)' }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => load(q, filter, users.length)}>加载更多</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => load(q, filter, users.length)}>加载更多</Button>
         </div>
       )}
     </div>
@@ -396,7 +396,7 @@ function BoardEditForm({ board, onSaved, onCancel }: { board: any; onSaved: () =
           {f.isPaid && <Input className="haha-inp" type="number" min={0} value={f.price} onChange={(e: any) => setF((s) => ({ ...s, price: e.target.value }))} placeholder="积分" style={{ width: 110 }} />}
         </label>
         <div className="row gap-4">
-          <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
           <SaveBtn onSave={save} />
         </div>
       </div>
@@ -444,7 +444,7 @@ function Boards() {
           <Input className="haha-inp" value={form.icon} onChange={(e: any) => setForm((f: any) => ({ ...f, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
           <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
           <Input className="haha-inp" value={form.slug} onChange={(e: any) => setForm((f: any) => ({ ...f, slug: e.target.value }))} placeholder="slug（必填，英文）" style={{ width: 130 }} />
-          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.slug.trim()}>创建</button>
+          <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.name.trim() || !form.slug.trim()}>创建</Button>
         </div>
         <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="板块说明 (可选)" style={{ width: '100%', marginTop: 8 }} />
       </div>
@@ -454,9 +454,9 @@ function Boards() {
             <div className="row gap-12" style={{ padding: '12px 16px' }}>
               <span style={{ fontSize: 22 }}>{b.icon}</span>
               <div className="grow" style={{ minWidth: 0 }}><b>{b.name}</b> <span className="faint" style={{ fontSize: 12 }}>/{b.slug} · {fmtNum(b.threadCount)}帖 · {b.moderators.length}版主{b.isPaid ? ` · 付费${b.price}` : ''}</span></div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditId(editId === b.id ? null : b.id)}>{editId === b.id ? '收起' : '编辑'}</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => addMod(b)}>版主</button>
-              <button className="btn btn-ghost btn-sm danger" onClick={() => del(b)}><Icon name="trash" size={14} /> 删除</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === b.id ? null : b.id)}>{editId === b.id ? '收起' : '编辑'}</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => addMod(b)}>版主</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(b)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
             </div>
             {editId === b.id && <BoardEditForm board={b} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
           </div>
@@ -481,7 +481,7 @@ function TopicEditForm({ topic, onSaved, onCancel }: { topic: any; onSaved: () =
       <div className="row gap-12" style={{ marginTop: 8, justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <label className="sec-field" style={{ width: 160 }}><span className="sec-label">热度（发现页排序）</span><Input className="haha-inp" type="number" min={0} value={f.hot} onChange={(e: any) => setF((s) => ({ ...s, hot: e.target.value }))} /></label>
         <div className="row gap-4">
-          <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
           <SaveBtn onSave={save} />
         </div>
       </div>
@@ -519,7 +519,7 @@ function Topics() {
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
           <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="话题名（必填）" style={{ flex: 1, minWidth: 120 }} />
           <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="描述" style={{ flex: 1, minWidth: 120 }} />
-          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim()}>创建话题</button>
+          <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.name.trim()}>创建话题</Button>
         </div>
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
@@ -530,8 +530,8 @@ function Topics() {
           <div key={t.id}>{i > 0 && <div className="divider" />}
             <div className="row gap-12" style={{ padding: '12px 16px' }}>
               <div className="grow" style={{ minWidth: 0 }}><b>#{t.name}#</b> <span className="faint" style={{ fontSize: 12 }}>{fmtNum(t.post_count)}动态 · 热度{fmtNum(t.hot)}{t.cover ? ' · 有封面' : ''}</span></div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditId(editId === t.id ? null : t.id)}>{editId === t.id ? '收起' : '编辑'}</button>
-              <button className="btn btn-ghost btn-sm danger" onClick={() => del(t)}><Icon name="trash" size={14} /> 删除</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === t.id ? null : t.id)}>{editId === t.id ? '收起' : '编辑'}</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(t)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
             </div>
             {editId === t.id && <TopicEditForm topic={t} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
           </div>
@@ -585,10 +585,10 @@ function Reports() {
               <div className="row gap-8" style={{ marginTop: 10 }}>
                 <span className="faint" style={{ fontSize: 12 }}>举报人 {r.reporter?.nickname}</span>
                 <span className="spacer" />
-                {link(r) && <Link to={link(r)!} className="btn btn-ghost btn-sm">查看</Link>}
-                {!resolved && r.target?.exists && r.targetType !== 'user' && <button className="btn btn-ghost btn-sm danger" onClick={() => delContent(r)}><Icon name="trash" size={14} /> 删除内容</button>}
+                {link(r) && <Link to={link(r)!} className="haha-btn-app haha-btn-app--ghost haha-btn-app--sm">查看</Link>}
+                {!resolved && r.target?.exists && r.targetType !== 'user' && <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delContent(r)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除内容</Button>}
                 {!resolved
-                  ? <button className="btn btn-outline btn-sm" onClick={() => resolve(r)}>忽略</button>
+                  ? <Button size="sm" variant="bordered" className="haha-btn-app" onClick={() => resolve(r)}>忽略</Button>
                   : <span className="faint" style={{ fontSize: 12, color: 'var(--good)' }}>已处理</span>}
               </div>
             </div>
@@ -618,7 +618,7 @@ function NoticeEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () =>
         <label className="sec-field"><span className="sec-label">按钮文字</span><Input className="haha-inp" maxLength={30} value={f.linkLabel} onChange={(e: any) => setF((s) => ({ ...s, linkLabel: e.target.value }))} placeholder="如 查看详情" /></label>
       </div>
       <div className="row gap-4" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
-        <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
+        <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
         <SaveBtn onSave={save} />
       </div>
     </div>
@@ -656,7 +656,7 @@ function Notices() {
             <label className="row gap-6" style={{ fontSize: 13, cursor: 'pointer', color: 'var(--ink-2)' }}>
               <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((f: any) => ({ ...f, pinned: e.target.checked }))} /> 置顶展示
             </label>
-            <button className="btn btn-primary" onClick={create} disabled={!form.title.trim()}>发布公告</button>
+            <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.title.trim()}>发布公告</Button>
           </div>
         </div>
       </div>
@@ -671,10 +671,10 @@ function Notices() {
                 <div className="faint" style={{ fontSize: 11.5, marginTop: 4 }}>{timeAgo(n.createdAt)} · {n.active ? '展示中' : '已下线'}</div>
               </div>
               <div className="row gap-6" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditId(editId === n.id ? null : n.id)}>{editId === n.id ? '收起' : '编辑'}</button>
-                <button className="btn btn-ghost btn-sm" onClick={() => patch(n, { active: !n.active })}>{n.active ? '下线' : '上线'}</button>
-                <button className="btn btn-ghost btn-sm" onClick={() => patch(n, { pinned: !n.pinned })}>{n.pinned ? '取消置顶' : '置顶'}</button>
-                <button className="btn btn-ghost btn-sm danger" onClick={() => del(n)}><Icon name="trash" size={14} /> 删除</button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === n.id ? null : n.id)}>{editId === n.id ? '收起' : '编辑'}</Button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => patch(n, { active: !n.active })}>{n.active ? '下线' : '上线'}</Button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => patch(n, { pinned: !n.pinned })}>{n.pinned ? '取消置顶' : '置顶'}</Button>
+                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(n)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
               </div>
             </div>
             {editId === n.id && <NoticeEditForm item={n} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
@@ -713,7 +713,7 @@ function ProductEditForm({ product, onSaved, onCancel }: { product: any; onSaved
       </div>
       <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="商品说明（可选）" style={{ width: '100%', marginTop: 8 }} />
       <div className="row gap-4" style={{ justifyContent: 'flex-end', marginTop: 10 }}>
-        <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
+        <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
         <SaveBtn onSave={save} />
       </div>
     </div>
@@ -740,9 +740,9 @@ function MallOrders() {
       </div>
       <div className="ui-card" style={{ padding: 0, overflow: 'hidden' }}>
         <ListHead title="兑换记录" count={data.orders.length} action={
-          <button className="btn btn-ghost btn-sm" disabled={!data.orders.length} onClick={() => downloadCSV('兑换记录.csv', [
+          <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={!data.orders.length} onClick={() => downloadCSV('兑换记录.csv', [
             { label: '用户', get: (o) => o.user?.nickname || '' }, { label: '商品', get: (o) => o.product?.name || '' }, { label: '分类', get: (o) => MALL_CAT[o.product?.category] || o.product?.category || '' }, { label: '积分', get: (o) => o.price }, { label: '时间', get: (o) => o.createdAt },
-          ], data.orders)}>导出 CSV</button>
+          ], data.orders)}>导出 CSV</Button>
         } />
         {data.orders.length === 0 ? <Empty text="还没有兑换记录" /> : data.orders.map((o: any, i: number) => {
           const phys = o.product?.category === 'physical';
@@ -790,7 +790,7 @@ function Products() {
             {PRODUCT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <Input className="haha-inp" type="number" value={form.price} onChange={(e: any) => setForm((f: any) => ({ ...f, price: e.target.value }))} placeholder="积分" style={{ width: 100 }} />
-          <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.price}>上架</button>
+          <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.name.trim() || !form.price}>上架</Button>
         </div>
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
@@ -802,8 +802,8 @@ function Products() {
             <div className="row gap-12" style={{ padding: '12px 16px' }}>
               <span style={{ fontSize: 22 }}>{p.icon}</span>
               <div className="grow" style={{ minWidth: 0 }}><b>{p.name}</b> <span className="faint" style={{ fontSize: 12 }}>{p.price}积分 · 已售{p.sold}{p.stock >= 0 ? ` · 余${Math.max(0, p.stock - p.sold)}` : ''}</span></div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditId(editId === p.id ? null : p.id)}>{editId === p.id ? '收起' : '编辑'}</button>
-              <button className="btn btn-ghost btn-sm danger" onClick={() => del(p)}><Icon name="trash" size={14} /> 下架</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === p.id ? null : p.id)}>{editId === p.id ? '收起' : '编辑'}</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(p)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 下架</Button>
             </div>
             {editId === p.id && <ProductEditForm product={p} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
           </div>
@@ -979,7 +979,7 @@ function Security() {
       </div>
 
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存设置'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存设置'}</Button>
       </div>
     </div>
   );
@@ -1022,7 +1022,7 @@ function Modules() {
         </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存设置'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存设置'}</Button>
       </div>
     </div>
   );
@@ -1106,7 +1106,7 @@ function Layouts() {
         </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存布局'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存布局'}</Button>
       </div>
     </div>
   );
@@ -1131,22 +1131,22 @@ function AdminSearch({ value, onChange, onSearch, placeholder }: { value: string
         <Icon name="search" size={15} />
         <Input className="haha-inp" value={value} onChange={(e: any) => onChange(e.target.value)} onKeyDown={(e: any) => e.key === 'Enter' && onSearch()} placeholder={placeholder} />
       </div>
-      <button className="btn btn-ghost" onClick={onSearch}>搜索</button>
+      <Button variant="flat" className="haha-btn-app" onClick={onSearch}>搜索</Button>
     </>
   );
 }
 
 // 带忙碌态的保存按钮：点击后禁用 + 显示「保存中…」，避免重复提交；卸载安全（行内编辑保存成功会收起表单）。
-function SaveBtn({ onSave, label = '保存', className = 'btn btn-sm btn-primary' }: { onSave: () => Promise<any> | void; label?: string; className?: string }) {
+function SaveBtn({ onSave, label = '保存' }: { onSave: () => Promise<any> | void; label?: string }) {
   const [busy, setBusy] = useState(false);
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
   return (
-    <button className={className} disabled={busy} onClick={async () => {
+    <Button size="sm" color="primary" className="haha-btn-app" isDisabled={busy} onClick={async () => {
       if (busy) return;
       setBusy(true);
       try { await onSave(); } finally { if (mounted.current) setBusy(false); }
-    }}>{busy ? '保存中…' : label}</button>
+    }}>{busy ? '保存中…' : label}</Button>
   );
 }
 
@@ -1171,7 +1171,7 @@ function FlashEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () => 
       <div className="row" style={{ justifyContent: 'space-between', marginTop: 12, alignItems: 'center' }}>
         <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={f.pinned} onChange={(v) => setF((s) => ({ ...s, pinned: v }))} /> 置顶</label>
         <div className="row gap-4">
-          <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
           <SaveBtn onSave={save} />
         </div>
       </div>
@@ -1211,7 +1211,7 @@ function FlashAdmin() {
         </div>
         <div className="row" style={{ justifyContent: 'space-between', marginTop: 14 }}>
           <label className="row gap-8" style={{ fontSize: 13.5 }}><Toggle on={form.pinned} onChange={(v) => setForm((f) => ({ ...f, pinned: v }))} /> 置顶</label>
-          <button className="btn btn-primary" onClick={publish} disabled={saving}>{saving ? '发布中…' : '发布快报'}</button>
+          <Button color="primary" className="haha-btn-app" onClick={publish} isDisabled={saving}>{saving ? '发布中…' : '发布快报'}</Button>
         </div>
       </div>
       <div className="ui-card" style={{ padding: 0, overflow: 'hidden' }}>

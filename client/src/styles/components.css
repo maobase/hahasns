@@ -751,6 +751,12 @@ select.haha-inp { width: 100%; border: 1.5px solid var(--line-2); border-radius:
      直绘不同（亚像素~1px 字形偏移）。抹回 none；:active/hover 的 scale/translate 规则
      特异性更高不受影响（批 2 门 3 实测：注入 none 后基线 diff 归零）。 */
   transform: none;
+  /* v3 .button 还自带 position:relative + isolation:isolate：定位+独立 stacking context
+     使胶囊弧边/阴影走另一条栅格化路径，1280 档与旧 .btn 有确定性亚像素差（批 4 Admin 门 3
+     实测 23px 超阈值；只注 position 不够，两者同注后基线 diff 归零）。旧 .btn 是 static/auto，
+     抹回后任何调用点行为都与旧轨道一致（旧按钮本就不是定位上下文，无依赖可破坏）。 */
+  position: static;
+  isolation: auto;
 }
 /* display 不进基座：v3 .button 自带 inline-flex；写在这里会压过 layout.css:177
    移动端 .nav-checkin{display:none}（同特异性、components.css 更靠后）把签到按钮顶出来。
