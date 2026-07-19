@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.61 — 2026-07-20 02:02:27
+
+- **[重构]** 管理后台代码拆分（第 2 刀）：「页面内容」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/PagesPanel.tsx（关于 / 更新日志 / 开发计划的 Markdown 编辑、启用开关与保存逻辑一并迁出，组件自取配置、无外部依赖），Admin.tsx 瘦至 2522 行，功能与外观保持不变。
+
 ## v5.60 — 2026-07-20 01:45:01
 
 - **[重构]** 管理后台代码拆分（第 1 刀）：「存储」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/StoragePanel.tsx（对象存储表单、配置预警卡片、测试连接与保存逻辑一并迁出，组件自取配置、无外部依赖），Admin.tsx 瘦至 2569 行，功能与外观保持不变。
