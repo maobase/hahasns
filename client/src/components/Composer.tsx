@@ -3,6 +3,8 @@ import Avatar from './Avatar';
 import Icon from './Icon';
 import PollEditor from './composer/PollEditor';
 import RedPacketEditor from './composer/RedPacketEditor';
+import EmojiPanel from './composer/EmojiPanel';
+import AdvancedFields from './composer/AdvancedFields';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
@@ -11,10 +13,8 @@ import { VIS_LABELS } from '../lib/format';
 import { uploadPickedFiles } from '../lib/upload';
 import { loadDraft, saveDraft, clearDraft as clearDraftStore, hasDraft } from '../lib/draft';
 import useMention from '../hooks/useMention';
-import { Input, Button } from './heroui';
+import { Button } from './heroui';
 import { onCtrlEnter } from '../lib/kbd';
-
-const EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 😡 👍 👏 🙏 💪 🎉 🔥 ✨ 💯 ❤️ 💔 🌈 ☕ 🍜 🎵 📷 🌙 ⭐ 🐱 🐶 🌸 🍀 🚀 💎'.split(' ');
 
 export interface ComposerProps {
   onPosted?: (post: any) => void;
@@ -48,7 +48,6 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
   const [draftRestored, setDraftRestored] = useState(() => !prefill && hasDraft());
   const [savedHint, setSavedHint] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const inlineImgRef = useRef<HTMLInputElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const mention = useMention(content, setContent, taRef);
 
@@ -123,83 +122,6 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
     finally { setBusy(false); }
   };
 
-  const resizeTa = (ta: HTMLTextAreaElement) => { ta.style.height = 'auto'; ta.style.height = `${ta.scrollHeight}px`; };
-
-  // wrap the current textarea selection with markdown markers (加粗/删除线/代码)
-  const format = (mark: string, end: string = mark) => {
-    const ta = taRef.current;
-    if (!ta) return;
-    const s = ta.selectionStart ?? content.length;
-    const e = ta.selectionEnd ?? content.length;
-    const sel = content.slice(s, e) || '文字';
-    const next = content.slice(0, s) + mark + sel + end + content.slice(e);
-    setContent(next);
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.selectionStart = s + mark.length;
-      ta.selectionEnd = s + mark.length + sel.length;
-      resizeTa(ta);
-    });
-  };
-
-  // prepend a block marker (标题 ## / 列表 - / 引用 >) to the start of the current line
-  const prefixLine = (prefix: string) => {
-    const ta = taRef.current;
-    if (!ta) return;
-    const s = ta.selectionStart ?? content.length;
-    const lineStart = content.lastIndexOf('\n', s - 1) + 1;
-    const next = content.slice(0, lineStart) + prefix + content.slice(lineStart);
-    setContent(next);
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.selectionStart = ta.selectionEnd = s + prefix.length;
-      resizeTa(ta);
-    });
-  };
-
-  // insert a markdown link [文字](url), cursor landing on the url so it can be typed over
-  const insertLink = () => {
-    const ta = taRef.current;
-    if (!ta) return;
-    const s = ta.selectionStart ?? content.length;
-    const e = ta.selectionEnd ?? content.length;
-    const sel = content.slice(s, e) || '链接文字';
-    const snippet = `[${sel}](https://)`;
-    const next = content.slice(0, s) + snippet + content.slice(e);
-    setContent(next);
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.selectionStart = s + sel.length + 3;       // just after "]("
-      ta.selectionEnd = s + snippet.length - 1;     // just before ")"
-      resizeTa(ta);
-    });
-  };
-
-  // 在光标处插入一段文本（图片 markdown 等），插入后光标落在末尾
-  const insertAtCursor = (snippet: string) => {
-    const ta = taRef.current;
-    const s = ta?.selectionStart ?? content.length;
-    const e = ta?.selectionEnd ?? content.length;
-    const next = content.slice(0, s) + snippet + content.slice(e);
-    setContent(next);
-    requestAnimationFrame(() => {
-      if (!ta) return;
-      ta.focus();
-      ta.selectionStart = ta.selectionEnd = s + snippet.length;
-      resizeTa(ta);
-    });
-  };
-
-  // 上传一张图片并在正文光标处插入 ![](url)，实现正文内联配图
-  const uploadInline = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = (ev.target.files || [])[0];
-    if (!raw) return;
-    const uploaded = await uploadPickedFiles([raw], { maxSizeMb, remaining: 1, onErr: toast.err, single: true });
-    const url = uploaded[0]?.url;
-    if (url) insertAtCursor(`\n![图片](${url})\n`);
-    ev.target.value = '';
-  };
-
   return (
     <div className={embedded ? 'composer composer-embedded' : 'ui-card composer'}>
       <div className="composer-top">
@@ -240,29 +162,10 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
 
       {(focused || content || media.length > 0 || poll || redPacket) && (
         <>
-          {vis === 'paid' && (
-            <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
-              <span className="muted">解锁价格</span>
-              <Input type="number" min={1} max={paidPriceMax} value={price} onChange={(e: any) => setPrice(e.target.value)}
-                className="haha-inp haha-inp-sm" style={{ width: 96 }} />
-              <span className="muted">积分</span>
-            </div>
-          )}
-          {vis === 'password' && (
-            <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
-              <span className="muted">访问密码</span>
-              <Input value={password} onChange={(e: any) => setPassword(e.target.value)} placeholder="设置查看密码"
-                className="haha-inp haha-inp-sm" style={{ width: 170 }} />
-            </div>
-          )}
-          {showLoc && (
-            <div className="row gap-8" style={{ marginTop: 10, fontSize: 13 }}>
-              <Icon name="location" size={15} style={{ color: 'var(--brand)' }} />
-              <Input value={location} onChange={(e: any) => setLocation(e.target.value)} placeholder="所在城市，如：上海" maxLength={20}
-                className="haha-inp haha-inp-sm" style={{ width: 210 }} />
-              {location && <button className="faint" style={{ fontSize: 12 }} onClick={() => { setLocation(''); setShowLoc(false); }}>清除</button>}
-            </div>
-          )}
+          <AdvancedFields vis={vis} price={price} onPriceChange={setPrice} paidPriceMax={paidPriceMax}
+            password={password} onPasswordChange={setPassword}
+            showLoc={showLoc} location={location} onLocationChange={setLocation}
+            onLocationClear={() => { setLocation(''); setShowLoc(false); }} />
           {poll && <PollEditor value={poll} onChange={setPoll} />}
           {redPacket && <RedPacketEditor value={redPacket} onChange={setRedPacket} userPoints={user?.points ?? 0} />}
           <div className="composer-bar">
@@ -274,11 +177,7 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
               onClick={() => setRedPacket((r: any) => r ? null : { points: 88, count: 8, blessing: '恭喜发财，大吉大利' })}><Icon name="redpacket" size={19} /></button>
             <div style={{ position: 'relative' }}>
               <button className="tool" onClick={() => setShowEmoji((s) => !s)} title="表情"><Icon name="smile" size={19} /></button>
-              {showEmoji && (
-                <div className="emoji-pop">
-                  {EMOJIS.map((em) => <button key={em} onClick={() => insertEmoji(em)}>{em}</button>)}
-                </div>
-              )}
+              {showEmoji && <EmojiPanel onPick={insertEmoji} />}
             </div>
             <button className={`tool${showLoc && location ? ' on' : ''}`} onClick={() => setShowLoc((s) => !s)} title="所在位置" style={showLoc && location ? { color: 'var(--brand)' } : undefined}><Icon name="location" size={19} /></button>
             <select className="vis-select" value={vis} onChange={(e) => setVis(e.target.value)} title="可见范围">
