@@ -615,6 +615,24 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 .admin-shell .perm-row .sec-num input { height: 32px; }
 .admin-shell .perm-row { border-top-color: var(--line); }
 .admin-shell .inp:focus { box-shadow: 0 0 0 2px var(--brand-soft); }
+/* 输入框双轨收敛 Admin 批（spec01 §1.2）：.admin-shell 内 shim Input/Textarea（.haha-inp wrap）与
+   原生 select 直挂 .haha-inp 时，对齐 .admin-shell .inp 的 B 端紧凑语言——36px 高 / r-sm 圆角 /
+   13.5px 字 / 2px brand-soft 聚焦环 / 数值等宽。字号声明在 wrap、内部 inherit（对齐 base.css
+   input{…inherit} 的继承行为，内联 fontSize/textAlign 照旧生效）。.inp 本体保留到末批再删。 */
+.admin-shell .haha-inp { height: 36px; border-radius: var(--r-sm); border-color: var(--line-2); font-size: 13.5px; }
+/* wrap 盒型对齐原生 input（inline-block）：block 级 wrap 的 margin-top 会穿过 padding-top:0 的表单容器
+   向外塌陷（TopicEditForm 首字段 marginTop:14，容器顶被顶下、上方露出 14px 卡片白边），原生 inline-block
+   不塌陷；inline-flex 同为 inline 级不塌陷。flex 行内子项会被 blockify 回 flex，行为不变。 */
+.admin-shell .haha-input-wrap.haha-inp { display: inline-flex; width: 100%; }
+.admin-shell .haha-inp:focus-within, .admin-shell .haha-inp:focus { border-color: var(--brand); box-shadow: 0 0 0 2px var(--brand-soft); }
+/* v3 给 .input 自带 text-align:start，打断原生 input 的 text-align 继承链（图标框 textAlign:center 实测左偏 7px），
+   inherit 还原原生继承行为；字号同理（内联 fontSize 经 wrap 继承，对齐 base.css input{…inherit}）。 */
+.admin-shell .haha-inp .haha-input { font-size: inherit; text-align: inherit; font-variant-numeric: tabular-nums; }
+.admin-shell textarea.haha-inp { font-size: 13.5px; }
+.admin-shell select.haha-inp { height: 36px; font-size: 13.5px; border-radius: var(--r-sm); border-color: var(--line-2);
+  -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; }
 .admin-shell .sec-label { color: var(--ink-2); font-weight: 500; }
 .admin-shell .sec-head { color: var(--ink); }
 /* B 端表单必填项标记（design.md 表单）：红色星号，标在带标签的必填字段后 */

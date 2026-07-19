@@ -6,7 +6,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
-import { Spinner } from '../components/heroui';
+import { Spinner, Input, Textarea } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
@@ -287,8 +287,8 @@ function PointsEdit({ value, onSave }: { value: number; onSave: (n: number) => v
   if (!editing) return <button className="btn btn-sm btn-outline" onClick={() => { setV(String(value)); setEditing(true); }} title="调整积分">积分</button>;
   return (
     <span className="row gap-4" style={{ alignItems: 'center' }}>
-      <input className="inp" type="number" min={0} value={v} autoFocus onChange={(e) => setV(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
+      <Input className="haha-inp" type="number" min={0} value={v} autoFocus onChange={(e: any) => setV(e.target.value)}
+        onKeyDown={(e: any) => { if (e.key === 'Enter') { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
         style={{ width: 96, height: 30, fontSize: 13 }} />
       <button className="btn btn-sm btn-primary" onClick={() => { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); }}>确定</button>
       <button className="btn btn-sm btn-ghost" onClick={() => setEditing(false)}>取消</button>
@@ -348,7 +348,7 @@ function Users() {
             </div>
             <div className="row gap-4" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
               <button className={`btn btn-sm ${u.verified ? 'btn-ghost' : 'btn-outline'}`} onClick={() => patch(u, { verified: !u.verified }, u.verified ? '已取消认证' : '已认证')}>V认证</button>
-              <select className="inp" value={u.vipLevel ?? (u.vip ? 1 : 0)} onChange={(e) => patch(u, { vipLevel: Number(e.target.value) }, 'VIP 等级已更新')} style={{ height: 30, width: 'auto', padding: '0 8px', fontSize: 13 }} title="VIP 等级">
+              <select className="haha-inp" value={u.vipLevel ?? (u.vip ? 1 : 0)} onChange={(e) => patch(u, { vipLevel: Number(e.target.value) }, 'VIP 等级已更新')} style={{ height: 30, width: 'auto', padding: '0 8px', fontSize: 13 }} title="VIP 等级">
                 <option value={0}>非会员</option>
                 <option value={1}>VIP1 青铜</option>
                 <option value={2}>VIP2 黄金</option>
@@ -385,15 +385,15 @@ function BoardEditForm({ board, onSaved, onCancel }: { board: any; onSaved: () =
   return (
     <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
       <div className="row gap-8" style={{ flexWrap: 'wrap', paddingTop: 14 }}>
-        <input className="inp" value={f.icon} onChange={(e) => setF((s) => ({ ...s, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
-        <input className="inp" value={f.name} onChange={(e) => setF((s) => ({ ...s, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
+        <Input className="haha-inp" value={f.icon} onChange={(e: any) => setF((s) => ({ ...s, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
+        <Input className="haha-inp" value={f.name} onChange={(e: any) => setF((s) => ({ ...s, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
       </div>
-      <input className="inp" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="板块说明（可选）" style={{ width: '100%', marginTop: 8 }} />
-      <textarea className="inp" value={f.announcement} onChange={(e) => setF((s) => ({ ...s, announcement: e.target.value }))} placeholder="板块公告（可选）" rows={2} style={{ width: '100%', marginTop: 8 }} />
+      <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="板块说明（可选）" style={{ width: '100%', marginTop: 8 }} />
+      <Textarea className="haha-inp" value={f.announcement} onChange={(e: any) => setF((s) => ({ ...s, announcement: e.target.value }))} placeholder="板块公告（可选）" minRows={2} style={{ width: '100%', marginTop: 8 }} />
       <div className="row gap-12" style={{ marginTop: 10, justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center' }}>
         <label className="row gap-8" style={{ fontSize: 13, color: 'var(--ink-2)', alignItems: 'center' }}>
           <Toggle on={f.isPaid} onChange={(v) => setF((s) => ({ ...s, isPaid: v }))} /> 付费板块
-          {f.isPaid && <input className="inp" type="number" min={0} value={f.price} onChange={(e) => setF((s) => ({ ...s, price: e.target.value }))} placeholder="积分" style={{ width: 110 }} />}
+          {f.isPaid && <Input className="haha-inp" type="number" min={0} value={f.price} onChange={(e: any) => setF((s) => ({ ...s, price: e.target.value }))} placeholder="积分" style={{ width: 110 }} />}
         </label>
         <div className="row gap-4">
           <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
@@ -441,12 +441,12 @@ function Boards() {
       <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
         <div style={{ fontWeight: 700, marginBottom: 12 }}>新建板块</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <input className="inp" value={form.icon} onChange={(e) => setForm((f: any) => ({ ...f, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
-          <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
-          <input className="inp" value={form.slug} onChange={(e) => setForm((f: any) => ({ ...f, slug: e.target.value }))} placeholder="slug（必填，英文）" style={{ width: 130 }} />
+          <Input className="haha-inp" value={form.icon} onChange={(e: any) => setForm((f: any) => ({ ...f, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
+          <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
+          <Input className="haha-inp" value={form.slug} onChange={(e: any) => setForm((f: any) => ({ ...f, slug: e.target.value }))} placeholder="slug（必填，英文）" style={{ width: 130 }} />
           <button className="btn btn-primary" onClick={create} disabled={!form.name.trim() || !form.slug.trim()}>创建</button>
         </div>
-        <input className="inp" value={form.description} onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="板块说明 (可选)" style={{ width: '100%', marginTop: 8 }} />
+        <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="板块说明 (可选)" style={{ width: '100%', marginTop: 8 }} />
       </div>
       <div className="ui-card" style={{ overflow: 'hidden' }}>
         {boards.map((b, i) => (
@@ -476,10 +476,10 @@ function TopicEditForm({ topic, onSaved, onCancel }: { topic: any; onSaved: () =
   };
   return (
     <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
-      <input className="inp" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="话题描述" style={{ width: '100%', marginTop: 14 }} />
-      <input className="inp" value={f.cover} onChange={(e) => setF((s) => ({ ...s, cover: e.target.value }))} placeholder="封面图 URL（可选，发现页展示）" style={{ width: '100%', marginTop: 8 }} />
+      <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="话题描述" style={{ width: '100%', marginTop: 14 }} />
+      <Input className="haha-inp" value={f.cover} onChange={(e: any) => setF((s) => ({ ...s, cover: e.target.value }))} placeholder="封面图 URL（可选，发现页展示）" style={{ width: '100%', marginTop: 8 }} />
       <div className="row gap-12" style={{ marginTop: 8, justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <label className="sec-field" style={{ width: 160 }}><span className="sec-label">热度（发现页排序）</span><input className="inp" type="number" min={0} value={f.hot} onChange={(e) => setF((s) => ({ ...s, hot: e.target.value }))} /></label>
+        <label className="sec-field" style={{ width: 160 }}><span className="sec-label">热度（发现页排序）</span><Input className="haha-inp" type="number" min={0} value={f.hot} onChange={(e: any) => setF((s) => ({ ...s, hot: e.target.value }))} /></label>
         <div className="row gap-4">
           <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
           <SaveBtn onSave={save} />
@@ -517,8 +517,8 @@ function Topics() {
       )}
       <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="话题名（必填）" style={{ flex: 1, minWidth: 120 }} />
-          <input className="inp" value={form.description} onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="描述" style={{ flex: 1, minWidth: 120 }} />
+          <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="话题名（必填）" style={{ flex: 1, minWidth: 120 }} />
+          <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="描述" style={{ flex: 1, minWidth: 120 }} />
           <button className="btn btn-primary" onClick={create} disabled={!form.name.trim()}>创建话题</button>
         </div>
       </div>
@@ -611,11 +611,11 @@ function NoticeEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () =>
   return (
     <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
       <div className="sec-grid" style={{ paddingTop: 14 }}>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><input className="inp" maxLength={120} value={f.title} onChange={(e) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">补充说明</span><textarea className="inp" rows={2} maxLength={500} value={f.body} onChange={(e) => setF((s) => ({ ...s, body: e.target.value }))} /></label>
-        <label className="sec-field"><span className="sec-label">级别</span><select className="inp" value={f.level} onChange={(e) => setF((s) => ({ ...s, level: e.target.value }))}>{NOTICE_LEVELS.map((l) => <option key={l.k} value={l.k}>{l.l}</option>)}</select></label>
-        <label className="sec-field"><span className="sec-label">跳转链接</span><input className="inp" maxLength={300} value={f.link} onChange={(e) => setF((s) => ({ ...s, link: e.target.value }))} placeholder="如 /events" /></label>
-        <label className="sec-field"><span className="sec-label">按钮文字</span><input className="inp" maxLength={30} value={f.linkLabel} onChange={(e) => setF((s) => ({ ...s, linkLabel: e.target.value }))} placeholder="如 查看详情" /></label>
+        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={f.title} onChange={(e: any) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
+        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">补充说明</span><Textarea className="haha-inp" minRows={2} maxLength={500} value={f.body} onChange={(e: any) => setF((s) => ({ ...s, body: e.target.value }))} /></label>
+        <label className="sec-field"><span className="sec-label">级别</span><select className="haha-inp" value={f.level} onChange={(e) => setF((s) => ({ ...s, level: e.target.value }))}>{NOTICE_LEVELS.map((l) => <option key={l.k} value={l.k}>{l.l}</option>)}</select></label>
+        <label className="sec-field"><span className="sec-label">跳转链接</span><Input className="haha-inp" maxLength={300} value={f.link} onChange={(e: any) => setF((s) => ({ ...s, link: e.target.value }))} placeholder="如 /events" /></label>
+        <label className="sec-field"><span className="sec-label">按钮文字</span><Input className="haha-inp" maxLength={30} value={f.linkLabel} onChange={(e: any) => setF((s) => ({ ...s, linkLabel: e.target.value }))} placeholder="如 查看详情" /></label>
       </div>
       <div className="row gap-4" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
         <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
@@ -643,14 +643,14 @@ function Notices() {
     <>
       <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
         <div className="col gap-8">
-          <input className="inp" value={form.title} onChange={(e) => setForm((f: any) => ({ ...f, title: e.target.value }))} placeholder="公告标题（必填）" style={{ width: '100%' }} />
-          <input className="inp" value={form.body} onChange={(e) => setForm((f: any) => ({ ...f, body: e.target.value }))} placeholder="补充说明（选填）" style={{ width: '100%' }} />
+          <Input className="haha-inp" value={form.title} onChange={(e: any) => setForm((f: any) => ({ ...f, title: e.target.value }))} placeholder="公告标题（必填）" style={{ width: '100%' }} />
+          <Input className="haha-inp" value={form.body} onChange={(e: any) => setForm((f: any) => ({ ...f, body: e.target.value }))} placeholder="补充说明（选填）" style={{ width: '100%' }} />
           <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-            <select className="inp" value={form.level} onChange={(e) => setForm((f: any) => ({ ...f, level: e.target.value }))} style={{ minWidth: 110, width: 'auto' }}>
+            <select className="haha-inp" value={form.level} onChange={(e) => setForm((f: any) => ({ ...f, level: e.target.value }))} style={{ minWidth: 110, width: 'auto' }}>
               {NOTICE_LEVELS.map((l) => <option key={l.k} value={l.k}>{l.l}</option>)}
             </select>
-            <input className="inp" value={form.link} onChange={(e) => setForm((f: any) => ({ ...f, link: e.target.value }))} placeholder="跳转链接（选填，如 /events）" style={{ flex: 1, minWidth: 150 }} />
-            <input className="inp" value={form.linkLabel} onChange={(e) => setForm((f: any) => ({ ...f, linkLabel: e.target.value }))} placeholder="按钮文字" style={{ width: 110 }} />
+            <Input className="haha-inp" value={form.link} onChange={(e: any) => setForm((f: any) => ({ ...f, link: e.target.value }))} placeholder="跳转链接（选填，如 /events）" style={{ flex: 1, minWidth: 150 }} />
+            <Input className="haha-inp" value={form.linkLabel} onChange={(e: any) => setForm((f: any) => ({ ...f, linkLabel: e.target.value }))} placeholder="按钮文字" style={{ width: 110 }} />
           </div>
           <div className="row gap-12" style={{ justifyContent: 'space-between' }}>
             <label className="row gap-6" style={{ fontSize: 13, cursor: 'pointer', color: 'var(--ink-2)' }}>
@@ -701,17 +701,17 @@ function ProductEditForm({ product, onSaved, onCancel }: { product: any; onSaved
   return (
     <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
       <div className="row gap-8" style={{ flexWrap: 'wrap', paddingTop: 14 }}>
-        <input className="inp" value={f.icon} onChange={(e) => setF((s) => ({ ...s, icon: e.target.value }))} style={{ width: 56, textAlign: 'center' }} />
-        <input className="inp" value={f.name} onChange={(e) => setF((s) => ({ ...s, name: e.target.value }))} placeholder="商品名（必填）" style={{ flex: 1, minWidth: 120 }} />
-        <select className="inp" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))} style={{ width: 'auto' }}>
+        <Input className="haha-inp" value={f.icon} onChange={(e: any) => setF((s) => ({ ...s, icon: e.target.value }))} style={{ width: 56, textAlign: 'center' }} />
+        <Input className="haha-inp" value={f.name} onChange={(e: any) => setF((s) => ({ ...s, name: e.target.value }))} placeholder="商品名（必填）" style={{ flex: 1, minWidth: 120 }} />
+        <select className="haha-inp" value={f.category} onChange={(e) => setF((s) => ({ ...s, category: e.target.value }))} style={{ width: 'auto' }}>
           {PRODUCT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </div>
       <div className="row gap-8" style={{ flexWrap: 'wrap', marginTop: 8 }}>
-        <label className="sec-field" style={{ width: 130 }}><span className="sec-label">价格（积分）</span><input className="inp" type="number" min={0} value={f.price} onChange={(e) => setF((s) => ({ ...s, price: e.target.value }))} /></label>
-        <label className="sec-field" style={{ width: 150 }}><span className="sec-label">库存（-1 不限）</span><input className="inp" type="number" min={-1} value={f.stock} onChange={(e) => setF((s) => ({ ...s, stock: e.target.value }))} /></label>
+        <label className="sec-field" style={{ width: 130 }}><span className="sec-label">价格（积分）</span><Input className="haha-inp" type="number" min={0} value={f.price} onChange={(e: any) => setF((s) => ({ ...s, price: e.target.value }))} /></label>
+        <label className="sec-field" style={{ width: 150 }}><span className="sec-label">库存（-1 不限）</span><Input className="haha-inp" type="number" min={-1} value={f.stock} onChange={(e: any) => setF((s) => ({ ...s, stock: e.target.value }))} /></label>
       </div>
-      <input className="inp" value={f.description} onChange={(e) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="商品说明（可选）" style={{ width: '100%', marginTop: 8 }} />
+      <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="商品说明（可选）" style={{ width: '100%', marginTop: 8 }} />
       <div className="row gap-4" style={{ justifyContent: 'flex-end', marginTop: 10 }}>
         <button className="btn btn-sm btn-ghost" onClick={onCancel}>取消</button>
         <SaveBtn onSave={save} />
@@ -784,7 +784,7 @@ function Products() {
       <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
         <div style={{ fontWeight: 700, marginBottom: 12 }}>上架商品</div>
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <input className="inp" value={form.icon} onChange={(e) => setForm((f: any) => ({ ...f, icon: e.target.value }))} style={{ width: 56, textAlign: 'center' }} />
+          <Input className="haha-inp" value={form.icon} onChange={(e: any) => setForm((f: any) => ({ ...f, icon: e.target.value }))} style={{ width: 56, textAlign: 'center' }} />
           <input className="inp" value={form.name} onChange={(e) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="商品名（必填）" style={{ flex: 1, minWidth: 120 }} />
           <select className="inp" value={form.category} onChange={(e) => setForm((f: any) => ({ ...f, category: e.target.value }))} style={{ width: 'auto' }}>
             {PRODUCT_CATS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
