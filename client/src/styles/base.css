@@ -43,7 +43,7 @@ a, button, input, textarea, select, [role="button"] { -webkit-tap-highlight-colo
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brand);
   border-radius: var(--r-xs);
 }
-.btn:focus-visible, .nav-icon-btn:focus-visible, .rail-item:focus-visible { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brand); }
+.nav-icon-btn:focus-visible, .rail-item:focus-visible { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--brand); }
 /* Text inputs use the app's soft focus ring, not the high-contrast button ring
    (text fields always trigger :focus-visible on click, so the loud ring read as "AI default"). */
 input:focus-visible, textarea:focus-visible, select:focus-visible { box-shadow: 0 0 0 3px var(--brand-soft); border-radius: revert; }
@@ -64,27 +64,6 @@ ul, ol { list-style: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--ink) 40%, transparent); background-clip: padding-box; }
-
-/* ---------- Buttons ---------- */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  height: 38px; padding: 0 18px; border-radius: var(--r-pill);
-  font-weight: 600; font-size: 14px; white-space: nowrap; letter-spacing: -.01em;
-  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
-  user-select: none;
-}
-.btn:active { transform: scale(.96); }
-.btn-primary { background: var(--brand); color: var(--on-brand); box-shadow: var(--shadow-brand); }
-.btn-primary:hover { background: var(--brand-strong); box-shadow: var(--shadow-brand); transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0) scale(.97); }
-.btn-ghost { background: var(--surface-2); color: var(--ink-2); }
-.btn-ghost:hover { background: var(--surface-3); color: var(--ink); }
-.btn-outline { background: transparent; border: 1.5px solid var(--line-2); color: var(--ink-2); }
-.btn-outline:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-tint); }
-.btn-sm { height: 32px; padding: 0 14px; font-size: 13px; }
-.btn-lg { height: 46px; padding: 0 24px; font-size: 15px; }
-.btn-block { width: 100%; }
-.btn:disabled { opacity: .55; cursor: not-allowed; }
 
 /* ---------- Cards ---------- */
 .ui-card {

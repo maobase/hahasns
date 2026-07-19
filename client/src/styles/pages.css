@@ -40,13 +40,13 @@
 @container (max-width: 560px) {
   .profile-top { flex-wrap: wrap; }
   .profile-top > .row { flex-basis: 100%; padding-bottom: 0; margin-top: 4px; }
-  .profile-top > .row .btn, .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
+  .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
 }
 @supports not (container-type: inline-size) {
   @media (max-width: 560px) {
     .profile-top { flex-wrap: wrap; }
     .profile-top > .row { flex-basis: 100%; padding-bottom: 0; margin-top: 4px; }
-    .profile-top > .row .btn, .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
+    .profile-top > .row .haha-btn-app { flex: 1; justify-content: center; }
   }
 }
 .profile-bio { margin-top: 12px; font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
@@ -111,7 +111,7 @@
 .vip-tier-perks { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .vip-tier-perks li { display: flex; align-items: flex-start; gap: 6px; font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
 .vip-tier-perks li svg { color: var(--tc); flex: none; margin-top: 2px; }
-.vip-tier .btn-block, .vip-tier .haha-btn-app { margin-top: auto; }
+.vip-tier .haha-btn-app { margin-top: auto; }
 @media (max-width: 620px) { .vip-tiers { grid-template-columns: 1fr; } }
 
 /* 创作数据 / creator stats */
@@ -575,8 +575,8 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 .admin-shell .admin-top-head h1 svg { color: var(--ink-3); flex: none; }
 .admin-shell .admin-top-sub { font-size: 12px; color: var(--ink-3); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* 主按钮 / 输入：蓝色主操作、紧凑控件高度（32/36） */
-.admin-shell .btn-primary, .admin-shell .haha-btn-app.button--primary, .admin-shell .haha-btn-app--primary { background: var(--brand); }
-.admin-shell .btn-primary:hover, .admin-shell .haha-btn-app.button--primary:hover, .admin-shell .haha-btn-app--primary:hover { background: var(--brand-strong); }
+.admin-shell .haha-btn-app.button--primary, .admin-shell .haha-btn-app--primary { background: var(--brand); }
+.admin-shell .haha-btn-app.button--primary:hover, .admin-shell .haha-btn-app--primary:hover { background: var(--brand-strong); }
 /* 开关选中走主色（沿用 ui-toggle） */
 .admin-shell .ui-toggle.on { background: var(--brand); }
 /* B 端精修（design.md）：等宽数字、紧凑控件(≈32/36)、高密度统计与列表 */
@@ -592,9 +592,9 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 .admin-shell input[type="number"] { -moz-appearance: textfield; }
 .admin-shell input[type="number"]::-webkit-outer-spin-button,
 .admin-shell input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.admin-shell .btn, .admin-shell .haha-btn-app { height: 36px; }
-.admin-shell .btn-sm, .admin-shell .haha-btn-app.button--sm, .admin-shell .haha-btn-app--sm { height: 30px; }
-.admin-shell .btn-lg, .admin-shell .btn-block, .admin-shell .haha-btn-app.button--lg, .admin-shell .haha-btn-app--lg, .admin-shell .haha-btn-app.button--full-width, .admin-shell .haha-btn-app--block { height: auto; }
+.admin-shell .haha-btn-app { height: 36px; }
+.admin-shell .haha-btn-app.button--sm, .admin-shell .haha-btn-app--sm { height: 30px; }
+.admin-shell .haha-btn-app.button--lg, .admin-shell .haha-btn-app--lg, .admin-shell .haha-btn-app.button--full-width, .admin-shell .haha-btn-app--block { height: auto; }
 .admin-shell .stat-grid .ui-card { padding: 14px 16px; }
 .admin-shell .stat-grid .num { font-size: 24px; }
 /* B 端列表/表格手感：行 hover 反馈 + 列表标题统一(design.md「表格」) */
@@ -684,9 +684,9 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
 .admin-shell .empty { padding: 40px 20px; color: var(--ink-3); }
 .admin-shell .empty .e-ico { width: 54px; height: 54px; border-radius: var(--r-lg); background: var(--surface-2); border: 1px solid var(--line); display: inline-grid; place-items: center; color: var(--ink-3); opacity: 1; }
 .admin-shell .empty .e-text { color: var(--ink-3); font-size: 13.5px; margin-top: 14px; }
-/* B 端行操作按钮统一：危险操作(删除/下架/解散)统一红色 + 红底 hover。此前 .btn.danger 无样式、各 tab 有的内联红有的不红。仅 .admin-shell。 */
-.admin-shell .btn.danger, .admin-shell .haha-btn-app.danger { color: var(--like); }
-.admin-shell .btn.danger:hover, .admin-shell .haha-btn-app.danger:hover, .admin-shell .haha-btn-app.danger[data-hovered="true"] { background: var(--like-soft); color: var(--like); }
+/* B 端行操作按钮统一：危险操作(删除/下架/解散)统一红色 + 红底 hover。此前自研按钮的 danger 修饰无样式、各 tab 有的内联红有的不红。仅 .admin-shell。 */
+.admin-shell .haha-btn-app.danger { color: var(--like); }
+.admin-shell .haha-btn-app.danger:hover, .admin-shell .haha-btn-app.danger[data-hovered="true"] { background: var(--like-soft); color: var(--like); }
 /* B 端标签（design.md「Tag 填充浅色」）：分类等裸 .ui-badge 此前无底色=浮空粗体字，给统一 Arco 填充浅色标签底（surface-2 底/ink-2 字/600 字重/20px 行高/等宽数值）。
    用 :not() 排除自带语义色的修饰类标签(通知级别 sn-badge / 举报 badge-elite / 用户身份 badge-v·vip·lv·title)——它们保留原色不被覆盖；带内联底色的状态标签(悬赏/精选/线上/已采纳/付费/置顶)仍由内联色覆盖，仅继承统一尺寸。仅 .admin-shell。 */
 .admin-shell .ui-badge:not(.sn-badge):not(.badge-elite):not(.badge-v):not(.badge-vip):not(.badge-lv):not(.badge-title) {
@@ -869,7 +869,7 @@ a.flash-feature:hover .flash-feature-title { color: var(--brand); }
 @media (max-width: 560px) {
   .circle-head { flex-wrap: wrap; }
   .circle-head > .self-start { flex-basis: 100%; }
-  .circle-head > .self-start .btn, .circle-head button { width: 100%; }
+  .circle-head button { width: 100%; }
 }
 
 /* members widget */
@@ -1675,7 +1675,7 @@ a.flash-feature:hover .flash-feature-title { color: var(--brand); }
 .cchat-input { display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
 .cchat-input textarea { flex: 1; min-width: 0; min-height: 42px; max-height: 120px; border: 1.5px solid var(--line-2); border-radius: var(--r-md); padding: 10px 14px; line-height: 1.45; outline: none; resize: none; background: var(--surface); color: var(--ink); font-family: inherit; font-size: 14.5px; }
 .cchat-input textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.cchat-input .btn, .cchat-input .haha-btn-app { flex: none; padding-left: 16px; padding-right: 16px; }
+.cchat-input .haha-btn-app { flex: none; padding-left: 16px; padding-right: 16px; }
 .cchat-emoji-wrap { position: relative; flex: none; display: flex; align-items: center; }
 .cchat-emoji-wrap .emoji-pop-up { bottom: calc(100% + 8px); margin-top: 0; left: 0; }
 .cchat-locked { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 44px 20px; color: var(--ink-3); font-size: 14px; }

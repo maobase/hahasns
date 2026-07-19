@@ -7,7 +7,7 @@
    ============================================================ */
 
 /* 圆角切换需要平滑一点，避免切风格时生硬跳变 */
-.ui-card, .btn, .haha-feed-tabs .tabs__tab, .chip, input, textarea {
+.ui-card, .haha-feed-tabs .tabs__tab, .chip, input, textarea {
   transition: border-radius .2s var(--ease-out), background-color .2s var(--ease-out);
 }
 
@@ -31,7 +31,6 @@
   --shadow-md: 0 4px 12px rgba(15, 18, 22, .05), 0 18px 38px -10px rgba(120, 90, 200, .18);
   --shadow-pop: 0 8px 22px rgba(15, 18, 22, .08), 0 26px 56px -12px rgba(120, 90, 200, .24);
 }
-[data-style="cute"] .btn,
 [data-style="cute"] .haha-feed-tabs .tabs__tab[data-selected="true"] { border-radius: var(--r-pill); }
 [data-style="cute"] .brand-mark { border-radius: 14px; }
 
@@ -39,7 +38,6 @@
 [data-style="anime"] {
   --r-xs: 9px; --r-sm: 13px; --r-md: 16px; --r-lg: 22px;
 }
-[data-style="anime"] .btn-primary,
 [data-style="anime"] .haha-btn-app.button--primary,
 [data-style="anime"] .haha-btn-app--primary {
   background-image: linear-gradient(135deg, var(--brand-strong), var(--brand-deep));
@@ -51,5 +49,5 @@
 
 /* 尊重减少动效偏好：切风格不做圆角过渡 */
 @media (prefers-reduced-motion: reduce) {
-  .ui-card, .btn, .haha-feed-tabs .tabs__tab, .chip, input, textarea { transition: none; }
+  .ui-card, .haha-feed-tabs .tabs__tab, .chip, input, textarea { transition: none; }
 }

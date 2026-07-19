@@ -1231,8 +1231,8 @@ function FlashAdmin() {
                 </div>
                 {f.summary && <div className="faint" style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.5 }}>{f.summary}</div>}
               </div>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditId(editId === f.id ? null : f.id)}>{editId === f.id ? '收起' : '编辑'}</button>
-              <button className="btn btn-ghost btn-sm danger" onClick={() => remove(f.id)}><Icon name="trash" size={14} /> 删除</button>
+              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === f.id ? null : f.id)}>{editId === f.id ? '收起' : '编辑'}</Button>
+              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => remove(f.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
             </div>
             {editId === f.id && <FlashEditForm item={f} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
           </div>
@@ -1289,7 +1289,7 @@ function NavAdmin() {
         <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
           <Input className="haha-inp" style={{ maxWidth: 220 }} maxLength={20} value={newCat.name} onChange={(e: any) => setNewCat((c) => ({ ...c, name: e.target.value }))} placeholder="分类名（如 开发工具）" />
           <Input className="haha-inp" style={{ maxWidth: 150 }} value={newCat.icon} onChange={(e: any) => setNewCat((c) => ({ ...c, icon: e.target.value }))} placeholder="图标 如 compass" />
-          <button className="btn btn-primary" onClick={addCat} disabled={!newCat.name.trim()}><Icon name="plus" size={15} /> 添加分类</button>
+          <Button color="primary" className="haha-btn-app" onClick={addCat} isDisabled={!newCat.name.trim()}><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 添加分类</Button>
         </div>
       </div>
       {cats.length === 0 ? <div className="ui-card"><Empty text="还没有导航分类，先新建一个" /></div> : cats.map((c) => (
@@ -1300,15 +1300,15 @@ function NavAdmin() {
                 <Input className="haha-inp" style={{ maxWidth: 180 }} maxLength={20} value={editCatVals.name} onChange={(e: any) => setEditCatVals((v) => ({ ...v, name: e.target.value }))} placeholder="分类名" />
                 <Input className="haha-inp" style={{ maxWidth: 140 }} value={editCatVals.icon} onChange={(e: any) => setEditCatVals((v) => ({ ...v, icon: e.target.value }))} placeholder="图标" />
                 <SaveBtn onSave={() => saveCat(c.id)} />
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditCat(null)}>取消</button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditCat(null)}>取消</Button>
               </span>
             ) : (
               <span className="row gap-8" style={{ fontWeight: 700 }}><Icon name={c.icon || 'compass'} size={16} /> {c.name} <span className="faint" style={{ fontSize: 12 }}>（{c.links.length}）</span></span>
             )}
             {editCat !== c.id && (
               <span className="row gap-4">
-                <button className="btn btn-ghost btn-sm" onClick={() => { setEditCat(c.id); setEditCatVals({ name: c.name, icon: c.icon || 'compass' }); }}>编辑</button>
-                <button className="btn btn-ghost btn-sm danger" onClick={() => delCat(c.id)}><Icon name="trash" size={14} /> 删分类</button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => { setEditCat(c.id); setEditCatVals({ name: c.name, icon: c.icon || 'compass' }); }}>编辑</Button>
+                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delCat(c.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删分类</Button>
               </span>
             )}
           </div>
@@ -1318,13 +1318,13 @@ function NavAdmin() {
                 <Input className="haha-inp" style={{ maxWidth: 160 }} maxLength={40} value={editLinkVals.title} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, title: e.target.value }))} placeholder="网站名" />
                 <Input className="haha-inp grow" maxLength={300} value={editLinkVals.url} onChange={(e: any) => setEditLinkVals((v) => ({ ...v, url: e.target.value }))} placeholder="https://…" />
                 <SaveBtn onSave={() => saveLink(l.id)} />
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditLink(null)}>取消</button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditLink(null)}>取消</Button>
               </div>
             ) : (
               <div className="row gap-8" key={l.id} style={{ padding: '7px 0', borderTop: '1px solid var(--line)' }}>
                 <span className="grow nowrap" style={{ minWidth: 0, fontSize: 13.5 }}>{l.title} <span className="faint" style={{ fontSize: 12 }}>· {l.url}</span></span>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setEditLink(l.id); setEditLinkVals({ title: l.title, url: l.url }); }}>编辑</button>
-                <button className="btn btn-ghost btn-sm danger" onClick={() => delLink(l.id)}><Icon name="trash" size={14} /> 删除</button>
+                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => { setEditLink(l.id); setEditLinkVals({ title: l.title, url: l.url }); }}>编辑</Button>
+                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delLink(l.id)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
               </div>
             )
           ))}
@@ -1366,10 +1366,10 @@ function PayOrders() {
       </div>
       <div className="ui-card" style={{ padding: 0, overflow: 'hidden' }}>
         <ListHead title="充值订单" count={data.orders.length} action={
-          <button className="btn btn-ghost btn-sm" disabled={!data.orders.length} onClick={() => downloadCSV('充值订单.csv', [
+          <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={!data.orders.length} onClick={() => downloadCSV('充值订单.csv', [
             { label: '订单号', get: (o) => o.outTradeNo }, { label: '用户', get: (o) => o.user?.nickname || '' }, { label: '渠道', get: (o) => o.channel },
             { label: '金额', get: (o) => o.amount }, { label: '积分', get: (o) => o.points }, { label: '状态', get: (o) => o.status }, { label: '时间', get: (o) => o.createdAt },
-          ], data.orders)}>导出 CSV</button>
+          ], data.orders)}>导出 CSV</Button>
         } />
         {data.orders.length === 0 ? <Empty text="还没有充值订单" /> : data.orders.map((o: any, i: number) => {
           const st = ST[o.status] || [o.status, 'var(--ink-3)'];
@@ -1504,7 +1504,7 @@ function PaymentAdmin() {
         </div>
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存支付配置'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存支付配置'}</Button>
       </div>
       <div className="sec-head" style={{ marginTop: 6 }}>充值订单</div>
       <PayOrders />
@@ -1539,9 +1539,9 @@ function LotteryDraws() {
       </div>
       <div className="ui-card" style={{ padding: 0, overflow: 'hidden' }}>
         <ListHead title="中奖记录" count={data.draws.length} action={
-          <button className="btn btn-ghost btn-sm" disabled={!data.draws.length} onClick={() => downloadCSV('抽奖记录.csv', [
+          <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={!data.draws.length} onClick={() => downloadCSV('抽奖记录.csv', [
             { label: '用户', get: (d) => d.user?.nickname || '' }, { label: '奖品', get: (d) => d.prizeName }, { label: '类型', get: (d) => d.prizeType }, { label: '时间', get: (d) => d.createdAt },
-          ], data.draws)}>导出 CSV</button>
+          ], data.draws)}>导出 CSV</Button>
         } />
         {data.draws.length === 0 ? <Empty text="还没有抽奖记录" /> : data.draws.map((d: any, i: number) => {
           const real = d.prizeType !== 'thanks';
@@ -1600,7 +1600,7 @@ function LotteryAdmin() {
             <label className="sec-field"><span className="sec-label">每日免费次数</span><span className="sec-num"><input type="number" min={0} value={cfg.lottery_free_daily ?? ''} placeholder="1" onChange={(e) => setKcfg('lottery_free_daily', e.target.value)} /><i>次</i></span></label>
           </div>
           <div className="row" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
-            <button className="btn btn-primary btn-sm" onClick={saveCfg} disabled={savingCfg}>{savingCfg ? '保存中…' : '保存规则'}</button>
+            <Button size="sm" color="primary" className="haha-btn-app" onClick={saveCfg} isDisabled={savingCfg}>{savingCfg ? '保存中…' : '保存规则'}</Button>
           </div>
         </div>
       )}
@@ -1614,12 +1614,12 @@ function LotteryAdmin() {
           </div>
           <div className="row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: 10, alignItems: 'center' }}>
             <span className="faint" style={{ marginRight: 'auto', fontSize: 12.5 }}>中奖概率 <b className="num" style={{ color: 'var(--brand)' }}>{totalW > 0 ? ((Math.max(0, Number(p.weight) || 0) / totalW) * 100).toFixed(1) : '0.0'}%</b></span>
-            <button className="btn btn-ghost btn-sm danger" onClick={() => del(p, i)}><Icon name="trash" size={14} /> 删除</button>
+            <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(p, i)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
             <SaveBtn onSave={() => save(p)} />
           </div>
         </div>
       ))}
-      <button className="btn btn-ghost btn-block" onClick={add}><Icon name="plus" size={15} /> 新增奖品</button>
+      <Button variant="flat" fullWidth className="haha-btn-app" onClick={add}><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 新增奖品</Button>
       <div className="sec-head" style={{ marginTop: 6 }}>抽奖记录</div>
       <LotteryDraws />
     </div>
@@ -1666,8 +1666,8 @@ function ArticlesAdmin() {
               </div>
               <div className="faint" style={{ fontSize: 12, marginTop: 3 }}>{a.author?.nickname} · {fmtNum(a.views)} 阅读 · {fmtNum(a.likeCount)} 赞</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => feature(a, !a.featured)}>{a.featured ? '取消精选' : '设精选'}</button>
-            <button className="btn btn-ghost btn-sm danger" onClick={() => del(a)}><Icon name="trash" size={14} /> 删除</button>
+            <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => feature(a, !a.featured)}>{a.featured ? '取消精选' : '设精选'}</Button>
+            <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(a)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
           </div>
         </div>
       ))}
@@ -1724,7 +1724,7 @@ function EventsAdmin() {
               </div>
               <div className="faint" style={{ fontSize: 12, marginTop: 3 }}>{e.organizer?.nickname} · {(e.startAt || '').slice(0, 16)} · 报名 {e.signupCount}{e.capacity > 0 ? `/${e.capacity}` : ''}</div>
             </div>
-            <button className="btn btn-ghost btn-sm danger" onClick={() => del(e)}><Icon name="trash" size={14} /> 删除</button>
+            <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(e)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
           </div>
         </div>
       ))}
@@ -1779,7 +1779,7 @@ function CirclesAdmin() {
               </div>
               <div className="faint" style={{ fontSize: 12, marginTop: 3 }}>{c.owner?.nickname} · {fmtNum(c.memberCount)} 成员 · {fmtNum(c.postCount)} 动态</div>
             </div>
-            <button className="btn btn-ghost btn-sm danger" onClick={() => del(c)}><Icon name="trash" size={14} /> 解散</button>
+            <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(c)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 解散</Button>
           </div>
         </div>
       ))}
@@ -1837,7 +1837,7 @@ function QAAdmin() {
               </div>
               <div className="faint" style={{ fontSize: 12, marginTop: 3 }}>{q.author?.nickname} · {fmtNum(q.answerCount)} 回答 · {fmtNum(q.viewCount)} 浏览</div>
             </div>
-            <button className="btn btn-ghost btn-sm danger" onClick={() => del(q)}><Icon name="trash" size={14} /> 删除</button>
+            <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(q)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
           </div>
         </div>
       ))}
@@ -2026,7 +2026,7 @@ function CheckinAdmin() {
       </div>
 
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" disabled={saving} onClick={save}>{saving ? '保存中…' : '保存配置'}</button>
+        <Button color="primary" className="haha-btn-app" isDisabled={saving} onClick={save}>{saving ? '保存中…' : '保存配置'}</Button>
       </div>
       <div className="sec-head" style={{ marginTop: 6 }}>签到统计</div>
       <CheckinStats />
@@ -2123,7 +2123,7 @@ function Appearance() {
               ? <img src={cfg.site_logo} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
             <Input className="haha-inp" maxLength={500} value={cfg.site_logo ?? ''} onChange={(e: any) => setK('site_logo', e.target.value)} placeholder="上传或粘贴 URL（留空用内置标记）" style={{ flex: 1 }} />
-            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_logo', e)} /></label>
+            <label className="haha-btn-app haha-btn-app--sm" style={{ cursor: 'pointer', flexShrink: 0, display: 'inline-flex' }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_logo', e)} /></label>
           </div>
         </label>
         <div className="sec-grid" style={{ marginTop: 12 }}>
@@ -2144,7 +2144,7 @@ function Appearance() {
               ? <img src={cfg.site_favicon} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
             <Input className="haha-inp" maxLength={500} value={cfg.site_favicon ?? ''} onChange={(e: any) => setK('site_favicon', e.target.value)} placeholder="上传或粘贴 URL（留空用内置图标）" style={{ flex: 1 }} />
-            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_favicon', e)} /></label>
+            <label className="haha-btn-app haha-btn-app--sm" style={{ cursor: 'pointer', flexShrink: 0, display: 'inline-flex' }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('site_favicon', e)} /></label>
           </div>
         </label>
         <label className="sec-field" style={{ marginTop: 12 }}>
@@ -2154,7 +2154,7 @@ function Appearance() {
               ? <img src={cfg.default_avatar} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
               : <span className="admin-logo" style={{ width: 36, height: 36, flexShrink: 0 }}><Icon name="image" size={18} /></span>}
             <Input className="haha-inp" maxLength={500} value={cfg.default_avatar ?? ''} onChange={(e: any) => setK('default_avatar', e.target.value)} placeholder="上传/粘贴 URL（留空按昵称生成渐变头像）" style={{ flex: 1 }} />
-            <label className="btn btn-sm" style={{ cursor: 'pointer', flexShrink: 0 }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('default_avatar', e)} /></label>
+            <label className="haha-btn-app haha-btn-app--sm" style={{ cursor: 'pointer', flexShrink: 0, display: 'inline-flex' }}>上传<input type="file" accept="image/*" hidden onChange={(e) => uploadBrand('default_avatar', e)} /></label>
           </div>
         </label>
       </div>
@@ -2164,7 +2164,7 @@ function Appearance() {
         <div className="faint" style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.5 }}>全站注入到页面 <code>&lt;head&gt;</code>，可覆盖任意样式做二次开发装饰；系统升级不会重置此处内容。请谨慎使用，错误的 CSS 可能影响页面显示。</div>
         <Textarea className="haha-inp" value={cfg.site_custom_css ?? ''} maxLength={20000} spellCheck={false}
           onChange={(e: any) => setK('site_custom_css', e.target.value)}
-          placeholder={'/* 例如：把主按钮换成圆角胶囊 */\n.btn-primary { border-radius: 999px; }'}
+          placeholder={'/* 例如：把主按钮换成圆角胶囊 */\n.haha-btn-app--primary { border-radius: 999px; }'}
           style={{ marginTop: 12, minHeight: 220, fontFamily: 'var(--font-mono, ui-monospace, monospace)', fontSize: 12.5, lineHeight: 1.6, resize: 'vertical' }} />
       </div>
 
@@ -2206,7 +2206,7 @@ function Appearance() {
       <ThemePackagesPanel cfg={cfg} setK={setK} />
 
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存外观'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存外观'}</Button>
       </div>
     </div>
   );
@@ -2278,8 +2278,8 @@ function ThemePackagesPanel({ cfg, setK }: { cfg: Record<string, string>; setK: 
                 {p.name} <span className="faint">({p.id} v{p.version})</span>
               </span>
               <span className="row gap-6">
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => exportOne(p)}>导出</button>
-                <button type="button" className="btn btn-ghost btn-sm danger" onClick={() => remove(p.id)}>删除</button>
+                <Button type="button" size="sm" variant="flat" className="haha-btn-app" onClick={() => exportOne(p)}>导出</Button>
+                <Button type="button" size="sm" variant="flat" className="haha-btn-app danger" onClick={() => remove(p.id)}>删除</Button>
               </span>
             </div>
           ))}
@@ -2291,13 +2291,13 @@ function ThemePackagesPanel({ cfg, setK }: { cfg: Record<string, string>; setK: 
       {editErr && <div className="form-err" style={{ marginTop: 8 }}>{editErr}</div>}
       {preview && <div className="faint" style={{ marginTop: 8, fontSize: 12.5 }}>预览中：{preview.name}（仅后台沙箱，点「导入」再保存）</div>}
       <div className="row gap-8" style={{ marginTop: 10, flexWrap: 'wrap' }}>
-        <button type="button" className="btn btn-sm" onClick={applyPreview}>预览</button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={importJson} disabled={!draft.trim()}>导入到列表</button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => {
+        <button type="button" className="haha-btn-app haha-btn-app--sm" style={{ display: 'inline-flex' }} onClick={applyPreview}>预览</button>
+        <Button type="button" size="sm" color="primary" className="haha-btn-app" onClick={importJson} isDisabled={!draft.trim()}>导入到列表</Button>
+        <Button type="button" size="sm" variant="flat" className="haha-btn-app" onClick={() => {
           const el = document.getElementById('theme-admin-preview');
           if (el) el.textContent = '';
           setPreview(null);
-        }}>清除预览</button>
+        }}>清除预览</Button>
       </div>
     </div>
   );
@@ -2345,7 +2345,7 @@ function PagesContent() {
         ))}
       </div>
       <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存页面内容'}</button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存页面内容'}</Button>
       </div>
     </div>
   );
@@ -2454,8 +2454,8 @@ function StorageAdmin() {
         </div>
       )}
       <div className="row gap-8" style={{ justifyContent: 'flex-end' }}>
-        <button className="btn btn-outline" onClick={test} disabled={testing}>{testing ? '测试中…' : '测试连接'}</button>
-        <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? '保存中…' : '保存存储配置'}</button>
+        <Button variant="bordered" className="haha-btn-app" onClick={test} isDisabled={testing}>{testing ? '测试中…' : '测试连接'}</Button>
+        <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存存储配置'}</Button>
       </div>
     </div>
   );
@@ -2484,9 +2484,9 @@ function AdminLogin() {
         {err && <div className="form-err">{err}</div>}
         <Input className="haha-inp" placeholder="管理员用户名" value={u} onChange={(e: any) => setU(e.target.value)} autoFocus />
         <Input className="haha-inp" type="password" placeholder="密码" value={p} onChange={(e: any) => setP(e.target.value)} style={{ marginTop: 10 }} />
-        <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy} style={{ marginTop: 14, fontWeight: 700 }}>
+        <Button type="submit" size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy} style={{ marginTop: 14, fontWeight: 700 }}>
           {busy ? '登录中…' : '登录'}
-        </button>
+        </Button>
         <Link to="/" className="faint" style={{ fontSize: 12.5, marginTop: 16, display: 'inline-block' }}>← 返回前台</Link>
       </form>
     </div>
@@ -2537,7 +2537,7 @@ function SystemAdmin() {
               最新版本：{st.canCheck ? <span className="num">{st.latestVersion || '—'}</span> : <span className="faint">（GitHub 检测暂不可用）</span>}
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" disabled={checking} onClick={() => load(true)}><Icon name="rocket" size={14} /> {checking ? '检查中…' : '检查更新'}</button>
+          <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={checking} onClick={() => load(true)}><Icon name="rocket" size={14} style={{ width: 14, height: 14 }} /> {checking ? '检查中…' : '检查更新'}</Button>
         </div>
         <div style={{ marginTop: 14 }}>
           {st.upgrading ? (
@@ -2546,9 +2546,9 @@ function SystemAdmin() {
             <div className="row gap-8" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ color: 'var(--like)', fontWeight: 700 }}>● 有新版本可用</span>
               {st.upgradeEnabled
-                ? <button className="btn btn-primary" onClick={doUpgrade}><Icon name="rocket" size={15} /> 一键升级</button>
+                ? <Button color="primary" className="haha-btn-app" onClick={doUpgrade}><Icon name="rocket" size={15} style={{ width: 15, height: 15 }} /> 一键升级</Button>
                 : <span className="faint" style={{ fontSize: 12.5 }}>（后台升级未启用，见下方说明）</span>}
-              <a className="btn btn-ghost btn-sm" href="/changelog" target="_blank" rel="noreferrer">查看更新日志</a>
+              <a className="haha-btn-app haha-btn-app--ghost haha-btn-app--sm" href="/changelog" target="_blank" rel="noreferrer">查看更新日志</a>
             </div>
           ) : (
             <span style={{ color: 'var(--ok, #16a34a)', fontWeight: 700 }}>✓ 已是最新版本</span>
@@ -2599,7 +2599,7 @@ export default function Admin() {
           <div style={{ fontSize: 42 }}>🛡️</div>
           <div style={{ fontWeight: 800, fontSize: 18, marginTop: 10 }}>需要管理员权限</div>
           <div className="muted" style={{ fontSize: 13.5, marginTop: 4 }}>该后台仅对管理员开放</div>
-          <Link to="/" className="btn btn-primary btn-lg" style={{ marginTop: 18 }}>返回前台首页</Link>
+          <Link to="/" className="haha-btn-app haha-btn-app--primary haha-btn-app--lg" style={{ marginTop: 18 }}>返回前台首页</Link>
         </div>
       </div>
     );
