@@ -8,6 +8,7 @@ import { Empty, CardGridSkeleton } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout } from '../context/SiteContext';
+import { Tabs, Tab } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -54,10 +55,11 @@ export default function Collections() {
       </div>
 
       {user && (
-        <div className="ui-card feed-tabs">
-          <button className={`feed-tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>全部专题</button>
-          <button className={`feed-tab${tab === 'mine' ? ' active' : ''}`} onClick={() => setTab('mine')}>我的专题</button>
-        </div>
+        <Tabs aria-label="专题筛选" className="ui-card haha-feed-tabs"
+          selectedKey={tab} onSelectionChange={(k: any) => setTab(k)}>
+          <Tab key="all" title="全部专题" />
+          <Tab key="mine" title="我的专题" />
+        </Tabs>
       )}
 
       {list === null ? <CardGridSkeleton count={6} minWidth={220} /> : list.length === 0 ? (

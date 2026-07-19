@@ -347,18 +347,23 @@
 .srch-topic-n { font-size: 12px; color: var(--ink-4); }
 .srch-topic-go { color: var(--ink-4); flex: none; transform: rotate(-90deg); opacity: .55; }
 
-/* ---------- Feed filter tabs ---------- */
-.feed-tabs {
-  display: flex; gap: 4px; padding: 6px; position: sticky; top: calc(var(--nav-h) + 4px); z-index: 20;
+/* ---------- Feed filter tabs（HeroUI Tabs 经 shim 渲染，opt-in 封装类 .haha-feed-tabs） ----------
+   视觉逐项对齐旧自研轨道：active 白字 + brand 实心 pill、inactive hover 灰底、
+   内容宽 tab、徽标、:active scale(.96)、移动端 44px 触摸高度 + 横向滚动隐藏滚动条。
+   全走语义 token，6 皮肤 + 暗色自动活；不影响其余 6 页 HeroUI Tabs 的默认观感。
+   （transition 由 styles.css 的圆角/底色过渡规则统一给出，与旧轨道一致。） */
+.haha-feed-tabs { position: sticky; top: calc(var(--nav-h) + 4px); z-index: 20; }
+.haha-feed-tabs .tabs__list { background: transparent; padding: 6px; gap: 4px; border-radius: 0; }
+.haha-feed-tabs .tabs__tab {
+  width: auto; flex: 0 0 auto; height: auto;
+  padding: 8px 16px; border-radius: var(--r-pill);
+  font-weight: 600; font-size: 14.5px; line-height: 1.6; color: var(--ink-3); white-space: nowrap;
 }
-.feed-tab {
-  padding: 8px 16px; border-radius: var(--r-pill); font-weight: 600; font-size: 14.5px; color: var(--ink-3);
-  transition: background .14s, color .14s; white-space: nowrap;
-}
-.feed-tab:hover { color: var(--ink); background: var(--surface-2); }
-.feed-tab.active { color: #fff; background: var(--brand); }
-.feed-tab .tab-badge { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 5px; border-radius: 999px; background: var(--like); color: #fff; font-size: 10px; font-weight: 700; vertical-align: 1px; }
-.feed-tab.active .tab-badge { background: rgba(255,255,255,.32); }
+.haha-feed-tabs .tabs__tab:hover, .haha-feed-tabs .tabs__tab[data-hovered="true"] { color: var(--ink); background: var(--surface-2); opacity: 1; }
+.haha-feed-tabs .tabs__tab[data-selected="true"] { color: #fff; background: var(--brand); opacity: 1; }
+.haha-feed-tabs .tab-badge { display: inline-grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 5px; border-radius: 999px; background: var(--like); color: #fff; font-size: 10px; font-weight: 700; vertical-align: 1px; }
+.haha-feed-tabs .tabs__tab[data-selected="true"] .tab-badge { background: rgba(255,255,255,.32); }
+.haha-feed-tabs .tabs__tab:active { transform: scale(.96); }
 
 /* ---------- Section header card ---------- */
 .section-head { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
@@ -437,7 +442,7 @@
 .board-card, .thread-row, .chat-list-item, .topic-row, .rank-row, .user-row { transition: background var(--dur-fast) var(--ease-out); }
 .topic-row:hover, .rank-row:hover { background: var(--surface-2); }
 .board-card:active, .thread-row:active, .chat-list-item:active { background: var(--brand-tint); }
-.feed-tab:active, .subtab:active, .pstat:active, .kw:active { transform: scale(.96); }
+.subtab:active, .pstat:active, .kw:active { transform: scale(.96); }
 
 /* admin activity bar chart */
 .chart { display: flex; align-items: flex-end; gap: 8px; height: 140px; }
@@ -457,10 +462,10 @@
   .nav-icon-btn { width: 44px; height: 44px; flex: none; }  /* flex:none → don't compress below the 44px touch target */
   .post-menu { width: 40px; height: 40px; }                  /* 更多操作 bigger tap target on touch */
   .btn-sm { height: 36px; }
-  .feed-tab { padding: 10px 12px; min-height: 44px; font-size: 13.5px; }
-  .feed-tabs, .subtabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-  .feed-tabs::-webkit-scrollbar, .subtabs::-webkit-scrollbar { display: none; }
-  .feed-tab, .subtab { white-space: nowrap; flex: 0 0 auto; }
+  .haha-feed-tabs .tabs__tab { padding: 10px 12px; min-height: 44px; font-size: 13.5px; }
+  .haha-feed-tabs .tabs__list, .subtabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .haha-feed-tabs .tabs__list::-webkit-scrollbar, .subtabs::-webkit-scrollbar { display: none; }
+  .subtab { white-space: nowrap; flex: 0 0 auto; }
 }
 
 /* back-to-top */

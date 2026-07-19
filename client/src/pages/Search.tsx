@@ -9,6 +9,7 @@ import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useSite, moduleOn } from '../context/SiteContext';
+import { Tabs, Tab } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -58,9 +59,10 @@ export default function Search() {
       </form>
       {q && <div className="muted" style={{ padding: '0 20px', fontSize: 13 }}>“{q}” 的搜索结果</div>}
       {q && (
-        <div className="ui-card feed-tabs">
-          {TABS.map((t) => <button key={t.k} className={`feed-tab${tab === t.k ? ' active' : ''}`} onClick={() => setTab(t.k)}>{t.l}</button>)}
-        </div>
+        <Tabs aria-label="搜索结果分类" className="ui-card haha-feed-tabs"
+          selectedKey={tab} onSelectionChange={(k: any) => setTab(k)}>
+          {TABS.map((t) => <Tab key={t.k} title={t.l} />)}
+        </Tabs>
       )}
 
       {!q ? (

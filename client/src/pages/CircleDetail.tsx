@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Card, CardBody, Button, Spinner, Chip } from '../components/heroui';
+import { Card, CardBody, Button, Spinner, Chip, Tabs, Tab } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
@@ -99,10 +99,11 @@ export default function CircleDetail() {
         </CardBody>
       </Card>
 
-      <div className="ui-card feed-tabs mb-4">
-        <button className={`feed-tab${tab === 'posts' ? ' active' : ''}`} onClick={() => setTab('posts')}>动态</button>
-        <button className={`feed-tab${tab === 'chat' ? ' active' : ''}`} onClick={() => setTab('chat')}>聊天室</button>
-      </div>
+      <Tabs aria-label="圈子内容" className="ui-card haha-feed-tabs mb-4"
+        selectedKey={tab} onSelectionChange={(k: any) => setTab(k)}>
+        <Tab key="posts" title="动态" />
+        <Tab key="chat" title="聊天室" />
+      </Tabs>
 
       {tab === 'chat' ? (
         <CircleChat slug={slug!} joined={!!circle.joined} onJoin={toggle} />

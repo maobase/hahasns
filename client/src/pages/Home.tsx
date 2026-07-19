@@ -9,6 +9,7 @@ import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { WhoToFollow } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
+import { Tabs, Tab } from '../components/heroui';
 import { normalizeFeedLayout } from '../lib/feedLayout';
 import api from '../api/client';
 
@@ -54,13 +55,10 @@ export default function Home() {
       <SiteNotice />
       <div ref={composerRef}><Composer onPosted={onPosted} /></div>
 
-      <div className="ui-card feed-tabs">
-        {tabs.map((f) => (
-          <button key={f.key} className={`feed-tab${filter === f.key ? ' active' : ''}`} onClick={() => onFilter(f)}>
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <Tabs aria-label="动态筛选" className="ui-card haha-feed-tabs"
+        selectedKey={filter} onSelectionChange={(k: any) => { const f = tabs.find((t) => t.key === k); if (f) onFilter(f); }}>
+        {tabs.map((f) => <Tab key={f.key} title={f.label} />)}
+      </Tabs>
 
       {loading ? (
         <>{[1, 2, 3].map((i) => <PostSkeleton key={i} />)}</>

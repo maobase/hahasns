@@ -27,6 +27,11 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.48', date: '2026-07-19 11:43:44', items: [
+      ['refactor', '信息流筛选标签统一为 HeroUI Tabs：首页、搜索、通知、积分商城、话题、专题、圈子详情 7 个页面的切换标签同一实现，外观与交互保持不变。'],
+    ],
+  },
+  {
     ver: 'v5.47', date: '2026-07-19 10:44:11', items: [
       ['refactor', '全站加载指示器统一为 HeroUI Spinner：登录/注册按钮、AI 发送、评论回应列表、收藏弹窗、圈子聊天、帖子展开、后台升级等 16 处加载态同一外观，删除旧自研样式。'],
     ],

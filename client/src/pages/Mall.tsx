@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '../components/heroui';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Loading, Empty, CardGridSkeleton } from '../components/States';
@@ -136,10 +136,11 @@ export default function Mall() {
         {user && <div className="row gap-6 num" style={{ fontWeight: 700, color: 'var(--gold-deep)' }}><Icon name="coin" size={16} /> {fmtNum(user.points)}</div>}
       </div>
 
-      <div className="ui-card feed-tabs">
-        <button className={`feed-tab${tab === 'shop' ? ' active' : ''}`} onClick={() => setTab('shop')}>商品</button>
-        <button className={`feed-tab${tab === 'orders' ? ' active' : ''}`} onClick={() => setTab('orders')}>我的兑换 {orders.length > 0 && `(${orders.length})`}</button>
-      </div>
+      <Tabs aria-label="商城" className="ui-card haha-feed-tabs"
+        selectedKey={tab} onSelectionChange={(k: any) => setTab(k)}>
+        <Tab key="shop" title="商品" />
+        <Tab key="orders" title={<>我的兑换 {orders.length > 0 && `(${orders.length})`}</>} />
+      </Tabs>
 
       {tab === 'shop' && payOn && (
         <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>

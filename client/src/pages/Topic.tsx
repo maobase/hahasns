@@ -6,6 +6,7 @@ import Composer from '../components/Composer';
 import Icon from '../components/Icon';
 import { Loading, Empty } from '../components/States';
 import { useAuth } from '../context/AuthContext';
+import { Tabs, Tab } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -70,10 +71,11 @@ export default function Topic() {
 
       {user && <Composer prefill={`#${topic.name}# `} onPosted={onPosted} />}
 
-      <div className="ui-card feed-tabs">
-        <button className={`feed-tab${sort === 'latest' ? ' active' : ''}`} onClick={() => setSort('latest')}>最新</button>
-        <button className={`feed-tab${sort === 'hot' ? ' active' : ''}`} onClick={() => setSort('hot')}>最热</button>
-      </div>
+      <Tabs aria-label="话题动态排序" className="ui-card haha-feed-tabs"
+        selectedKey={sort} onSelectionChange={(k: any) => setSort(k)}>
+        <Tab key="latest" title="最新" />
+        <Tab key="hot" title="最热" />
+      </Tabs>
 
       {sorted.length === 0 ? <div className="ui-card"><Empty text="还没有人参与这个话题，来发第一条吧" /></div>
         : sorted.map((p: any) => <PostCard key={p.id} post={p} onDelete={(id: number) => setPosts((x) => x.filter((y) => y.id !== id))} />)}

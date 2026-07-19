@@ -7,7 +7,7 @@
    ============================================================ */
 
 /* 圆角切换需要平滑一点，避免切风格时生硬跳变 */
-.ui-card, .btn, .feed-tab, .inp, .chip, input, textarea {
+.ui-card, .btn, .haha-feed-tabs .tabs__tab, .inp, .chip, input, textarea {
   transition: border-radius .2s var(--ease-out), background-color .2s var(--ease-out);
 }
 
@@ -32,7 +32,7 @@
   --shadow-pop: 0 8px 22px rgba(15, 18, 22, .08), 0 26px 56px -12px rgba(120, 90, 200, .24);
 }
 [data-style="cute"] .btn,
-[data-style="cute"] .feed-tab.active { border-radius: var(--r-pill); }
+[data-style="cute"] .haha-feed-tabs .tabs__tab[data-selected="true"] { border-radius: var(--r-pill); }
 [data-style="cute"] .brand-mark { border-radius: 14px; }
 
 /* ---------- 二次元 anime：更鲜亮——主按钮/标志渐变、圆角偏大 ---------- */
@@ -49,5 +49,5 @@
 
 /* 尊重减少动效偏好：切风格不做圆角过渡 */
 @media (prefers-reduced-motion: reduce) {
-  .ui-card, .btn, .feed-tab, .inp, .chip, input, textarea { transition: none; }
+  .ui-card, .btn, .haha-feed-tabs .tabs__tab, .inp, .chip, input, textarea { transition: none; }
 }

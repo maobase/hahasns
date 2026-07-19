@@ -5,6 +5,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
+import { Tabs, Tab } from '../components/heroui';
 import api from '../api/client';
 import { timeAgo } from '../lib/format';
 
@@ -119,16 +120,13 @@ export default function Notifications() {
         </Link>
       )}
 
-      <div className="ui-card feed-tabs">
+      <Tabs aria-label="通知分类" className="ui-card haha-feed-tabs"
+        selectedKey={tab} onSelectionChange={(k: any) => setTab(k)}>
         {FILTERS.map((f) => {
           const n = f.k === 'all' ? items.filter((x) => !x.read).length : items.filter((x) => f.types!.includes(x.type) && !x.read).length;
-          return (
-            <button key={f.k} className={`feed-tab${tab === f.k ? ' active' : ''}`} onClick={() => setTab(f.k)}>
-              {f.l}{n > 0 && <span className="tab-badge">{n}</span>}
-            </button>
-          );
+          return <Tab key={f.k} title={<>{f.l}{n > 0 && <span className="tab-badge">{n}</span>}</>} />;
         })}
-      </div>
+      </Tabs>
       {loading ? <RowSkeleton rows={6} /> : error ? (
         <div className="ui-card"><LoadError onRetry={load} /></div>
       ) : (
