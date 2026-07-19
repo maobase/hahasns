@@ -7,6 +7,7 @@ import { BoardTile, BoardMini } from '../components/BoardIcon';
 import ThreadRow from '../components/ThreadRow';
 import NewThreadModal from '../components/NewThreadModal';
 import { Loading, Empty, RowSkeleton } from '../components/States';
+import { Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -99,10 +100,10 @@ export default function Board() {
           <div className="muted" style={{ fontSize: 13.5, marginTop: 2 }}>{board.description} · {fmtNum(board.threadCount)} 主题 · {fmtNum(board.followers || 0)} 关注</div>
         </div>
         <div className="row gap-8">
-          <button className={`btn ${board.isFollowing ? 'btn-ghost' : 'btn-outline'}`} onClick={followBoard}>
-            {board.isFollowing ? '已关注' : <><Icon name="plus" size={15} /> 关注</>}
-          </button>
-          {!board.locked && <button className="btn btn-primary" onClick={() => (user ? setComposeOpen(true) : setAuthOpen(true))}><Icon name="edit" size={16} /> 发帖</button>}
+          <Button variant={board.isFollowing ? 'flat' : 'bordered'} className="haha-btn-app" onClick={followBoard}>
+            {board.isFollowing ? '已关注' : <><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 关注</>}
+          </Button>
+          {!board.locked && <Button color="primary" className="haha-btn-app" onClick={() => (user ? setComposeOpen(true) : setAuthOpen(true))}><Icon name="edit" size={16} style={{ width: 16, height: 16 }} /> 发帖</Button>}
         </div>
       </div>
 
@@ -116,9 +117,9 @@ export default function Board() {
           <h3 className="paywall-title">这是一个付费板块</h3>
           <p className="paywall-sub">解锁「{board.name}」即可查看全部 {fmtNum(board.threadCount)} 篇主题并参与讨论，一次解锁、永久可看。</p>
           <div className="paywall-price"><Icon name="coin" size={19} /> {fmtNum(board.price)} <span>积分</span></div>
-          <button className="btn btn-primary btn-lg" onClick={unlockBoard} disabled={buying} style={{ minWidth: 180 }}>
+          <Button size="lg" color="primary" className="haha-btn-app" onClick={unlockBoard} isDisabled={buying} style={{ minWidth: 180 }}>
             {buying ? '解锁中…' : (user ? '立即解锁' : '登录后解锁')}
-          </button>
+          </Button>
           {user && <div className="muted paywall-note">你当前有 {fmtNum(user.points || 0)} 积分</div>}
         </div>
       ) : (

@@ -3,7 +3,7 @@ import { toPng } from 'html-to-image';
 import QRCode from 'qrcode';
 import Modal from './Modal';
 import Icon from './Icon';
-import { Spinner } from './heroui';
+import { Spinner, Button } from './heroui';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
 
@@ -93,9 +93,10 @@ export default function SharePoster({ open, onClose, post }: { open: boolean; on
             <Spinner />
           </div>
         )}
-        <button className="btn btn-primary btn-lg btn-block" disabled={busy || !img} onClick={download}>
-          <Icon name="share" size={16} /> 保存海报
-        </button>
+        <Button size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy || !img} onClick={download}>
+          {/* 内联尺寸：v3 .button 移动端(<768px)强制内部 svg 20px，钉住保持基线 16px */}
+          <Icon name="share" size={16} style={{ width: 16, height: 16 }} /> 保存海报
+        </Button>
         <div className="faint" style={{ fontSize: 12, textAlign: 'center' }}>保存到相册后即可分享到微信/朋友圈，好友扫码即可查看</div>
       </div>
     </Modal>

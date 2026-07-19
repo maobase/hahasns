@@ -10,7 +10,7 @@ import BackToTop from './BackToTop';
 import ComposeFab from './ComposeFab';
 import Shell from './Shell';
 import { Empty } from './States';
-import { Spinner } from './heroui';
+import { Spinner, Button } from './heroui';
 
 type TitleLabel = string | ((m: RegExpMatchArray) => string);
 
@@ -43,7 +43,7 @@ function ModuleClosed() {
       <div className="ui-card" style={{ padding: 8 }}>
         <Empty icon="🚧" text="该功能暂未开放" />
         <div className="center" style={{ paddingBottom: 18 }}>
-          <Link to="/" className="btn btn-primary btn-sm">返回首页</Link>
+          <Link to="/" className="haha-btn-app haha-btn-app--primary haha-btn-app--sm">返回首页</Link>
         </div>
       </div>
     </Shell>
@@ -117,7 +117,7 @@ export default function Layout() {
       {isGuest && (
         <div className="guest-strip">
           <span>你正在游客浏览 · 登录后可发帖、评论、私信</span>
-          <button className="btn btn-primary btn-sm" onClick={() => setAuthOpen(true)}>登录 / 注册</button>
+          <Button size="sm" color="primary" className="haha-btn-app" onClick={() => setAuthOpen(true)}>登录 / 注册</Button>
         </div>
       )}
       {/* 单一 Suspense 边界兜住所有路由级懒加载的二级页；ErrorBoundary(key=路由)兜住页面组件崩溃，

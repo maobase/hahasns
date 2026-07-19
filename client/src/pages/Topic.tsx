@@ -6,7 +6,7 @@ import Composer from '../components/Composer';
 import Icon from '../components/Icon';
 import { Loading, Empty } from '../components/States';
 import { useAuth } from '../context/AuthContext';
-import { Tabs, Tab } from '../components/heroui';
+import { Tabs, Tab, Button } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -57,9 +57,9 @@ export default function Topic() {
             <div className="muted" style={{ fontSize: 13.5 }}>{topic.description || '一起来聊聊吧'}</div>
           </div>
           {user && (
-            <button className={`btn follow-btn ${following ? 'btn-ghost following' : 'btn-primary'}`} onClick={toggleFollow} style={{ alignSelf: 'flex-start' }}>
-              {following ? <><span className="fb-on">已关注</span><span className="fb-off">取消关注</span></> : <><Icon name="plus" size={15} /> 关注</>}
-            </button>
+            <Button color="primary" variant={following ? 'flat' : 'solid'} className={`haha-btn-app follow-btn${following ? ' following' : ''}`} onClick={toggleFollow} style={{ alignSelf: 'flex-start' }}>
+              {following ? <><span className="fb-on">已关注</span><span className="fb-off">取消关注</span></> : <><Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 关注</>}
+            </Button>
           )}
         </div>
         <div className="row gap-16" style={{ marginTop: 14, fontSize: 13, color: 'var(--ink-3)' }}>

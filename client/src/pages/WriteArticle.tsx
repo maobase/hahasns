@@ -6,7 +6,7 @@ import MarkdownToolbar from '../components/MarkdownToolbar';
 import RichBody from '../components/RichBody';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Input } from '../components/heroui';
+import { Input, Button } from '../components/heroui';
 import api from '../api/client';
 import type { Article } from '../types';
 import { CAT_META } from './Articles';
@@ -32,7 +32,7 @@ export default function WriteArticle() {
       <Shell narrow>
         <div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>
           登录后即可发表专栏文章。
-          <div><button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setAuthOpen(true)}>登录 / 注册</button></div>
+          <div><Button size="sm" color="primary" className="haha-btn-app" style={{ marginTop: 12 }} onClick={() => setAuthOpen(true)}>登录 / 注册</Button></div>
         </div>
       </Shell>
     );
@@ -78,7 +78,7 @@ export default function WriteArticle() {
 
         <div className="row gap-8 art-ed-toolbar" style={{ justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 8px' }}>
           <MarkdownToolbar taRef={taRef} value={content} onChange={setContent} />
-          <button type="button" className="btn btn-ghost btn-sm" style={{ padding: '3px 12px', fontSize: 12.5, flex: 'none' }} onClick={() => setPreview((p) => !p)}>{preview ? '继续编辑' : '预览'}</button>
+          <Button type="button" size="sm" variant="flat" className="haha-btn-app" style={{ padding: '3px 12px', fontSize: 12.5, flex: 'none' }} onClick={() => setPreview((p) => !p)}>{preview ? '继续编辑' : '预览'}</Button>
         </div>
         {preview ? (
           <div className="art-ed-body" style={{ overflowY: 'auto' }}>
@@ -104,10 +104,11 @@ export default function WriteArticle() {
             )}
           </span>
           <div className="row gap-8">
-            <Link to="/articles" className="btn btn-ghost">取消</Link>
-            <button className="btn btn-primary" onClick={publish} disabled={!canPublish || busy}>
-              <Icon name="send" size={15} /> {busy ? '发布中…' : '发布'}
-            </button>
+            <Link to="/articles" className="haha-btn-app haha-btn-app--ghost">取消</Link>
+            <Button color="primary" className="haha-btn-app" onClick={publish} isDisabled={!canPublish || busy}>
+              {/* 内联尺寸：v3 .button 会强制内部 svg 16px，基线此图标为 15px，钉住保持像素一致 */}
+              <Icon name="send" size={15} style={{ width: 15, height: 15 }} /> {busy ? '发布中…' : '发布'}
+            </Button>
           </div>
         </div>
       </div>

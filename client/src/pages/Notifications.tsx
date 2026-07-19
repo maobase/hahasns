@@ -5,7 +5,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
-import { Tabs, Tab } from '../components/heroui';
+import { Tabs, Tab, Button } from '../components/heroui';
 import api from '../api/client';
 import { timeAgo } from '../lib/format';
 
@@ -104,7 +104,7 @@ export default function Notifications() {
     <Shell right={false}>
       <div className="ui-card section-head">
         <h2 className="row gap-8"><Icon name="bell" size={19} style={{ color: 'var(--brand)' }} /> 通知</h2>
-        <button className="btn btn-ghost btn-sm" onClick={markAll}>全部已读</button>
+        <Button size="sm" variant="flat" className="haha-btn-app" onClick={markAll}>全部已读</Button>
       </div>
 
       {/* 统一入口：未读私信聚合到通知中心顶部，一处直达 */}

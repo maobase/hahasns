@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
-import { Textarea } from './heroui';
+import { Textarea, Button } from './heroui';
 import { useSite } from '../context/SiteContext';
 
 /**
@@ -63,8 +63,8 @@ export function ReportHost() {
           maxLength={200}
         />
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
-          <button className="btn btn-ghost" onClick={() => finish(null)}>取消</button>
-          <button className="btn btn-primary" disabled={!reason || (reason === '其他' && !note.trim())} onClick={submit}>提交举报</button>
+          <Button variant="flat" className="haha-btn-app" onClick={() => finish(null)}>取消</Button>
+          <Button color="primary" className="haha-btn-app" isDisabled={!reason || (reason === '其他' && !note.trim())} onClick={submit}>提交举报</Button>
         </div>
       </div>
     </Modal>

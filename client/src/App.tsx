@@ -80,7 +80,7 @@ function PageGate({ on, children }: { on: boolean; children: React.ReactNode }) 
       <div className="center" style={{ padding: 48 }}>
         <div className="ui-card" style={{ padding: 24, textAlign: 'center' }}>
           <div style={{ fontSize: 15, fontWeight: 700 }}>该页面暂未开放</div>
-          <a href="/" className="btn btn-primary btn-sm" style={{ marginTop: 14 }}>返回首页</a>
+          <a href="/" className="haha-btn-app haha-btn-app--primary haha-btn-app--sm" style={{ marginTop: 14 }}>返回首页</a>
         </div>
       </div>
     );

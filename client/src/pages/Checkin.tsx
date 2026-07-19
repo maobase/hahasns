@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
 import Modal from '../components/Modal';
 import { Loading } from '../components/States';
+import { Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -176,10 +177,10 @@ export default function Checkin() {
           <div className="ckin-makeup-title">补签 {m} 月 {makeupDay} 日</div>
           <div className="ckin-makeup-sub faint">将花费 <b>{data.makeupCost} 积分</b> 补上这一天（不计入连签）。当前 {fmtNum(data.points || 0)} 积分。</div>
           <div className="row gap-8" style={{ justifyContent: 'center', marginTop: 16 }}>
-            <button className="btn btn-ghost" onClick={() => setMakeupDay(null)} disabled={busy}>再想想</button>
-            <button className="btn btn-primary" onClick={doMakeup} disabled={busy || (data.points || 0) < data.makeupCost}>
+            <Button variant="flat" className="haha-btn-app" onClick={() => setMakeupDay(null)} isDisabled={busy}>再想想</Button>
+            <Button color="primary" className="haha-btn-app" onClick={doMakeup} isDisabled={busy || (data.points || 0) < data.makeupCost}>
               {(data.points || 0) < data.makeupCost ? '积分不足' : `花 ${data.makeupCost} 积分补签`}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

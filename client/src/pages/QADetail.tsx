@@ -168,7 +168,7 @@ export default function QADetail() {
             <>
               <div className="row gap-8" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <MarkdownToolbar taRef={answerTaRef} value={reply} onChange={setReply} />
-                <button type="button" className="btn btn-ghost btn-sm" style={{ padding: '3px 12px', fontSize: 12.5, flex: 'none' }} onClick={() => setAnsPreview((p) => !p)}>{ansPreview ? '继续编辑' : '预览'}</button>
+                <Button type="button" size="sm" variant="flat" className="haha-btn-app" style={{ padding: '3px 12px', fontSize: 12.5, flex: 'none' }} onClick={() => setAnsPreview((p) => !p)}>{ansPreview ? '继续编辑' : '预览'}</Button>
               </div>
               {ansPreview ? (
                 <div className="qa-answer-input" style={{ minHeight: 96, overflowY: 'auto' }}>

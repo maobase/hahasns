@@ -9,7 +9,7 @@ import { VIS_LABELS } from '../lib/format';
 import { uploadPickedFiles } from '../lib/upload';
 import { loadDraft, saveDraft, clearDraft as clearDraftStore, hasDraft } from '../lib/draft';
 import useMention from '../hooks/useMention';
-import { Input } from './heroui';
+import { Input, Button } from './heroui';
 import { onCtrlEnter } from '../lib/kbd';
 
 const EMOJIS = '😀 😂 🥰 😍 😎 🤔 😴 😭 😡 👍 👏 🙏 💪 🎉 🔥 ✨ 💯 ❤️ 💔 🌈 ☕ 🍜 🎵 📷 🌙 ⭐ 🐱 🐶 🌸 🍀 🚀 💎'.split(' ');
@@ -350,9 +350,9 @@ export default function Composer({ onPosted, compact = false, prefill = '', embe
             <div className="composer-submit">
               {savedHint && <span className="composer-saved"><Icon name="check" size={11} /> 已存草稿</span>}
               <span className="faint num" style={{ fontSize: 12 }}>{content.length}/1000</span>
-              <button className="btn btn-primary" disabled={busy || (!content.trim() && !media.length && !poll)} onClick={submit}>
+              <Button color="primary" className="haha-btn-app" isDisabled={busy || (!content.trim() && !media.length && !poll)} onClick={submit}>
                 {busy ? '发布中…' : '发布'}
-              </button>
+              </Button>
             </div>
           </div>
         </>

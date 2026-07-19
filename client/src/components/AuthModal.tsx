@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { Button } from './heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
@@ -91,9 +92,9 @@ export default function AuthModal() {
           {mode === 'register' && regClosed && (
             <div className="faint" style={{ fontSize: 13, textAlign: 'center', margin: '4px 0 10px', color: 'var(--ink-3)' }}>本站暂未开放注册</div>
           )}
-          <button className="btn btn-primary btn-lg btn-block" disabled={busy || (mode === 'register' && regClosed)}>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy || (mode === 'register' && regClosed)}>
             {busy ? '请稍候…' : mode === 'login' ? '登录' : '注册'}
-          </button>
+          </Button>
         </form>
         <div className="auth-switch">
           {mode === 'login' ? (

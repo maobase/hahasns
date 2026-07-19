@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
-import { Input } from './heroui';
+import { Input, Button } from './heroui';
 
 /**
  * 品牌化单行输入弹窗——替代原生 window.prompt（管理端设密码/设版主等）。模块级单例桥
@@ -60,8 +60,8 @@ export function PromptHost() {
         />
         {tooShort && <div className="field-err" style={{ marginTop: 6 }}>至少 {min} 位</div>}
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 18 }}>
-          <button className="btn btn-ghost" onClick={() => finish(null)}>取消</button>
-          <button className="btn btn-primary" disabled={!ok} onClick={submit}>{st.confirmText || '确定'}</button>
+          <Button variant="flat" className="haha-btn-app" onClick={() => finish(null)}>取消</Button>
+          <Button color="primary" className="haha-btn-app" isDisabled={!ok} onClick={submit}>{st.confirmText || '确定'}</Button>
         </div>
       </div>
     </Modal>

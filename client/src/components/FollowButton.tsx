@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
+import { Button } from './heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -41,10 +42,10 @@ export default function FollowButton({ user, size = 'sm', onChange }: FollowButt
   };
 
   return (
-    <button className={`btn btn-${size} follow-btn ${following ? 'btn-ghost following' : 'btn-outline'}`} onClick={toggle}>
+    <Button size={size} variant={following ? 'flat' : 'bordered'} className={`haha-btn-app follow-btn${following ? ' following' : ''}`} onClick={toggle}>
       {following
         ? <><span className="fb-on">已关注</span><span className="fb-off">取消关注</span></>
-        : <><Icon name="plus" size={14} /> 关注</>}
-    </button>
+        : <><Icon name="plus" size={14} style={{ width: 14, height: 14 }} /> 关注</>}
+    </Button>
   );
 }

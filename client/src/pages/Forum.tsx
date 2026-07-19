@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import ThreadRow from '../components/ThreadRow';
 import NewThreadModal from '../components/NewThreadModal';
 import { Empty, RowSkeleton, ListEnd, LoadError } from '../components/States';
+import { Button } from '../components/heroui';
 import { HotTopics, TrendingSearch, Footer } from '../components/Widgets';
 import { BoardTile, BoardMini } from '../components/BoardIcon';
 import { useAuth } from '../context/AuthContext';
@@ -67,9 +68,10 @@ export default function Forum() {
     <Shell right={right}>
       <div className="ui-card section-head">
         <h2 className="row gap-8"><Icon name="forum" size={19} style={{ color: 'var(--brand)' }} /> 社区论坛</h2>
-        <button className="btn btn-primary" onClick={() => (user ? setComposeOpen(true) : setAuthOpen(true))}>
-          <Icon name="edit" size={16} /> 发帖
-        </button>
+        <Button color="primary" className="haha-btn-app" onClick={() => (user ? setComposeOpen(true) : setAuthOpen(true))}>
+          {/* 内联尺寸：v3 .button 移动端(<768px)强制内部 svg 20px，钉住保持基线 16px */}
+          <Icon name="edit" size={16} style={{ width: 16, height: 16 }} /> 发帖
+        </Button>
       </div>
 
       {/* board cards */}

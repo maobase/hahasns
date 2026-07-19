@@ -110,7 +110,7 @@ export default function Articles() {
           <h1 className="text-xl font-extrabold flex items-center gap-2"><Icon name="book" size={20} /> 专栏</h1>
           <p className="art-head-sub">社区里更完整的思考、教程与观点，慢读慢聊。</p>
         </div>
-        <Link to="/write" className="btn btn-primary"><Icon name="edit" size={16} /> 写文章</Link>
+        <Link to="/write" className="haha-btn-app haha-btn-app--primary"><Icon name="edit" size={16} /> 写文章</Link>
       </div>
 
       <div className="art-filterbar">
@@ -129,7 +129,7 @@ export default function Articles() {
         <div className="ui-card"><LoadError onRetry={reload} /></div>
       ) : (articles.length === 0 && !featured) ? (
         <div className="ui-card"><Empty icon="📝" text="这个分类还没有文章" >
-          {user && <Link to="/write" className="btn btn-primary btn-sm" style={{ marginTop: 10 }}><Icon name="edit" size={14} /> 写第一篇</Link>}
+          {user && <Link to="/write" className="haha-btn-app haha-btn-app--primary haha-btn-app--sm" style={{ marginTop: 10 }}><Icon name="edit" size={14} /> 写第一篇</Link>}
         </Empty></div>
       ) : (
         <>

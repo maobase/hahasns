@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import Modal from '../components/Modal';
 import { Empty, EventListSkeleton, LoadError } from '../components/States';
-import { Input } from '../components/heroui';
+import { Input, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -123,9 +123,9 @@ export default function Events() {
         <li>报名需消耗的积分会在取消时自动退还。</li>
         <li>报名成功后，发起人会收到通知。</li>
       </ul>
-      <button className="btn btn-primary btn-block" style={{ marginTop: 12 }} onClick={() => (user ? setCreating(true) : setAuthOpen(true))}>
-        <Icon name="plus" size={15} /> 发起活动
-      </button>
+      <Button color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 12 }} onClick={() => (user ? setCreating(true) : setAuthOpen(true))}>
+        <Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 发起活动
+      </Button>
     </div>
   );
 
@@ -136,7 +136,7 @@ export default function Events() {
           <h1 className="text-xl font-extrabold flex items-center gap-2"><Icon name="calendar" size={20} /> 社区活动</h1>
           <p className="art-head-sub">线上线下一起玩，报名参加感兴趣的活动。</p>
         </div>
-        <button className="btn btn-primary" onClick={() => (user ? setCreating(true) : setAuthOpen(true))}><Icon name="plus" size={16} /> 发起活动</button>
+        <Button color="primary" className="haha-btn-app" onClick={() => (user ? setCreating(true) : setAuthOpen(true))}><Icon name="plus" size={16} style={{ width: 16, height: 16 }} /> 发起活动</Button>
       </div>
 
       <div className="art-filterbar">
@@ -157,7 +157,7 @@ export default function Events() {
         <div className="ui-card"><LoadError onRetry={load} /></div>
       ) : data.events.length === 0 ? (
         <div className="ui-card"><Empty icon="📅" text={filter === 'mine' ? '你还没有参加任何活动' : '这里还没有活动'}>
-          {user && <button className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={() => setCreating(true)}><Icon name="plus" size={14} /> 发起一个</button>}
+          {user && <Button size="sm" color="primary" className="haha-btn-app" style={{ marginTop: 10 }} onClick={() => setCreating(true)}><Icon name="plus" size={14} style={{ width: 14, height: 14 }} /> 发起一个</Button>}
         </Empty></div>
       ) : (
         <div className="ev-list">
@@ -215,8 +215,8 @@ function CreateEvent({ open, onClose, onCreated }: { open: boolean; onClose: () 
         <Input className="haha-inp" placeholder="封面图链接（选填）" value={f.cover} onChange={(e: any) => set('cover', e.target.value)} />
         <textarea className="art-ed-body" style={{ minHeight: 120 }} placeholder="活动介绍：流程、注意事项、报名要求…" value={f.description} onChange={(e) => set('description', e.target.value)} />
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 6 }}>
-          <button className="btn btn-ghost" onClick={onClose}>取消</button>
-          <button className="btn btn-primary" onClick={submit} disabled={!canSubmit || busy}><Icon name="send" size={15} /> {busy ? '发布中…' : '发起'}</button>
+          <Button variant="flat" className="haha-btn-app" onClick={onClose}>取消</Button>
+          <Button color="primary" className="haha-btn-app" onClick={submit} isDisabled={!canSubmit || busy}><Icon name="send" size={15} style={{ width: 15, height: 15 }} /> {busy ? '发布中…' : '发起'}</Button>
         </div>
       </div>
     </Modal>

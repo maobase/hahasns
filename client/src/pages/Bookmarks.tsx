@@ -4,6 +4,7 @@ import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import PostCard from '../components/PostCard';
 import { Loading, Empty, PostSkeleton, ListEnd, LoadError } from '../components/States';
+import { Button } from '../components/heroui';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import { useAuth } from '../context/AuthContext';
 import { useLayout } from '../context/SiteContext';
@@ -37,7 +38,7 @@ export default function Bookmarks() {
       {loading && posts.length === 0 ? <><PostSkeleton /><PostSkeleton /><PostSkeleton /></>
         : error ? <div className="ui-card"><LoadError onRetry={reload} /></div>
         : posts.length === 0 ? <div className="ui-card"><Empty icon="🔖" text="还没有收藏任何动态">
-          <button className="btn btn-primary btn-sm" onClick={() => nav('/')}>去首页逛逛</button>
+          <Button size="sm" color="primary" className="haha-btn-app" onClick={() => nav('/')}>去首页逛逛</Button>
         </Empty></div>
         : <>
           {posts.map((p: any) => <PostCard key={p.id} post={p} onDelete={(id: number) => setPosts((x) => x.filter((y) => y.id !== id))} />)}

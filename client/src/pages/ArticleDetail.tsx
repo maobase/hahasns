@@ -55,7 +55,7 @@ export default function ArticleDetail() {
   };
 
   if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
-  if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>文章不存在或已删除。<br /><Link to="/articles" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>返回专栏</Link></div></Shell>;
+  if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>文章不存在或已删除。<br /><Link to="/articles" className="haha-btn-app haha-btn-app--primary haha-btn-app--sm" style={{ marginTop: 12 }}>返回专栏</Link></div></Shell>;
   if (!article) return <Shell right={false}><DetailSkeleton /></Shell>;
 
   const canManage = user && (user.id === article.author.id || user.role === 'admin');

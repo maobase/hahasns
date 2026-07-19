@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab, Input } from '../components/heroui';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Tabs, Tab, Input, Button } from '../components/heroui';
 import Shell from '../components/Shell';
 import Icon from '../components/Icon';
 import { Loading, Empty, CardGridSkeleton } from '../components/States';
@@ -157,7 +157,7 @@ export default function Mall() {
                 {alipayOn && <option value="alipay_direct">支付宝（官方）</option>}
                 {wechatOn && <option value="wechat_native">微信（扫码）</option>}
               </select>
-              <button className="btn btn-primary" onClick={recharge}>去支付</button>
+              <Button color="primary" className="haha-btn-app" onClick={recharge}>去支付</Button>
             </div>
           </div>
         </div>
@@ -182,12 +182,14 @@ export default function Mall() {
                   <div className="row gap-4 num" style={{ fontWeight: 800, color: 'var(--gold-deep)' }}>
                     <Icon name="coin" size={16} /> {fmtNum(p.price)}
                   </div>
-                  <button
-                    className={`btn btn-sm ${p.owned && p.category !== 'item' ? 'btn-ghost' : p.soldOut ? 'btn-ghost' : 'btn-primary'}`}
-                    disabled={p.soldOut || (p.owned && p.category !== 'item')}
+                  <Button
+                    size="sm" color="primary"
+                    variant={p.owned && p.category !== 'item' ? 'flat' : p.soldOut ? 'flat' : 'solid'}
+                    className="haha-btn-app"
+                    isDisabled={p.soldOut || (p.owned && p.category !== 'item')}
                     onClick={() => redeem(p)}>
                     {p.owned && p.category !== 'item' ? '已拥有' : p.soldOut ? '已售罄' : '兑换'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -239,7 +241,7 @@ export default function Mall() {
             )}
           </ModalBody>
           <ModalFooter>
-            <button className="btn btn-ghost btn-block" onClick={() => setWxQr(null)}>关闭</button>
+            <Button variant="flat" fullWidth className="haha-btn-app" onClick={() => setWxQr(null)}>关闭</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -271,10 +273,10 @@ export default function Mall() {
             )}
           </ModalBody>
           <ModalFooter>
-            <button className="btn btn-ghost" onClick={() => setPending(null)} disabled={busy}>取消</button>
-            <button className="btn btn-primary" onClick={confirmRedeem} disabled={busy || !affordable}>
+            <Button variant="flat" className="haha-btn-app" onClick={() => setPending(null)} isDisabled={busy}>取消</Button>
+            <Button color="primary" className="haha-btn-app" onClick={confirmRedeem} isDisabled={busy || !affordable}>
               {busy ? '兑换中…' : affordable ? '确认兑换' : '积分不足'}
-            </button>
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

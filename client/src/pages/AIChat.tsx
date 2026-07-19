@@ -4,7 +4,7 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Empty, Loading, ChatListSkeleton } from '../components/States';
 import AiMarkdown from '../components/AiMarkdown';
-import { Spinner, Textarea } from '../components/heroui';
+import { Spinner, Textarea, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -247,9 +247,10 @@ export default function AIChat() {
         {/* ── Left: conversation list ── */}
         <div className="chat-list ai-list">
           <div className="ai-list-top">
-            <button className="btn btn-primary btn-block ai-newchat" onClick={newChat} disabled={streaming}>
-              <Icon name="plus" size={16} /> 新对话
-            </button>
+            <Button color="primary" fullWidth className="haha-btn-app ai-newchat" onClick={newChat} isDisabled={streaming}>
+              {/* 内联尺寸：v3 .button 移动端(<768px)强制内部 svg 20px，钉住保持基线 16px */}
+              <Icon name="plus" size={16} style={{ width: 16, height: 16 }} /> 新对话
+            </Button>
           </div>
           {loadingList ? <ChatListSkeleton /> : convos.length === 0 ? (
             <div style={{ padding: '8px 16px' }}>

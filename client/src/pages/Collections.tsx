@@ -8,7 +8,7 @@ import { Empty, CardGridSkeleton } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useLayout } from '../context/SiteContext';
-import { Tabs, Tab, Input, Textarea } from '../components/heroui';
+import { Tabs, Tab, Input, Textarea, Button } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -49,9 +49,10 @@ export default function Collections() {
     <Shell layout={layout}>
       <div className="ui-card page-title">
         <span><Icon name="grid" size={20} /> 专题合集</span>
-        <button className="btn btn-primary btn-sm" onClick={() => (user ? setCreateOpen(true) : setAuthOpen(true))}>
-          <Icon name="plus" size={15} /> 创建专题
-        </button>
+        <Button size="sm" color="primary" className="haha-btn-app" onClick={() => (user ? setCreateOpen(true) : setAuthOpen(true))}>
+          {/* 内联尺寸：v3 .button 会强制内部 svg 16px，基线此图标为 15px，钉住保持像素一致 */}
+          <Icon name="plus" size={15} style={{ width: 15, height: 15 }} /> 创建专题
+        </Button>
       </div>
 
       {user && (
@@ -99,7 +100,7 @@ export default function Collections() {
             <label>封面图链接（可选）</label>
             <Input className="haha-inp" value={form.cover} onChange={(e: any) => setForm((f) => ({ ...f, cover: e.target.value }))} placeholder="留空则用首个收录内容的图" maxLength={500} />
           </div>
-          <button className="btn btn-primary btn-lg btn-block" disabled={busy} onClick={create}>{busy ? '创建中…' : '创建'}</button>
+          <Button size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy} onClick={create}>{busy ? '创建中…' : '创建'}</Button>
         </div>
       </Modal>
     </Shell>

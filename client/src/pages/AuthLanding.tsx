@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Input, Tabs, Tab, Spinner } from '../components/heroui';
+import { Input, Tabs, Tab, Spinner, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useSite } from '../context/SiteContext';
@@ -123,19 +123,21 @@ export default function AuthLanding() {
             {mode === 'register' && !site.registrationEnabled && (
               <div className="faint" style={{ fontSize: 13, textAlign: 'center', color: 'var(--ink-3)' }}>本站暂未开放注册</div>
             )}
-            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={busy || (mode === 'register' && !site.registrationEnabled)} style={{ marginTop: 4, fontWeight: 700 }}>
+            <Button type="submit" size="lg" color="primary" fullWidth className="haha-btn-app" isDisabled={busy || (mode === 'register' && !site.registrationEnabled)} style={{ marginTop: 4, fontWeight: 700 }}>
               {busy ? <Spinner size="sm" color="current" /> : (mode === 'login' ? '登录' : '注册')}
-            </button>
+            </Button>
           </form>
           {site.allowGuest && (
-            <button
+            <Button
               type="button"
-              className="btn btn-ghost btn-block"
+              variant="flat"
+              fullWidth
+              className="haha-btn-app"
               style={{ marginTop: 12, fontWeight: 600 }}
               onClick={() => { enterGuest(); toast.show('已进入游客浏览（只读）'); }}
             >
               游客浏览
-            </button>
+            </Button>
           )}
         </div>
         <div className="faint" style={{ fontSize: 12, textAlign: 'center', marginTop: 18 }}>

@@ -9,7 +9,7 @@ import { PostSkeleton, Empty, LoadError } from '../components/States';
 import { WhoToFollow } from '../components/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
-import { Tabs, Tab } from '../components/heroui';
+import { Tabs, Tab, Button } from '../components/heroui';
 import { normalizeFeedLayout } from '../lib/feedLayout';
 import api from '../api/client';
 
@@ -86,7 +86,7 @@ export default function Home() {
             <div className="ui-card guest-wall">
               <div className="guest-wall-title">注册解锁全部内容</div>
               <div className="guest-wall-sub">登录后可查看更多动态，并发帖、评论、参与互动。</div>
-              <button className="btn btn-primary" onClick={() => setAuthOpen(true)}>登录 / 注册</button>
+              <Button color="primary" className="haha-btn-app" onClick={() => setAuthOpen(true)}>登录 / 注册</Button>
             </div>
           ) : (
             <>

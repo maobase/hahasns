@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import Avatar from './Avatar';
 import Icon from './Icon';
-import { Spinner } from './heroui';
+import { Spinner, Button } from './heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { timeAgo } from '../lib/format';
@@ -92,7 +92,7 @@ export default function CircleChat({ slug, joined, onJoin }: { slug: string; joi
         <div className="cchat-locked">
           <Icon name="lock" size={26} />
           <div>加入圈子后即可参与群聊</div>
-          <button className="btn btn-primary btn-sm" onClick={() => (user ? onJoin() : setAuthOpen(true))}>加入圈子</button>
+          <Button size="sm" color="primary" className="haha-btn-app" onClick={() => (user ? onJoin() : setAuthOpen(true))}>加入圈子</Button>
         </div>
       </div>
     );
@@ -137,7 +137,7 @@ export default function CircleChat({ slug, joined, onJoin }: { slug: string; joi
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
           onFocus={() => setShowEmoji(false)}
           placeholder="说点什么…（Enter 发送，Shift+Enter 换行）" />
-        <button className="btn btn-primary" onClick={send} disabled={sending || !text.trim()} aria-label="发送"><Icon name="send" size={16} /></button>
+        <Button color="primary" className="haha-btn-app" onClick={send} isDisabled={sending || !text.trim()} aria-label="发送"><Icon name="send" size={16} style={{ width: 16, height: 16 }} /></Button>
       </div>
     </div>
   );

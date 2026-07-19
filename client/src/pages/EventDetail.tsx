@@ -58,7 +58,7 @@ export default function EventDetail() {
   };
 
   if (error) return <Shell right={false}><div className="ui-card"><LoadError onRetry={load} /></div></Shell>;
-  if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>活动不存在或已取消。<br /><Link to="/events" className="btn btn-primary btn-sm" style={{ marginTop: 12 }}>返回活动</Link></div></Shell>;
+  if (notFound) return <Shell right={false}><div className="ui-card" style={{ padding: 40, textAlign: 'center' }}>活动不存在或已取消。<br /><Link to="/events" className="haha-btn-app haha-btn-app--primary haha-btn-app--sm" style={{ marginTop: 12 }}>返回活动</Link></div></Shell>;
   if (!ev) return <Shell right={false}><DetailSkeleton media={false} /></Shell>;
 
   const st = STATUS[ev.status];

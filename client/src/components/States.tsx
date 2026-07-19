@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import Icon from './Icon';
-import { Spinner } from './heroui';
+import { Spinner, Button } from './heroui';
 
 export function Loading({ label = '加载中…' }: { label?: string } = {}) {
   void label;
@@ -39,7 +39,7 @@ export function LoadError({ onRetry, text = '加载失败' }: { onRetry?: () => 
       <div className="e-ico">📡</div>
       <div className="e-text">{text}</div>
       <div className="faint" style={{ fontSize: 13, marginTop: 2 }}>网络或服务器开小差了，稍后再试</div>
-      {onRetry && <div className="e-action"><button className="btn btn-primary btn-sm" onClick={onRetry}>重试</button></div>}
+      {onRetry && <div className="e-action"><Button size="sm" color="primary" className="haha-btn-app" onClick={onRetry}>重试</Button></div>}
     </div>
   );
 }

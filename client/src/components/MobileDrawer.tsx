@@ -8,6 +8,7 @@ import { useCompose } from '../context/ComposeContext';
 import { useTheme } from '../context/ThemeContext';
 import { RAIL_ITEMS } from './LeftRail';
 import { BrandMark, BrandName, showBrandText, logoHeightOf } from './Navbar';
+import { Button } from './heroui';
 import { useSite, moduleOn } from '../context/SiteContext';
 
 // Mobile-only slide-in drawer that surfaces the full LeftRail navigation
@@ -58,7 +59,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
             </div>
           </Link>
         ) : (
-          <button className="btn btn-primary btn-block" style={{ margin: '2px 0 6px' }} onClick={() => { setAuthOpen(true); onClose(); }}>登录 / 注册</button>
+          <Button color="primary" fullWidth className="haha-btn-app" style={{ margin: '2px 0 6px' }} onClick={() => { setAuthOpen(true); onClose(); }}>登录 / 注册</Button>
         )}
 
         <nav className="mdrawer-nav">
@@ -87,9 +88,10 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
           ))}
         </nav>
 
-        <button className="btn btn-primary btn-lg btn-block" style={{ marginTop: 10 }} onClick={() => { openCompose(); onClose(); }}>
-          <Icon name="edit" size={17} /> 发布动态
-        </button>
+        <Button size="lg" color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 10 }} onClick={() => { openCompose(); onClose(); }}>
+          {/* 内联尺寸：v3 .button 会强制内部 svg 16px，基线此图标为 17px，钉住保持像素一致 */}
+          <Icon name="edit" size={17} style={{ width: 17, height: 17 }} /> 发布动态
+        </Button>
 
         <div className="mdrawer-appearance">
           <div className="ts-title">外观与配色</div>

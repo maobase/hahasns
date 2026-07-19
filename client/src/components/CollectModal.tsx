@@ -53,7 +53,7 @@ export default function CollectModal({
             ))}
           </div>
         )}
-        <Link to="/collections" onClick={onClose} className="btn btn-ghost btn-block" style={{ marginTop: 10 }}><Icon name="plus" size={15} /> 新建专题</Link>
+        <Link to="/collections" onClick={onClose} className="haha-btn-app haha-btn-app--ghost haha-btn-app--block" style={{ marginTop: 10 }}><Icon name="plus" size={15} /> 新建专题</Link>
       </div>
     </Modal>
   );

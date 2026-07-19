@@ -779,6 +779,11 @@ a.haha-btn-app { display: inline-flex; }
 .haha-btn-app--primary { background-color: var(--brand); color: var(--on-brand); box-shadow: var(--shadow-brand); }
 .haha-btn-app--primary:hover { background: var(--brand-strong); box-shadow: var(--shadow-brand); transform: translateY(-1px); }
 .haha-btn-app--primary:active { transform: translateY(0) scale(.97); }
+/* outline / block 的 Link 形态修饰类（批 3：About 开源仓库/部署教程/查看源码、CollectModal 新建专题等
+   是 <a>/<Link>，复刻 .btn-outline 的 1.5px 描边 + hover 品牌化、.btn-block 的通栏宽） */
+.haha-btn-app--outline { background-color: transparent; border: 1.5px solid var(--line-2); color: var(--ink-2); }
+.haha-btn-app--outline:hover { background-color: var(--brand-tint); border-color: var(--brand); color: var(--brand); }
+.haha-btn-app--block { width: 100%; }
 /* Profile 关注按钮「已关注」悬停红化（批 2）：原 .follow-btn.following:hover（上方 :42）与抹平层
    ghost hover 同特异性且位置更前会被压过，后置恢复；v3 悬停走 data-hovered，一并覆盖 */
 .haha-btn-app.follow-btn.following:hover, .haha-btn-app.follow-btn.following[data-hovered="true"] { background-color: var(--like-soft); color: var(--like); border-color: var(--like); }

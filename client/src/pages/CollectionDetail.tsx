@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import Avatar from '../components/Avatar';
 import PostCard from '../components/PostCard';
 import { Loading, Empty } from '../components/States';
+import { Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -50,7 +51,7 @@ export default function CollectionDetail() {
           <div className="coll-detail-foot">
             <Link to={`/u/${c.owner?.username}`} className="coll-owner"><Avatar user={c.owner} size={22} noLink /> <span>{c.owner?.nickname}</span></Link>
             <span className="faint">· {fmtNum(c.itemCount)} 篇收录</span>
-            {c.isOwner && <button className="btn btn-ghost btn-sm danger" style={{ marginLeft: 'auto' }} onClick={removeColl}><Icon name="close" size={14} /> 删除专题</button>}
+            {c.isOwner && <Button size="sm" variant="flat" className="haha-btn-app danger" style={{ marginLeft: 'auto' }} onClick={removeColl}><Icon name="close" size={14} style={{ width: 14, height: 14 }} /> 删除专题</Button>}
           </div>
         </div>
       </div>

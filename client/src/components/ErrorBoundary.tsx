@@ -24,7 +24,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div style={{ fontSize: 44, lineHeight: 1 }}>😵</div>
         <div style={{ fontWeight: 700, fontSize: 16 }}>页面出了点问题</div>
         <div className="faint" style={{ fontSize: 13.5, maxWidth: 320, lineHeight: 1.6 }}>刷新一下通常就好了；如果反复出现，请稍后再试。</div>
-        <button className="btn btn-primary" onClick={() => window.location.reload()}>刷新页面</button>
+        <button className="haha-btn-app haha-btn-app--primary" onClick={() => window.location.reload()}>刷新页面</button>
       </div>
     );
   }

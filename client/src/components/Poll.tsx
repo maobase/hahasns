@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Icon from './Icon';
+import { Button } from './heroui';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
@@ -87,9 +88,9 @@ export default function Poll({ poll: initial, postId }: { poll: any; postId: num
       </div>
       <div className="poll-foot">
         {!showResults && (
-          <button className="btn btn-primary btn-sm" onClick={vote} disabled={busy || !picked.length}>
+          <Button size="sm" color="primary" className="haha-btn-app" onClick={vote} isDisabled={busy || !picked.length}>
             {busy ? '提交中…' : '投票'}
-          </button>
+          </Button>
         )}
         <span className="poll-meta">{fmtNum(total)} 人参与 · {deadlineLabel(poll.deadline, poll.closed)}</span>
       </div>

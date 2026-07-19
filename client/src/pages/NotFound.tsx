@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
+import { Button } from '../components/heroui';
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -13,9 +14,9 @@ export default function NotFound() {
           {/* 失效页面多由旧链接（如已删动态）进来：优先「返回上一页」更省事；无历史时只显示回首页 */}
           <div className="row gap-8" style={{ justifyContent: 'center', marginTop: 22, flexWrap: 'wrap' }}>
             {window.history.length > 1 && (
-              <button type="button" className="btn btn-ghost btn-lg" onClick={() => navigate(-1)}>返回上一页</button>
+              <Button type="button" size="lg" variant="flat" className="haha-btn-app" onClick={() => navigate(-1)}>返回上一页</Button>
             )}
-            <Link to="/" className="btn btn-primary btn-lg">返回首页</Link>
+            <Link to="/" className="haha-btn-app haha-btn-app--primary haha-btn-app--lg">返回首页</Link>
           </div>
         </div>
       </div>

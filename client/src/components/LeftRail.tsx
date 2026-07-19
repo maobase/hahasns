@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import Avatar from './Avatar';
 import Icon from './Icon';
+import { Button } from './heroui';
 import { Badges } from './Identity';
 import { useAuth } from '../context/AuthContext';
 import { useCompose } from '../context/ComposeContext';
@@ -108,9 +109,10 @@ export default function LeftRail({ onCompose }: LeftRailProps) {
         ))}
       </nav>
 
-      <button className="btn btn-primary btn-lg btn-block" style={{ marginTop: 14 }} onClick={openCompose}>
-        <Icon name="edit" size={17} /> 发布动态
-      </button>
+      <Button size="lg" color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 14 }} onClick={openCompose}>
+        {/* 内联尺寸：v3 .button 会强制内部 svg 16px，基线此图标为 17px，钉住保持像素一致 */}
+        <Icon name="edit" size={17} style={{ width: 17, height: 17 }} /> 发布动态
+      </Button>
     </div>
   );
 }

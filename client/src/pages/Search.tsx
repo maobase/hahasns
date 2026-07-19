@@ -9,7 +9,7 @@ import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton, LoadError } from '../components/States';
 import { useAuth } from '../context/AuthContext';
 import { useSite, moduleOn } from '../context/SiteContext';
-import { Tabs, Tab } from '../components/heroui';
+import { Tabs, Tab, Button } from '../components/heroui';
 import api from '../api/client';
 import { fmtNum } from '../lib/format';
 
@@ -55,7 +55,7 @@ export default function Search() {
       <form className="search-bar" onSubmit={submit}>
         <Icon name="search" size={18} style={{ color: 'var(--ink-3)', flex: 'none' }} />
         <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="搜索用户、动态、帖子、话题…" autoFocus={!q && typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches} />
-        <button className="btn btn-primary btn-sm" type="submit">搜索</button>
+        <Button size="sm" color="primary" className="haha-btn-app" type="submit">搜索</Button>
       </form>
       {q && <div className="muted" style={{ padding: '0 20px', fontSize: 13 }}>“{q}” 的搜索结果</div>}
       {q && (
@@ -107,7 +107,7 @@ export default function Search() {
                 <div className="user-row" key={u.id} style={{ borderTop: '1px solid var(--line)' }}>
                   <Avatar user={u} size={44} showV />
                   <div className="meta nowrap"><Link to={`/u/${u.username}`} className="nm uname">{u.nickname} <Badges user={u} showLevel={false} /></Link><div className="sub nowrap">@{u.username} · {fmtNum(u.followers)} 粉丝</div></div>
-                  {me && me.id !== u.id && <button className="btn btn-ghost btn-sm" onClick={() => nav(`/messages/${u.id}`)}><Icon name="mail" size={14} /></button>}
+                  {me && me.id !== u.id && <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => nav(`/messages/${u.id}`)}><Icon name="mail" size={14} style={{ width: 14, height: 14 }} /></Button>}
                   <FollowButton user={u} />
                 </div>
               ))}

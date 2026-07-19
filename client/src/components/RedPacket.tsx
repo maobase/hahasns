@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from './Icon';
+import { Button } from './heroui';
 import Avatar from './Avatar';
 import Modal from './Modal';
 import { useAuth } from '../context/AuthContext';
@@ -87,7 +88,7 @@ export default function RedPacket({ data: initial, postId }: { data: RedPacketDa
               ))}
             </div>
           )}
-          <button className="btn btn-primary btn-block" style={{ marginTop: 14 }} onClick={() => setResult(null)}>开心收下</button>
+          <Button color="primary" fullWidth className="haha-btn-app" style={{ marginTop: 14 }} onClick={() => setResult(null)}>开心收下</Button>
         </div>
       </Modal>
     </div>

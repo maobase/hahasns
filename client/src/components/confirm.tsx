@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
+import { Button } from './heroui';
 
 /**
  * 品牌化二次确认——替代全站原生 window.confirm（无品牌样式、按钮永远「确定/取消」、
@@ -34,8 +35,8 @@ export function ConfirmHost() {
       <div className="modal-body">
         <div style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.65, whiteSpace: 'pre-line' }}>{st.message}</div>
         <div className="row gap-8" style={{ justifyContent: 'flex-end', marginTop: 22 }}>
-          <button className="btn btn-ghost" onClick={() => close(false)}>取消</button>
-          <button className="btn btn-primary" style={st.danger ? { background: 'var(--like)' } : undefined} onClick={() => close(true)}>{st.confirmText || '确定'}</button>
+          <Button variant="flat" className="haha-btn-app" onClick={() => close(false)}>取消</Button>
+          <Button color="primary" className="haha-btn-app" style={st.danger ? { background: 'var(--like)' } : undefined} onClick={() => close(true)}>{st.confirmText || '确定'}</Button>
         </div>
       </div>
     </Modal>
