@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.64 — 2026-07-20 03:20:13
+
+- **[重构]** 管理后台代码拆分（第 5 刀）：「支付」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/PaymentPanel.tsx（支付宝 / 微信支付 / 易支付三家网关开关与凭据、演示充值开关、充值档位、付费内容价格上限、VIP 档位月价 / 名称标语 / 权益、保存支付配置与充值订单对账一并迁出，组件自取自存、无外部 props）；通用 CSV 导出 downloadCSV 与列表表头 ListHead 上提 pages/admin/ui.tsx 共享（用户 / 订单 / 抽奖 / 审计等多处统一引用），Admin.tsx 瘦至 1977 行，功能与外观保持不变。
+
 ## v5.63 — 2026-07-20 02:48:54
 
 - **[重构]** 管理后台代码拆分（第 4 刀）：「系统更新」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/SystemPanel.tsx（版本信息展示、检查更新、一键升级与升级进度轮询、更新日志链接一并迁出，组件自取自检、无外部 props）；顺带清理已确认的死 import（Shell 及本刀产生的 Spinner/APP_VERSION），Admin.tsx 瘦至 2170 行，功能与外观保持不变。
