@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.63 — 2026-07-20 02:48:54
+
+- **[重构]** 管理后台代码拆分（第 4 刀）：「系统更新」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/SystemPanel.tsx（版本信息展示、检查更新、一键升级与升级进度轮询、更新日志链接一并迁出，组件自取自检、无外部 props）；顺带清理已确认的死 import（Shell 及本刀产生的 Spinner/APP_VERSION），Admin.tsx 瘦至 2170 行，功能与外观保持不变。
+
 ## v5.62 — 2026-07-20 02:26:40
 
 - **[重构]** 管理后台代码拆分（第 3 刀）：「外观」面板从 Admin.tsx 整体抽离为独立模块 pages/admin/AppearancePanel.tsx（站点品牌、主题默认、Logo/Favicon/默认头像上传、自定义 CSS/导航链接/导航改名、游客访问与自定义主题包一并迁出，组件自取配置、无外部依赖）；开关组件 Toggle 上提为 pages/admin/ui.tsx 共享（Admin 其余面板与 PagesPanel 统一引用，消除重复），Admin.tsx 瘦至 2244 行，功能与外观保持不变。
