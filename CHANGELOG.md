@@ -2,6 +2,10 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.69 — 2026-07-20 05:35:33
+
+- **[重构]** 管理后台代码拆分（第 10 刀·收尾）：「概览」「文章」「活动」「圈子」「问答」「日志」六面板从 Admin.tsx 整体抽离为独立模块 pages/admin/OverviewPanel.tsx（站点数据总览卡 / 今日动态 / 近 7 天活跃度 / 最新注册 / 邀请概况，onNav 跳转回调仍由壳传入）、pages/admin/ArticlesPanel.tsx（专栏文章精选 / 取消精选 / 删除）、pages/admin/EventsPanel.tsx（活动统计卡 / 搜索 / 删除）、pages/admin/CirclesPanel.tsx（圈子统计卡 / 搜索 / 解散）、pages/admin/QaPanel.tsx（问答统计卡 / 搜索 / 删除）与 pages/admin/LogsPanel.tsx（审计日志筛选 / 导出 CSV，AUDIT_ICON、AUDIT_PREFIX_LABEL 随迁），组件自取自存、仅 OverviewPanel 保留 onNav prop，共享件沿用 pages/admin/ui.tsx、无新上提；四块内容管理虽结构同构（搜索卡 + ListHead 列表 + 确认删除）但无实际代码共用，为保持一面板一文件惯例未合并；壳同步清理死 import（Badges/Empty/RowSkeleton/useToast/api/fmtNum/timeAgo/confirmDialog/ListHead/downloadCSV/AdminSearch），Admin.tsx 瘦至 216 行只剩壳（tab 状态 / 侧栏分组导航 / 路由深链 / 登录墙），功能与外观保持不变。
+
 ## v5.68 — 2026-07-20 05:18:48
 
 - **[重构]** 管理后台代码拆分（第 9 刀）：「用户」「板块」「话题」「举报」「公告」五面板从 Admin.tsx 整体抽离为独立模块 pages/admin/UsersPanel.tsx（用户列表 / 搜索 / 积分补丁 / VIP / 认证 / 管理员 / 重置密码 / 封禁 / 导出 CSV）、pages/admin/BoardsPanel.tsx（板块 CRUD / 版主 / 行内编辑）、pages/admin/TopicsPanel.tsx（话题 CRUD / 热度）、pages/admin/ReportsPanel.tsx（举报处理 / 删除内容 / 忽略）与 pages/admin/NoticesPanel.tsx（公告 CRUD / 上下线 / 置顶），PointsEdit、USER_FILTERS、BoardEditForm、TopicEditForm、NoticeEditForm、NOTICE_LEVELS 随迁，共享件沿用 pages/admin/ui.tsx、无新上提，组件均自取自存、无外部 props，Admin.tsx 瘦至 637 行，功能与外观保持不变。
