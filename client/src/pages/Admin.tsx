@@ -4,14 +4,18 @@ import Avatar from '../components/Avatar';
 import Icon from '../components/Icon';
 import { Badges } from '../components/Identity';
 import { Loading, Empty, RowSkeleton } from '../components/States';
-import { Input, Textarea, Button } from '../components/heroui';
+import { Input, Button } from '../components/heroui';
 import { useAuth } from '../context/AuthContext';
 import { useSite } from '../context/SiteContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api/client';
 import { fmtNum, timeAgo } from '../lib/format';
 import { confirmDialog } from '../components/confirm';
-import { promptDialog } from '../components/prompt';
+import UsersPanel from './admin/UsersPanel';
+import BoardsPanel from './admin/BoardsPanel';
+import TopicsPanel from './admin/TopicsPanel';
+import ReportsPanel from './admin/ReportsPanel';
+import NoticesPanel from './admin/NoticesPanel';
 import StoragePanel from './admin/StoragePanel';
 import PagesPanel from './admin/PagesPanel';
 import AppearancePanel from './admin/AppearancePanel';
@@ -25,11 +29,12 @@ import MallPanel from './admin/MallPanel';
 import SecurityPanel from './admin/SecurityPanel';
 import ModulesPanel from './admin/ModulesPanel';
 import LayoutPanel from './admin/LayoutPanel';
-import { Toggle, ListHead, downloadCSV, SaveBtn, AdminSearch } from './admin/ui';
+import { ListHead, downloadCSV, AdminSearch } from './admin/ui';
 // 品牌化二次确认已抽到 ../components/confirm（全站共用，<ConfirmHost/> 挂在 App 根）。
 // downloadCSV / ListHead 第 5 刀上提 ./admin/ui（支付面板抽离后多处共用）；
 // SaveBtn 第 6 刀上提 ./admin/ui（抽奖面板抽离后用户/板块/快报/导航/抽奖多处共用）。
 // AdminSearch 第 7 刀上提 ./admin/ui（快报面板抽离后用户/话题/商品/文章/活动/圈子/问答多处共用）。
+// 第 9 刀：用户/板块/话题/举报/公告五面板整体抽离（Toggle/SaveBtn 在本文档已无直接使用，仍由 ./admin/ui 供各面板引用）。
 
 const TABS = [
   { k: 'overview', l: '概览', icon: 'trend', d: '站点数据总览与今日动态' },
@@ -69,10 +74,6 @@ const TAB_BY_K = Object.fromEntries(TABS.map((t) => [t.k, t]));
 // tab key → 所属分组名（顶栏面包屑用）
 const GROUP_OF: Record<string, string> = {};
 NAV_GROUPS.forEach((g) => g.keys.forEach((k) => { GROUP_OF[k] = g.l; }));
-
-const NOTICE_LEVELS = [
-  { k: 'info', l: '信息' }, { k: 'success', l: '成功' }, { k: 'warning', l: '提醒' }, { k: 'event', l: '活动' },
-];
 
 const AUDIT_ICON: Record<string, string> = {
   'user.update': 'user', 'content.delete': 'trash', 'report.resolve': 'flag',
@@ -268,411 +269,6 @@ function Overview({ onNav }: { onNav?: (tab: string) => void }) {
           ))}
         </div>
       )}
-    </>
-  );
-}
-
-// 行内积分编辑：点「积分」展开输入框 → 确定写入（管理员手动加/扣积分）。
-function PointsEdit({ value, onSave }: { value: number; onSave: (n: number) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [v, setV] = useState(String(value));
-  if (!editing) return <Button size="sm" variant="bordered" className="haha-btn-app" onClick={() => { setV(String(value)); setEditing(true); }} title="调整积分">积分</Button>;
-  return (
-    <span className="row gap-4" style={{ alignItems: 'center' }}>
-      <Input className="haha-inp" type="number" min={0} value={v} autoFocus onChange={(e: any) => setV(e.target.value)}
-        onKeyDown={(e: any) => { if (e.key === 'Enter') { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
-        style={{ width: 96, height: 30, fontSize: 13 }} />
-      <Button size="sm" color="primary" className="haha-btn-app" onClick={() => { onSave(Math.max(0, Math.round(Number(v) || 0))); setEditing(false); }}>确定</Button>
-      <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditing(false)}>取消</Button>
-    </span>
-  );
-}
-
-const USER_FILTERS: [string, string][] = [['all', '全部'], ['admin', '管理员'], ['vip', 'VIP'], ['banned', '已封禁']];
-
-function Users() {
-  const toast = useToast();
-  const [users, setUsers] = useState<any[]>([]);
-  const [q, setQ] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [hasMore, setHasMore] = useState(false);
-  const load = (query = q, f = filter, off = 0) => api.get('/admin/users', { params: { q: query, filter: f === 'all' ? undefined : f, offset: off || undefined } }).then(({ data }) => {
-    setUsers((prev) => (off > 0 ? [...prev, ...data.users] : data.users));
-    setHasMore(!!data.hasMore);
-  });
-  useEffect(() => { load(); }, []);
-  const pickFilter = (f: string) => { setFilter(f); load(q, f); };
-
-  const patch = async (u: any, body: any, label: any) => {
-    try { const { data } = await api.put(`/admin/users/${u.id}`, body); setUsers((xs) => xs.map((x) => x.id === u.id ? { ...x, ...data.user } : x)); toast.ok(label); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  // 重置密码（帮助找回）：弹窗输入新密码 → 后端 bcrypt 存储 + 通知该用户
-  const resetPw = async (u: any) => {
-    const pw = await promptDialog({ title: `为「${u.nickname}」设置新登录密码`, placeholder: '至少 6 位', type: 'password', minLength: 6, confirmText: '重置密码' });
-    if (pw == null) return;
-    try { await api.post(`/admin/users/${u.id}/reset-password`, { password: pw }); toast.ok('密码已重置，并已通知用户'); }
-    catch (e: any) { toast.err(e.message); }
-  };
-
-  return (
-    <div className="ui-card" style={{ overflow: 'hidden' }}>
-      <div className="col gap-8" style={{ padding: 14 }}>
-        <div className="row gap-8">
-          <AdminSearch value={q} onChange={setQ} onSearch={() => load(q, filter)} placeholder="搜索用户名/昵称…" />
-          <Button variant="flat" className="haha-btn-app" isDisabled={!users.length} title="导出当前列表为 CSV" onClick={() => downloadCSV(`用户_${filter}.csv`, [
-            { label: '昵称', get: (u) => u.nickname }, { label: '用户名', get: (u) => u.username }, { label: '等级', get: (u) => u.level },
-            { label: '积分', get: (u) => u.points }, { label: 'VIP等级', get: (u) => u.vipLevel ?? (u.vip ? 1 : 0) }, { label: '角色', get: (u) => u.role || 'user' },
-            { label: '封禁', get: (u) => (u.banned ? '是' : '否') },
-          ], users)}>导出 CSV</Button>
-        </div>
-        <div className="audit-filters">
-          {USER_FILTERS.map(([k, l]) => <button key={k} className={`audit-chip${filter === k ? ' active' : ''}`} onClick={() => pickFilter(k)}>{l}</button>)}
-        </div>
-      </div>
-      {users.length === 0 ? <Empty text="没有符合条件的用户" /> : users.map((u, i) => (
-        <div key={u.id}>{i > 0 && <div className="divider" />}
-          <div className="row gap-12" style={{ padding: '12px 16px', flexWrap: 'wrap' }}>
-            <Avatar user={u} size={40} showV />
-            <div className="grow" style={{ minWidth: 140 }}>
-              <Link to={`/u/${u.username}`} className="uname">{u.nickname}</Link> <Badges user={u} />
-              <div className="faint" style={{ fontSize: 12 }}>@{u.username} · Lv.{u.level} · {fmtNum(u.points)}积分 {u.banned && <span style={{ color: 'var(--like)' }}>· 已封禁</span>}</div>
-            </div>
-            <div className="row gap-4" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button size="sm" variant={u.verified ? 'flat' : 'bordered'} className="haha-btn-app" onClick={() => patch(u, { verified: !u.verified }, u.verified ? '已取消认证' : '已认证')}>V认证</Button>
-              <select className="haha-inp" value={u.vipLevel ?? (u.vip ? 1 : 0)} onChange={(e) => patch(u, { vipLevel: Number(e.target.value) }, 'VIP 等级已更新')} style={{ height: 30, width: 'auto', padding: '0 8px', fontSize: 13 }} title="VIP 等级">
-                <option value={0}>非会员</option>
-                <option value={1}>VIP1 青铜</option>
-                <option value={2}>VIP2 黄金</option>
-                <option value={3}>VIP3 黑钻</option>
-              </select>
-              <PointsEdit value={u.points} onSave={(n) => patch(u, { points: n }, '积分已更新')} />
-              <Button size="sm" variant={u.role === 'admin' ? 'flat' : 'bordered'} className="haha-btn-app" onClick={() => patch(u, { role: u.role === 'admin' ? 'user' : 'admin' }, '角色已更新')}>管理员</Button>
-              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => resetPw(u)} title="重置该用户登录密码">重置密码</Button>
-              <Button size="sm" variant="bordered" className="haha-btn-app" style={{ color: u.banned ? 'var(--good)' : 'var(--like)', borderColor: 'currentColor' }} onClick={() => patch(u, { banned: !u.banned }, u.banned ? '已解封' : '已封禁')}>{u.banned ? '解封' : '封禁'}</Button>
-            </div>
-          </div>
-        </div>
-      ))}
-      {hasMore && (
-        <div className="row" style={{ justifyContent: 'center', padding: 12, borderTop: '1px solid var(--line)' }}>
-          <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => load(q, filter, users.length)}>加载更多</Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// 板块编辑（行内展开）：改 图标/名称/说明/公告 + 付费板块开关与价格。后端 PUT /admin/boards/:id。
-function BoardEditForm({ board, onSaved, onCancel }: { board: any; onSaved: () => void; onCancel: () => void }) {
-  const toast = useToast();
-  const [f, setF] = useState({ icon: board.icon || '', name: board.name || '', description: board.description || '', announcement: board.announcement || '', isPaid: !!board.isPaid, price: String(board.price || 0) });
-  const save = async () => {
-    if (!f.name.trim()) return toast.err('名称必填');
-    try {
-      await api.put(`/admin/boards/${board.id}`, { name: f.name, icon: f.icon, description: f.description, announcement: f.announcement, isPaid: f.isPaid, price: Math.max(0, Math.round(Number(f.price) || 0)) });
-      toast.ok('板块已更新'); onSaved();
-    } catch (e: any) { toast.err(e.message); }
-  };
-  return (
-    <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
-      <div className="row gap-8" style={{ flexWrap: 'wrap', paddingTop: 14 }}>
-        <Input className="haha-inp" value={f.icon} onChange={(e: any) => setF((s) => ({ ...s, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
-        <Input className="haha-inp" value={f.name} onChange={(e: any) => setF((s) => ({ ...s, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
-      </div>
-      <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="板块说明（可选）" style={{ width: '100%', marginTop: 8 }} />
-      <Textarea className="haha-inp" value={f.announcement} onChange={(e: any) => setF((s) => ({ ...s, announcement: e.target.value }))} placeholder="板块公告（可选）" minRows={2} style={{ width: '100%', marginTop: 8 }} />
-      <div className="row gap-12" style={{ marginTop: 10, justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center' }}>
-        <label className="row gap-8" style={{ fontSize: 13, color: 'var(--ink-2)', alignItems: 'center' }}>
-          <Toggle on={f.isPaid} onChange={(v) => setF((s) => ({ ...s, isPaid: v }))} /> 付费板块
-          {f.isPaid && <Input className="haha-inp" type="number" min={0} value={f.price} onChange={(e: any) => setF((s) => ({ ...s, price: e.target.value }))} placeholder="积分" style={{ width: 110 }} />}
-        </label>
-        <div className="row gap-4">
-          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
-          <SaveBtn onSave={save} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Boards() {
-  const toast = useToast();
-  const [boards, setBoards] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: '', slug: '', icon: '📁', description: '' });
-  const [editId, setEditId] = useState<number | null>(null);
-  const load = () => api.get('/forum/boards').then(({ data }) => setBoards(data.boards));
-  useEffect(() => { load(); }, []);
-
-  const create = async () => {
-    if (!form.name || !form.slug) return toast.err('名称和 slug 必填');
-    try { await api.post('/admin/boards', form); toast.ok('板块已创建'); setForm({ name: '', slug: '', icon: '📁', description: '' }); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const del = async (b: any) => { if (!(await confirmDialog(`删除板块「${b.name}」及其所有帖子？`))) return; try { await api.delete(`/admin/boards/${b.id}`); toast.ok('已删除'); load(); } catch (e: any) { toast.err(e.message); } };
-  const addMod = async (b: any) => { const username = await promptDialog({ title: `「${b.name}」版主`, label: '输入用户名；已是版主则取消其版主身份', placeholder: '用户名', confirmText: '确定' }); if (!username) return; try { const { data } = await api.post(`/admin/boards/${b.id}/moderators`, { username }); toast.ok(data.added ? '已任命版主' : '已移除版主'); load(); } catch (e: any) { toast.err(e.message); } };
-  // 板块运营总览（客户端按已载列表聚合：板块数 / 帖子总数 / 付费板块数）
-  const boardStats: [string, number][] = [
-    ['板块总数', boards.length],
-    ['帖子总数', boards.reduce((s, b: any) => s + (Number(b.threadCount) || 0), 0)],
-    ['付费板块', boards.filter((b: any) => b.isPaid).length],
-  ];
-
-  return (
-    <>
-      {boards.length > 0 && (
-        <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: 'var(--gap)' }}>
-          {boardStats.map(([k, v]) => (
-            <div className="ui-card stat-card" key={k} style={{ padding: 16 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{k}</span>
-              <div className="num" style={{ fontWeight: 700, marginTop: 8, fontSize: 22 }}>{v.toLocaleString()}</div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
-        <div style={{ fontWeight: 700, marginBottom: 12 }}>新建板块</div>
-        <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <Input className="haha-inp" value={form.icon} onChange={(e: any) => setForm((f: any) => ({ ...f, icon: e.target.value }))} placeholder="图标" style={{ width: 60, textAlign: 'center' }} />
-          <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="板块名称（必填）" style={{ flex: 1, minWidth: 120 }} />
-          <Input className="haha-inp" value={form.slug} onChange={(e: any) => setForm((f: any) => ({ ...f, slug: e.target.value }))} placeholder="slug（必填，英文）" style={{ width: 130 }} />
-          <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.name.trim() || !form.slug.trim()}>创建</Button>
-        </div>
-        <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="板块说明 (可选)" style={{ width: '100%', marginTop: 8 }} />
-      </div>
-      <div className="ui-card" style={{ overflow: 'hidden' }}>
-        {boards.map((b, i) => (
-          <div key={b.id}>{i > 0 && <div className="divider" />}
-            <div className="row gap-12" style={{ padding: '12px 16px' }}>
-              <span style={{ fontSize: 22 }}>{b.icon}</span>
-              <div className="grow" style={{ minWidth: 0 }}><b>{b.name}</b> <span className="faint" style={{ fontSize: 12 }}>/{b.slug} · {fmtNum(b.threadCount)}帖 · {b.moderators.length}版主{b.isPaid ? ` · 付费${b.price}` : ''}</span></div>
-              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === b.id ? null : b.id)}>{editId === b.id ? '收起' : '编辑'}</Button>
-              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => addMod(b)}>版主</Button>
-              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(b)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
-            </div>
-            {editId === b.id && <BoardEditForm board={b} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-// 话题编辑（行内展开）：改 描述/封面/热度。热度(hot)决定发现页话题排序，是运营权重。后端 PUT /admin/topics/:id。
-function TopicEditForm({ topic, onSaved, onCancel }: { topic: any; onSaved: () => void; onCancel: () => void }) {
-  const toast = useToast();
-  const [f, setF] = useState({ description: topic.description || '', cover: topic.cover || '', hot: String(topic.hot ?? 0) });
-  const save = async () => {
-    try { await api.put(`/admin/topics/${topic.id}`, { description: f.description, cover: f.cover, hot: Math.max(0, Math.round(Number(f.hot) || 0)) }); toast.ok('话题已更新'); onSaved(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  return (
-    <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
-      <Input className="haha-inp" value={f.description} onChange={(e: any) => setF((s) => ({ ...s, description: e.target.value }))} placeholder="话题描述" style={{ width: '100%', marginTop: 14 }} />
-      <Input className="haha-inp" value={f.cover} onChange={(e: any) => setF((s) => ({ ...s, cover: e.target.value }))} placeholder="封面图 URL（可选，发现页展示）" style={{ width: '100%', marginTop: 8 }} />
-      <div className="row gap-12" style={{ marginTop: 8, justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <label className="sec-field" style={{ width: 160 }}><span className="sec-label">热度（发现页排序）</span><Input className="haha-inp" type="number" min={0} value={f.hot} onChange={(e: any) => setF((s) => ({ ...s, hot: e.target.value }))} /></label>
-        <div className="row gap-4">
-          <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
-          <SaveBtn onSave={save} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Topics() {
-  const toast = useToast();
-  const [topics, setTopics] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: '', description: '' });
-  const [editId, setEditId] = useState<number | null>(null);
-  const [q, setQ] = useState('');
-  const [stats, setStats] = useState<any>(null);
-  const load = (query = q) => api.get('/topics', { params: { q: query || undefined, limit: 100 } }).then(({ data }) => setTopics(data.topics));
-  useEffect(() => { load(); api.get('/topics/admin/stats').then(({ data }) => setStats(data)).catch(() => {}); }, []);
-  const create = async () => { if (!form.name) return toast.err('话题名必填'); try { await api.post('/admin/topics', form); toast.ok('话题已创建'); setForm({ name: '', description: '' }); load(); } catch (e: any) { toast.err(e.message); } };
-  const del = async (t: any) => { if (!(await confirmDialog(`删除话题 #${t.name}#?`))) return; try { await api.delete(`/admin/topics/${t.id}`); toast.ok('已删除'); load(); } catch (e: any) { toast.err(e.message); } };
-  const STAT_CARDS: [string, any][] = stats ? [
-    ['话题总数', (stats.total ?? 0).toLocaleString()], ['话题动态', (stats.totalPosts ?? 0).toLocaleString()], ['关注总数', (stats.totalFollows ?? 0).toLocaleString()],
-  ] : [];
-  return (
-    <>
-      {stats && (
-        <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: 'var(--gap)' }}>
-          {STAT_CARDS.map(([k, v]) => (
-            <div className="ui-card stat-card" key={k} style={{ padding: 16 }}>
-              <span className="muted" style={{ fontSize: 12.5 }}>{k}</span>
-              <div className="num" style={{ fontWeight: 700, marginTop: 8, fontSize: 22 }}>{v}</div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
-        <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-          <Input className="haha-inp" value={form.name} onChange={(e: any) => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="话题名（必填）" style={{ flex: 1, minWidth: 120 }} />
-          <Input className="haha-inp" value={form.description} onChange={(e: any) => setForm((f: any) => ({ ...f, description: e.target.value }))} placeholder="描述" style={{ flex: 1, minWidth: 120 }} />
-          <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.name.trim()}>创建话题</Button>
-        </div>
-      </div>
-      <div className="ui-card" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: 14, borderBottom: '1px solid var(--line)' }}>
-          <div className="row gap-8"><AdminSearch value={q} onChange={setQ} onSearch={() => load(q)} placeholder="搜索话题名…" /></div>
-        </div>
-        {topics.length === 0 ? <Empty text={q.trim() ? '没有匹配的话题' : '还没有话题'} /> : topics.map((t, i) => (
-          <div key={t.id}>{i > 0 && <div className="divider" />}
-            <div className="row gap-12" style={{ padding: '12px 16px' }}>
-              <div className="grow" style={{ minWidth: 0 }}><b>#{t.name}#</b> <span className="faint" style={{ fontSize: 12 }}>{fmtNum(t.post_count)}动态 · 热度{fmtNum(t.hot)}{t.cover ? ' · 有封面' : ''}</span></div>
-              <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === t.id ? null : t.id)}>{editId === t.id ? '收起' : '编辑'}</Button>
-              <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(t)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
-            </div>
-            {editId === t.id && <TopicEditForm topic={t} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function Reports() {
-  const toast = useToast();
-  const [reports, setReports] = useState<any[]>([]);
-  const [status, setStatus] = useState('open');
-  const load = (s = status) => api.get('/admin/reports', { params: { status: s } }).then(({ data }) => setReports(data.reports));
-  useEffect(() => { load(); }, []);
-  const pick = (s: string) => { setStatus(s); load(s); };
-  const resolve = async (r: any) => { try { await api.post(`/admin/reports/${r.id}/resolve`); toast.ok('已处理'); load(); } catch (e: any) { toast.err(e.message); } };
-  const delContent = async (r: any) => {
-    if (!(await confirmDialog('确定删除被举报的内容？此操作不可撤销'))) return;
-    try { await api.delete(`/admin/content/${r.targetType}/${r.targetId}`); await api.post(`/admin/reports/${r.id}/resolve`); toast.ok('内容已删除并处理'); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const TYPE: any = { post: '动态', thread: '帖子', comment: '评论', user: '用户' };
-  const link = (r: any) => r.targetType === 'post' ? `/post/${r.targetId}` : r.targetType === 'thread' ? `/thread/${r.targetId}` : r.targetType === 'user' && r.target?.author ? `/u/${r.target.author.username}` : null;
-  const resolved = status === 'resolved';
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="audit-filters">
-        {[['open', '待处理'], ['resolved', '已处理']].map(([k, l]) => (
-          <button key={k} className={`audit-chip${status === k ? ' active' : ''}`} onClick={() => pick(k)}>{l}</button>
-        ))}
-      </div>
-      <div className="ui-card" style={{ overflow: 'hidden' }}>
-        {!reports.length ? <Empty icon={resolved ? '📋' : '✅'} text={resolved ? '还没有已处理的举报' : '没有待处理的举报'} /> : reports.map((r, i) => (
-          <div key={r.id}>{i > 0 && <div className="divider" />}
-            <div style={{ padding: '14px 16px' }}>
-              <div className="row gap-8" style={{ marginBottom: 8 }}>
-                <span className="ui-badge badge-elite">{TYPE[r.targetType] || r.targetType}</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600 }}>{r.reason || '(未填写原因)'}</span>
-                <span className="spacer" />
-                <span className="faint" style={{ fontSize: 12 }}>{timeAgo(r.createdAt)}</span>
-              </div>
-              <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--r-sm)', padding: '10px 12px', fontSize: 13 }}>
-                {r.target?.exists ? (
-                  <>
-                    {r.target.author && <span className="muted">{r.target.author.nickname}：</span>}
-                    <span>{r.target.text}</span>
-                  </>
-                ) : <span className="faint">内容已不存在</span>}
-              </div>
-              <div className="row gap-8" style={{ marginTop: 10 }}>
-                <span className="faint" style={{ fontSize: 12 }}>举报人 {r.reporter?.nickname}</span>
-                <span className="spacer" />
-                {link(r) && <Link to={link(r)!} className="haha-btn-app haha-btn-app--ghost haha-btn-app--sm">查看</Link>}
-                {!resolved && r.target?.exists && r.targetType !== 'user' && <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => delContent(r)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除内容</Button>}
-                {!resolved
-                  ? <Button size="sm" variant="bordered" className="haha-btn-app" onClick={() => resolve(r)}>忽略</Button>
-                  : <span className="faint" style={{ fontSize: 12, color: 'var(--good)' }}>已处理</span>}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// 公告编辑（行内展开）：改 标题/补充说明/级别/跳转链接/按钮文字。后端 PUT /notices/:id（上线/置顶仍走行内快捷按钮）。
-function NoticeEditForm({ item, onSaved, onCancel }: { item: any; onSaved: () => void; onCancel: () => void }) {
-  const toast = useToast();
-  const [f, setF] = useState({ title: item.title || '', body: item.body || '', level: item.level || 'info', link: item.link || '', linkLabel: item.linkLabel || '' });
-  const save = async () => {
-    if (!f.title.trim()) return toast.err('公告标题必填');
-    try { await api.put(`/notices/${item.id}`, { title: f.title, body: f.body, level: f.level, link: f.link, linkLabel: f.linkLabel }); toast.ok('公告已更新'); onSaved(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  return (
-    <div style={{ padding: '0 16px 16px', background: 'var(--surface-2)' }}>
-      <div className="sec-grid" style={{ paddingTop: 14 }}>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">标题 <i className="sec-req">*</i></span><Input className="haha-inp" maxLength={120} value={f.title} onChange={(e: any) => setF((s) => ({ ...s, title: e.target.value }))} /></label>
-        <label className="sec-field" style={{ gridColumn: '1 / -1' }}><span className="sec-label">补充说明</span><Textarea className="haha-inp" minRows={2} maxLength={500} value={f.body} onChange={(e: any) => setF((s) => ({ ...s, body: e.target.value }))} /></label>
-        <label className="sec-field"><span className="sec-label">级别</span><select className="haha-inp" value={f.level} onChange={(e) => setF((s) => ({ ...s, level: e.target.value }))}>{NOTICE_LEVELS.map((l) => <option key={l.k} value={l.k}>{l.l}</option>)}</select></label>
-        <label className="sec-field"><span className="sec-label">跳转链接</span><Input className="haha-inp" maxLength={300} value={f.link} onChange={(e: any) => setF((s) => ({ ...s, link: e.target.value }))} placeholder="如 /events" /></label>
-        <label className="sec-field"><span className="sec-label">按钮文字</span><Input className="haha-inp" maxLength={30} value={f.linkLabel} onChange={(e: any) => setF((s) => ({ ...s, linkLabel: e.target.value }))} placeholder="如 查看详情" /></label>
-      </div>
-      <div className="row gap-4" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
-        <Button size="sm" variant="flat" className="haha-btn-app" onClick={onCancel}>取消</Button>
-        <SaveBtn onSave={save} />
-      </div>
-    </div>
-  );
-}
-
-function Notices() {
-  const toast = useToast();
-  const [list, setList] = useState<any[]>([]);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<any>({ title: '', body: '', level: 'info', link: '', linkLabel: '', pinned: false });
-  const load = () => api.get('/notices/all').then(({ data }) => setList(data.notices)).catch(() => {});
-  useEffect(() => { load(); }, []);
-  const create = async () => {
-    if (!form.title.trim()) return toast.err('公告标题必填');
-    try { await api.post('/notices', form); toast.ok('公告已发布'); setForm({ title: '', body: '', level: 'info', link: '', linkLabel: '', pinned: false }); load(); }
-    catch (e: any) { toast.err(e.message); }
-  };
-  const patch = async (n: any, p: any) => { try { await api.put(`/notices/${n.id}`, p); load(); } catch (e: any) { toast.err(e.message); } };
-  const del = async (n: any) => { if (!(await confirmDialog(`删除公告「${n.title}」？`))) return; try { await api.delete(`/notices/${n.id}`); toast.ok('已删除'); load(); } catch (e: any) { toast.err(e.message); } };
-  return (
-    <>
-      <div className="ui-card" style={{ padding: 16, marginBottom: 'var(--gap)' }}>
-        <div className="col gap-8">
-          <Input className="haha-inp" value={form.title} onChange={(e: any) => setForm((f: any) => ({ ...f, title: e.target.value }))} placeholder="公告标题（必填）" style={{ width: '100%' }} />
-          <Input className="haha-inp" value={form.body} onChange={(e: any) => setForm((f: any) => ({ ...f, body: e.target.value }))} placeholder="补充说明（选填）" style={{ width: '100%' }} />
-          <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-            <select className="haha-inp" value={form.level} onChange={(e) => setForm((f: any) => ({ ...f, level: e.target.value }))} style={{ minWidth: 110, width: 'auto' }}>
-              {NOTICE_LEVELS.map((l) => <option key={l.k} value={l.k}>{l.l}</option>)}
-            </select>
-            <Input className="haha-inp" value={form.link} onChange={(e: any) => setForm((f: any) => ({ ...f, link: e.target.value }))} placeholder="跳转链接（选填，如 /events）" style={{ flex: 1, minWidth: 150 }} />
-            <Input className="haha-inp" value={form.linkLabel} onChange={(e: any) => setForm((f: any) => ({ ...f, linkLabel: e.target.value }))} placeholder="按钮文字" style={{ width: 110 }} />
-          </div>
-          <div className="row gap-12" style={{ justifyContent: 'space-between' }}>
-            <label className="row gap-6" style={{ fontSize: 13, cursor: 'pointer', color: 'var(--ink-2)' }}>
-              <input type="checkbox" checked={form.pinned} onChange={(e) => setForm((f: any) => ({ ...f, pinned: e.target.checked }))} /> 置顶展示
-            </label>
-            <Button color="primary" className="haha-btn-app" onClick={create} isDisabled={!form.title.trim()}>发布公告</Button>
-          </div>
-        </div>
-      </div>
-      <div className="ui-card" style={{ overflow: 'hidden' }}>
-        {list.length === 0 ? <Empty icon="📋" text="还没有公告，发布第一条吧" /> : list.map((n, i) => (
-          <div key={n.id}>{i > 0 && <div className="divider" />}
-            <div className="row gap-12" style={{ padding: '12px 16px', alignItems: 'flex-start' }}>
-              <span className={`ui-badge sn-badge sn-badge-${n.level}`}>{(NOTICE_LEVELS.find((l) => l.k === n.level) || { l: n.level }).l}</span>
-              <div className="grow" style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{n.title} {n.pinned ? <Icon name="pin" size={12} style={{ color: 'var(--brand)', verticalAlign: '-1px' }} /> : null}</div>
-                {n.body && <div className="faint" style={{ fontSize: 12.5, marginTop: 2 }}>{n.body}</div>}
-                <div className="faint" style={{ fontSize: 11.5, marginTop: 4 }}>{timeAgo(n.createdAt)} · {n.active ? '展示中' : '已下线'}</div>
-              </div>
-              <div className="row gap-6" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => setEditId(editId === n.id ? null : n.id)}>{editId === n.id ? '收起' : '编辑'}</Button>
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => patch(n, { active: !n.active })}>{n.active ? '下线' : '上线'}</Button>
-                <Button size="sm" variant="flat" className="haha-btn-app" onClick={() => patch(n, { pinned: !n.pinned })}>{n.pinned ? '取消置顶' : '置顶'}</Button>
-                <Button size="sm" variant="flat" className="haha-btn-app danger" onClick={() => del(n)}><Icon name="trash" size={14} style={{ width: 14, height: 14 }} /> 删除</Button>
-              </div>
-            </div>
-            {editId === n.id && <NoticeEditForm item={n} onSaved={() => { setEditId(null); load(); }} onCancel={() => setEditId(null)} />}
-          </div>
-        ))}
-      </div>
     </>
   );
 }
@@ -1010,11 +606,11 @@ export default function Admin() {
         </header>
         <div className="admin-content">
           {tab === 'overview' && <Overview onNav={setTab} />}
-          {tab === 'users' && <Users />}
-          {tab === 'boards' && <Boards />}
-          {tab === 'topics' && <Topics />}
-          {tab === 'reports' && <Reports />}
-          {tab === 'notices' && <Notices />}
+          {tab === 'users' && <UsersPanel />}
+          {tab === 'boards' && <BoardsPanel />}
+          {tab === 'topics' && <TopicsPanel />}
+          {tab === 'reports' && <ReportsPanel />}
+          {tab === 'notices' && <NoticesPanel />}
           {tab === 'flash' && <FlashPanel />}
           {tab === 'nav' && <NavPanel />}
           {tab === 'articles' && <ArticlesAdmin />}
