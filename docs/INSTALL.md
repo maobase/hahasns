@@ -127,11 +127,16 @@ node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁�
 | `REDIS_URL` | `redis://127.0.0.1:6379` | Redis 连接地址 |
 | `CLIENT_DIST` | 内置默认 | 前端构建产物目录，指向 `client/dist`，由后端托管 |
 | `UPLOADS_DIR` | 内置默认 | 本地媒体存储目录（`STORAGE_DRIVER=local` 时生效） |
-| `STORAGE_DRIVER` | `local` | 媒体存储驱动：`local`（本地磁盘）或 `s3`（对象存储） |
+| `STORAGE_DRIVER` | 自动推断 | 媒体存储驱动：`local`（本地磁盘）或 `s3`（对象存储）。不设时按「有没有 `S3_ACCESS_KEY`」推断，也就是填了密钥就自动切到 `s3`；想留着密钥先退回本地存储，就显式写 `STORAGE_DRIVER=local` |
 | `TRUST_PROXY` | 空 | 挂在 Nginx / 宝塔 / 1Panel / Cloudflare 后面时设 `1`。不设的话后端看到的访客 IP 全是反代 IP，按 IP 的注册与发帖限流会失效（详见第八节） |
 | `ANTHROPIC_API_KEY` | 空 | （可选）启用 AI 相关能力时填写 |
 
 启用对象存储（`STORAGE_DRIVER=s3`）时再补充：`S3_ENDPOINT`、`S3_BUCKET`、`S3_ACCESS_KEY`、`S3_SECRET_KEY`、`S3_REGION`、`S3_PUBLIC_URL`、`S3_FORCE_PATH_STYLE`。
+
+> **用 docker compose 装的话注意**：`docker-compose.yml` 没有 `env_file:`，容器只能拿到 `app` 服务
+> `environment:` 块里声明过的变量——那是一份白名单。上表这些都已透传；但如果你自己加了别的变量，
+> 写进 `.env` 是不生效的（也不报错），得同时在 compose 里加一行。用 `docker compose config`
+> 能看到最终真正注入容器的值。
 
 生成强随机密钥示例：
 

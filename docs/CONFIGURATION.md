@@ -34,8 +34,14 @@ HahaSNS reads configuration from process environment variables (copy `server-nes
 | `STORAGE_DRIVER` | auto (`s3` if S3 keys present, else `local`) | Storage backend: `local` (write to `UPLOADS_DIR`) or `s3`. |
 | `S3_ENDPOINT` / `S3_BUCKET` / `S3_ACCESS_KEY` / `S3_SECRET_KEY` / `S3_REGION` / `S3_FORCE_PATH_STYLE` / `S3_PUBLIC_URL` | — | S3-compatible object storage settings, used when `STORAGE_DRIVER=s3` (works with AWS S3, MinIO, rustfs, etc.). |
 | `ANTHROPIC_API_KEY` | — | Optional. Enables the AI assistant; without it the assistant runs in a demo/placeholder mode. |
+| `AVATAR_PROVIDER` | — | Optional. Unset = new users get a locally rendered initial-and-gradient avatar (no external request). Set `pravatar` to go back to `i.pravatar.cc` random avatars. |
 
 Set them via a real secrets mechanism — a `.env` file with restricted permissions, systemd `Environment=`, a container secret, etc. — rather than inlining values in scripts you commit.
+
+> **docker compose 路径下的一个坑**：仓库的 `docker-compose.yml` 没有 `env_file:`，容器里能看到哪些变量
+> 完全由 `app` 服务的 `environment:` 块决定——**那是一份白名单**。往 `.env` 里写一个 compose 没声明的变量，
+> 它不会进容器，也不会报错，只是静默不生效。所以自己加变量时要连 compose 一起改（上表里的变量都已透传）。
+> 用 `docker compose config` 可以看到最终真正注入的值。
 
 ## Admin account
 
