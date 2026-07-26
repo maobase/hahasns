@@ -58,6 +58,12 @@ export class AdminController {
     return this.admin.updateConfig(user.id, config || {});
   }
 
+  /** 当前生效的存储配置 + 逐项来源（后台 / 环境变量 / 默认），密钥只报有无 */
+  @Get('storage/status')
+  storageStatus() {
+    return this.storage.status();
+  }
+
   /** 测试当前存储驱动连通性（local 写探针 / s3 上传删除探针） */
   @Post('storage/test')
   testStorage() {

@@ -13,8 +13,10 @@ import {
   resolveStorageConfig,
   storageConfigHash,
   storageConfigWarnings,
+  resolveStorageSources,
   type StorageEnvLike,
   type StorageResolvedConfig,
+  type StorageSourceMap,
 } from './storage-config';
 
 /**
@@ -200,6 +202,42 @@ export class StorageService implements OnModuleInit {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.resolved!.bucket, Key: key }),
     );
+  }
+
+  /**
+   * 当前生效的存储配置（含逐项来源、密钥只报有无、示例文件地址）。
+   * 密钥本身不出网关，只回 hasAccessKey / hasSecretKey。
+   */
+  async status(): Promise<{
+    driver: 'local' | 's3';
+    sources: StorageSourceMap;
+    endpoint: string;
+    bucket: string;
+    region: string;
+    publicUrl: string;
+    forcePathStyle: boolean;
+    hasAccessKey: boolean;
+    hasSecretKey: boolean;
+    uploadsDir: string;
+    sampleUrl: string;
+    warnings: string[];
+  }> {
+    const cfg = await this.refreshFromSite(true);
+    return {
+      driver: cfg.driver,
+      sources: resolveStorageSources(this.lastSite, this.lastEnv),
+      endpoint: cfg.endpoint,
+      bucket: cfg.bucket,
+      region: cfg.region,
+      publicUrl: cfg.publicUrl,
+      forcePathStyle: cfg.forcePathStyle,
+      hasAccessKey: !!cfg.accessKey,
+      hasSecretKey: !!cfg.secretKey,
+      uploadsDir: this.uploadsDir,
+      sampleUrl:
+        cfg.driver === 'local' ? '/uploads/example.jpg' : this.publicUrlFor('example.jpg'),
+      warnings: storageConfigWarnings(this.lastSite, this.lastEnv),
+    };
   }
 
   /** 测试连接：上传并删除探针对象；warnings 为配置缺陷预警（不阻断，仅提示）。 */

@@ -109,6 +109,58 @@ export function storageConfigWarnings(
   return warnings;
 }
 
+/** 某项配置最终取自哪里：后台设置 / 环境变量 / 内置默认 */
+export type StorageConfigSource = 'site' | 'env' | 'default';
+
+export interface StorageSourceMap {
+  driver: StorageConfigSource;
+  endpoint: StorageConfigSource;
+  bucket: StorageConfigSource;
+  region: StorageConfigSource;
+  publicUrl: StorageConfigSource;
+  forcePathStyle: StorageConfigSource;
+  accessKey: StorageConfigSource;
+  secretKey: StorageConfigSource;
+}
+
+/**
+ * 逐项判定配置来源，口径与 resolveStorageConfig 严格一致。
+ * 后台面板据此告诉站长「这个值是我填的，还是 .env 带进来的」——
+ * 用 env 部署时后台字段全空，不标来源就会被误读成「没配对象存储」。
+ */
+export function resolveStorageSources(
+  site: Record<string, string | null | undefined> = {},
+  env: StorageEnvLike = {},
+): StorageSourceMap {
+  const pick = (siteKey: string, envVal: string | undefined): StorageConfigSource => {
+    const s = site[siteKey];
+    if (s != null && String(s).length > 0) return 'site';
+    return envVal ? 'env' : 'default';
+  };
+
+  const siteDriver = (site.storage_driver || '').toLowerCase();
+  let driver: StorageConfigSource;
+  if (siteDriver === 'local' || siteDriver === 's3') driver = 'site';
+  else if (env.STORAGE_DRIVER === 'local' || env.STORAGE_DRIVER === 's3') driver = 'env';
+  else driver = 'default'; // 兜底按「有无 AccessKey」推断
+
+  let forcePathStyle: StorageConfigSource;
+  if (site.s3_force_path_style === '1' || site.s3_force_path_style === '0') forcePathStyle = 'site';
+  else if (env.S3_FORCE_PATH_STYLE) forcePathStyle = 'env';
+  else forcePathStyle = 'default';
+
+  return {
+    driver,
+    endpoint: pick('s3_endpoint', env.S3_ENDPOINT),
+    bucket: pick('s3_bucket', env.S3_BUCKET),
+    region: pick('s3_region', env.S3_REGION),
+    publicUrl: pick('s3_public_url', env.S3_PUBLIC_URL),
+    forcePathStyle,
+    accessKey: pick('s3_access_key', env.S3_ACCESS_KEY),
+    secretKey: pick('s3_secret_key', env.S3_SECRET_KEY),
+  };
+}
+
 /** 配置指纹：变化时重建 S3Client */
 export function storageConfigHash(c: StorageResolvedConfig): string {
   return [
