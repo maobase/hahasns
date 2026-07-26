@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-20 · v5.72）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.73）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,10 +9,10 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.72**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.73**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **26 文件 / 195 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 201 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -28,6 +28,13 @@
 - 存量迁移：`node server-nest/scripts/migrate-uploads-to-s3.mjs`（默认 dry-run，
   先核对输出再 `--execute --yes`；`--rollback <file>` 回滚；`--rewrite-missing` 为显式放行开关）。
   docker 部署下脚本已在镜像内：`docker compose exec app node scripts/migrate-uploads-to-s3.mjs`。
+- **配置来源可视化（v5.73）**：后台存储页顶部「当前生效」卡片直接显示实际在用的驱动与各项值，
+  每项标出取自「后台设置 / 环境变量 / 默认值」，并给一条示例文件地址（图裂在上传前就看得出来）。
+  数据来自 `GET /api/admin/storage/status`（管理员限定，密钥只回有无）；来源判定在
+  `storage-config.ts` 的 `resolveStorageSources`，**改 `resolveStorageConfig` 的优先级必须同步改它**
+  （两者口径必须一致，已有 6 个单测钉住，含 `s3_force_path_style='0'` 仍算「后台设置」的 falsy 坑）。
+- 优先级口径（一句话）：**后台设置 > 环境变量 > 内置默认，逐字段独立**。后台留空 = 沿用 env，
+  不是「清空」；想从后台退回 env 目前只能改库（见 §5.5）。
 - 细节见 `server-nest/src/modules/storage/`（storage.service.ts / storage-config.ts）。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
@@ -55,9 +62,12 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
    - `npm --prefix client run build` 0 error（动了后端再 `npm --prefix server-nest run build`）
    - `cd server-nest && npx vitest run` 全绿；新逻辑补测试
    - `npm run lint:copy`（文案/交互 lint）
-   - 视觉门：本地起 dev（NestJS :4000 + Vite :5173；本地 curl 一律 `--noproxy '*'`），
+   - 视觉门：本地起 dev（NestJS :4000 + Vite :5173；本地 curl 一律 `--noproxy '*'`，
+     Vite 只监听 IPv6，用 `http://localhost:5173` 而非 `127.0.0.1`），
      playwright-core 无头（`channel:'chrome'`）截改动页 390/1280 × 亮/暗，
-     页面级无横向溢出（`scrollWidth === clientWidth`）；主题存 `localStorage.haha_theme`。
+     页面级无横向溢出（`scrollWidth === clientWidth`）；**主题用 URL 参数 `?theme=dark` 切**
+     （`ThemeContext.initMode()` 认它；只写 `localStorage.haha_theme` 在无头里不稳）。
+     后台页深链是**路径** `/admin/<tab>`，不是 `?tab=`（写错会静默落在「概览」上，白截一轮）。
    - 一次性账号：注册 → 用完先 `SELECT` 确认唯一 → `DELETE ... LIMIT 1`；
      需管理员就本地库 `UPDATE users SET role='admin'`；**bash 变量名禁用 `UID`**（只读内建）。
 4. **提交**：一项一 commit，中文 conventional 前缀 + 版本号；
@@ -76,6 +86,10 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 - 硬红线速记：仓库公开（github.com/maobase/hahasns）；HeroUI 单轨；颜色一律语义 token
   （`client/src/styles/tokens.css`，6 皮肤 + 暗色）；文案规范见 `spec/02-copy-guide.md`；
   线上 `DB_SYNCHRONIZE=false`，**改表结构必须先停下向人类说明方案**（见 §5 迁移遗留）。
+- **`.admin-shell` 是固定浅色的 B 端主题**（`client/src/styles/pages.css`），刻意不随前台明暗。
+  它在自己的作用域里把 token 重新钉成浅色值——中性色、强调色（gold/good/like/coral/verify）、
+  骨架屏、遮罩都在内。**新增语义 token 若会被后台面板用到，必须同步在这个块里钉一份**，
+  否则前台切暗色后，后台白卡上会冒出暗色底纹（v5.73 修过一次）。
 
 ## 5. 已知遗留 / 后续候选（按优先级）
 
@@ -88,6 +102,9 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 4. **对象删除不清理存储对象**：`StorageService.delete` 目前无调用方（预留），
    删帖/删用户时桶内对象会累积；接入时注意幂等与本地/S3 双驱动。
 5. **Admin「清空已存密钥」**：PUT 留空=保留原值，想回退 env 只能改库（体验项）。
+   v5.73 的「当前生效」卡片至少让人看清现在用的是哪一份，但「清掉后台值、退回 env」仍缺入口。
+6. **本地存储切 S3 后无迁移提示**：后台把驱动从 local 改成 s3、存量图片仍在磁盘上，
+   页面不会提醒去跑 `migrate-uploads-to-s3.mjs`（现在只在文档和面板底部的说明里写着）。
 
 ## 6. 故障速查
 
@@ -98,4 +115,24 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 | vite 起不来 | 5173 被 stale 进程占用，`lsof -i :5173` 查杀 |
 | 上传 413/格式被拒 | `uploads.controller.ts` 的 25MB/9 张硬顶与 mimetype 双拦 |
 | 七牛图裂 | 多半没填 Public URL，或桶私有但用了裸 S3 域名 |
+| 「对象存储到底生效没有」 | 后台 系统 → 存储 顶部「当前生效」卡片；命令行 `GET /api/admin/storage/status`（带管理员 token） |
+| 后台白卡上出现暗色底纹 | 用到的 token 没在 `.admin-shell` 块里钉浅色版（见 §4 末条） |
 | 测试在未改动区域变红 | 停——这是 LOOP-PROMPT 停止条件，别绕，查清楚再继续 |
+| 本地后端起不来（DB 连不上） | 3306 常被别的项目占；本地库另起一个容器即可，见 §7 |
+
+## 7. 本地开发环境（视觉门要用）
+
+`server-nest/.env`（gitignored）指向一个**独立的开发库容器**，不碰 3306 上别人的 mysql：
+
+```bash
+docker run -d --name hahasns-dev-db -p 3310:3306 \
+  -e MARIADB_ROOT_PASSWORD=devroot -e MARIADB_DATABASE=hahasns \
+  -e MARIADB_USER=hahasns -e MARIADB_PASSWORD=devpass mariadb:10.11
+npm --prefix server-nest run start:dev   # :4000，DB_SYNCHRONIZE=true 自动建表 + 播种管理员
+npm --prefix client run dev              # :5173
+```
+
+`.env` 里 `SEED_ADMIN_USER` / `SEED_ADMIN_PASSWORD` 是首次启动播种的管理员，登录拿 token 供
+无头截图注入（`localStorage.haha_token`）。**这份 .env 里的 S3_\* 是故意只给环境变量、后台不填的**，
+用来验证「当前生效」卡片的来源标注；它指向的 127.0.0.1:9000 本地并没有 MinIO，
+所以「测试连接」会失败——这是预期，不是 bug。
