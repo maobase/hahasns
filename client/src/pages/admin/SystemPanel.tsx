@@ -140,7 +140,9 @@ export default function SystemPanel() {
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>升级说明</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.85 }}>
-          {!st.upgradeEnabled && <>后台一键升级默认关闭（安全，且仅适用于宿主机直跑的部署）。启用：给运行 app 的账号配好执行 <code>upgrade.sh</code> 的权限后，设环境变量 <code>ALLOW_ADMIN_UPGRADE=true</code> 并重启服务。<br /></>}
+          {!st.upgradeEnabled && (st.isGitRepo
+            ? <>后台一键升级默认关闭（安全，且仅适用于宿主机直跑的部署）。启用：给运行 app 的账号配好执行 <code>upgrade.sh</code> 的权限后，设环境变量 <code>ALLOW_ADMIN_UPGRADE=true</code> 并重启服务。<br /></>
+            : <>本实例用不了后台一键升级：这里看不到 git 仓库（用镜像 / 拷贝文件部署的都是这样），进程没法拉取代码、也没法重建自己，所以设 <code>ALLOW_ADMIN_UPGRADE=true</code> 也不会生效。请走下面的命令行方式，「检查更新」不受影响。<br /></>)}
           任何部署形态都可在服务器仓库根目录手动运行 <code>./upgrade.sh</code>（自动备份 → 拉取 → 迁移 → 重建 → 重启；Docker 部署设 <code>DEPLOY_MODE=docker</code>）。完整说明见仓库 <code>UPGRADE.md</code>。
         </div>
       </div>
