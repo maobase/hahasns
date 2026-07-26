@@ -99,14 +99,14 @@ export default function StoragePanel() {
   // 所以不给这个入口就只能改库才能回退。
   const clearSite = async () => {
     const ok = await confirmDialog(
-      '会删掉后台存的存储配置（含 Access Key / Secret Key），之后按环境变量或内置默认生效。\n上传中的文件不受影响，已上传的文件也不会动。',
+      '会删掉后台存的存储配置（含 Access Key / Secret Key），之后按环境变量或内置默认生效。\n已上传的文件不受影响，不会被删除或搬家。',
       { title: '清除后台存储设置？', confirmText: '清除' },
     );
     if (!ok) return;
     setClearing(true);
     try {
       const { data } = await api.delete('/admin/storage/site-config');
-      toast.ok(data.cleared?.length ? `已清除 ${data.cleared.length} 项，改按环境变量生效` : '后台本来就没存配置');
+      toast.ok(data.cleared?.length ? `已清除 ${data.cleared.length} 项，改按环境变量 / 默认值生效` : '后台本来就没存配置');
       const res = await api.get('/admin/config');
       setCfg(res.data.config || {});
       setSecrets(res.data.secretsSet || {});
