@@ -14,11 +14,26 @@ import {
   storageConfigHash,
   storageConfigWarnings,
   resolveStorageSources,
+  describeStorageError,
+  describePublicReadResult,
+  WARN_NO_PUBLIC_URL,
   STORAGE_SITE_KEYS,
   type StorageEnvLike,
   type StorageResolvedConfig,
   type StorageSourceMap,
 } from './storage-config';
+
+/**
+ * 「测试连接」结果。ok 只表示写入这一步过了；
+ * level 区分「全过」和「写得进但读不出/删不掉」，后者最容易被当成没问题放过去。
+ */
+export interface StorageTestResult {
+  ok: boolean;
+  level: 'ok' | 'warn' | 'fail';
+  message: string;
+  driver: string;
+  warnings: string[];
+}
 
 /**
  * 双模存储 local | s3。配置优先 site_config，env 回退。
@@ -258,8 +273,22 @@ export class StorageService implements OnModuleInit {
     };
   }
 
-  /** 测试连接：上传并删除探针对象；warnings 为配置缺陷预警（不阻断，仅提示）。 */
-  async testConnection(): Promise<{ ok: boolean; message: string; driver: string; warnings: string[] }> {
+  /** 探针对象能否被公开读到。只报结果，不抛错——网络层失败也是一种结论。 */
+  private async probePublicRead(url: string): Promise<{ status?: number; error?: string }> {
+    try {
+      const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(4000) });
+      return { status: res.status };
+    } catch (e: any) {
+      return { error: e?.name === 'TimeoutError' ? '超时（4 秒）' : e?.message || String(e) };
+    }
+  }
+
+  /**
+   * 测试连接：写入探针对象 → 按公开地址回读 → 删除。
+   * 回读失败只当预警不当失败：CDN 刚配好有回源延迟，判死会误伤。
+   * warnings 同时包含静态配置缺陷预警。
+   */
+  async testConnection(): Promise<StorageTestResult> {
     const cfg = await this.refreshFromSite(true);
     const warnings = storageConfigWarnings(this.lastSite, this.lastEnv);
     if (cfg.driver === 'local') {
@@ -268,13 +297,19 @@ export class StorageService implements OnModuleInit {
         const probe = join(this.uploadsDir, `.probe-${Date.now()}`);
         await fs.promises.writeFile(probe, 'ok');
         await fs.promises.unlink(probe);
-        return { ok: true, message: '本地存储可写', driver: 'local', warnings };
+        return { ok: true, level: 'ok', message: `本地存储可写（${this.uploadsDir}）`, driver: 'local', warnings };
       } catch (e: any) {
-        return { ok: false, message: e?.message || '本地存储不可写', driver: 'local', warnings };
+        return {
+          ok: false,
+          level: 'fail',
+          message: `本地上传目录写不进去：${e?.message || '未知错误'}。请检查 UPLOADS_DIR 是否存在、进程有没有写权限（docker 部署多半是卷挂载权限问题）。`,
+          driver: 'local',
+          warnings,
+        };
       }
     }
+    const key = `._probe_${Date.now()}.txt`;
     try {
-      const key = `._probe_${Date.now()}.txt`;
       await this.client!.send(
         new PutObjectCommand({
           Bucket: cfg.bucket,
@@ -283,12 +318,35 @@ export class StorageService implements OnModuleInit {
           ContentType: 'text/plain',
         }),
       );
-      await this.client!.send(
-        new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }),
-      );
-      return { ok: true, message: `S3 连接成功（${cfg.endpoint} / ${cfg.bucket}）`, driver: 's3', warnings };
     } catch (e: any) {
-      return { ok: false, message: e?.message || 'S3 连接失败', driver: 's3', warnings };
+      return { ok: false, level: 'fail', message: describeStorageError(e), driver: 's3', warnings };
     }
+    // 写成功了才有必要验读。读不通不判失败——CDN 刚配好有回源延迟，判死会误伤
+    const read = await this.probePublicRead(this.publicUrlFor(key));
+    const readNote = describePublicReadResult({ ...read, publicUrlConfigured: !!cfg.publicUrl });
+    if (readNote) {
+      warnings.push(readNote);
+    } else {
+      // 实测读通了，「没填 Public URL」这条静态预警就不成立了（MinIO 直连、公开桶都属这种）
+      const i = warnings.indexOf(WARN_NO_PUBLIC_URL);
+      if (i >= 0) warnings.splice(i, 1);
+    }
+    let delFailed = false;
+    try {
+      await this.client!.send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }));
+    } catch {
+      delFailed = true;
+      warnings.push('探针文件删不掉，密钥可能只有写权限没有删权限。这不影响发帖，但清理旧文件会失败。');
+    }
+    const partial = !!readNote || delFailed;
+    return {
+      ok: true,
+      level: partial ? 'warn' : 'ok',
+      message: partial
+        ? `文件写进去了，但还有没通过的检查项（${cfg.bucket}）`
+        : `连接正常：写入、公开读取、删除三项都通过（${cfg.endpoint} / ${cfg.bucket}）`,
+      driver: 's3',
+      warnings,
+    };
   }
 }
