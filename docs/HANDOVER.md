@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-26 · v5.76）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.78）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,11 +9,11 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.76**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.78**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 环境变量在哪 | env1：`/home/tt/hahasns/.nest-env` + unit 内 `Environment=`（`systemctl --user cat hahasns`）；env2：`/opt/haha-apps/hahasns-nest/.nest-prod.env`（`docker-compose.prod.yml` 的 `env_file`，**不是仓库里的 `docker-compose.yml`**） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **28 文件 / 246 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **30 文件 / 273 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -86,6 +86,27 @@
   不看有没有 DB 行引用它。env2 报「还剩 2 个」，跑 dry-run 一看「待重写路径 0」——是早期测试残留的孤儿。
   迁移脚本从不删本地文件，硬迁只会往桶里再加两个孤儿，所以那次**有意不迁**；
   v5.77 改成逐文件对库里的引用，这种「全是孤儿」的情况现在直接报绿并说明不用管。
+
+### 2.1c 仓库 compose 的 `environment:` 是白名单（v5.78 · 部署易用性红线）
+
+- **事实**：仓库根 `docker-compose.yml` 的 `app` 服务**没有 `env_file:`**，所以站长 `.env` 里的变量
+  只有在 `environment:` 块里逐个声明过（`FOO: ${FOO:-}`）才会进容器。漏一个 = 站长照文档配了
+  **完全不生效、且不报任何错**。v5.78 就是修这个：`ANTHROPIC_API_KEY` 被六处文档（含 `.env.example`
+  和 compose 自己的注释）写成「在 `.env` 里配上就启用 AI 助手」，但从没声明过；同时补了
+  `STORAGE_DRIVER`（不显式指定的话驱动按「有没有 `S3_ACCESS_KEY`」推断，等于**没法留着密钥退回本地存储**）
+  和三个可选调参 `JWT_EXPIRES_IN` / `REDIS_TTL` / `AVATAR_PROVIDER`。
+- **为什么一直没人发现**：两台自有环境都不走这条路（env1 systemd `EnvironmentFile=`、
+  env2 自己的 `docker-compose.prod.yml` + `env_file:`），正好都绕开了仓库 compose。
+  **凡是只影响仓库 compose 路径的改动，两环境都验不出来**——别指望「发上去看看」，
+  要用 `docker compose config` 看渲染结果（它会插值出真正注入容器的值）。
+- **守门用例**：`test/docker-env-passthrough.test.ts` 把 `server-nest/src` 下读过的每个
+  `process.env.X` 与 compose 白名单对账，漏透传就红并指出漏了哪个。确实不该给站长配的写进
+  `INTENTIONALLY_NOT_PASSED` 并**必须附一句原因**（容器内部路径、compose 自己的接线、
+  未完工能力的开关如 `ALLOW_ADMIN_UPGRADE` / `DB_MIGRATIONS_RUN`、只给脚本用的 `SEED_*`）；
+  另有一条用例禁止清单里留下代码已不读的死条目，还有一条钉住「app 没有 `env_file:`」这个前提
+  ——哪天真给它加了 `env_file:`，白名单模型就不成立，那两条会提醒你回来重想。
+- **加环境变量的标准动作**：改代码 → compose `environment:` 加一行 → `.env.example` 加注释行
+  → `docs/CONFIGURATION.md` 变量表补一行（`docs/INSTALL.md` 的表按需）→ 跑 vitest 让对账过。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
 四条自研轨道全部收敛 HeroUI 单轨（经 `client/src/components/heroui.jsx` shim）：
@@ -165,7 +186,12 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 7. **部署自检只覆盖「进程自己看得见」的事实**（v5.76）：磁盘余量、数据库连接池、证书到期、
    备份有没有在跑，这些都还没测。加项前先想清楚「这条要不要连网/连磁盘」——
    `deployCheck()` 是同步串在页面加载上的，慢检查得另走异步。
-8. **两环境自检剩两条黄（v5.76 起可见，都是有意先不动的）**：
+8. **docker compose 路径下「一键升级」跑不起来**（v5.78 对账时确认）：`ALLOW_ADMIN_UPGRADE` /
+   `UPGRADE_REPO` / `UPGRADE_BRANCH` / `REPO_DIR` **有意没进 compose 白名单**——容器里既没有 git
+   仓库也没有 docker socket，给个开关等于承诺做不到的事。要么在 `UPGRADE.md` 里写清「compose 部署
+   请用 `git pull && docker compose up -d --build`」，要么真做成挂 socket 的容器内升级（较大改动）。
+   见 [[upgrade-solution]] 与 `test/docker-env-passthrough.test.ts` 的豁免原因。
+9. **两环境自检剩两条黄（v5.76 起可见，都是有意先不动的）**：
    - `DB_SYNCHRONIZE` 在 env2 仍是 `true`（`docker-compose.prod.yml` 默认值）。关掉才安全，
      但关掉就必须有迁移链路接手——**即上面第 1 条，需用户拍板**，别单独关。
    - `SEED_ADMIN_USER` / `SEED_ADMIN_PASSWORD` 两环境都还留在配置里（env2 有）。删掉不影响
