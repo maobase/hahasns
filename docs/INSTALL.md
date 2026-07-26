@@ -92,6 +92,8 @@ FLUSH PRIVILEGES;
 
 两者可以混用：**后台填了的字段优先，留空的沿用环境变量**。后台「存储」页顶部的「当前生效」会逐项标出每个值来自后台还是环境变量，并给出一个示例文件地址，便于核对。
 
+保存密钥时留空表示**保留原值**（避免手滑清空），所以想彻底退回 `.env` 那份配置，请用页面上的「清除后台设置」按钮——它会删掉后台存的全部存储配置（含密钥），之后按环境变量或内置默认生效，已上传的文件不受影响。这个按钮只在后台确实存过配置时出现。
+
 切换到对象存储时，此前存在本地磁盘的媒体不会自动搬家，用仓库自带脚本迁移（默认 dry-run，先看输出再执行）：
 
 ```bash
@@ -99,6 +101,8 @@ node server-nest/scripts/migrate-uploads-to-s3.mjs                 # 预演
 node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁移
 # docker 部署：docker compose exec app node scripts/migrate-uploads-to-s3.mjs
 ```
+
+忘了这一步也不至于翻车：只要本地上传目录还有存量文件，后台「存储」页会直接提示还剩几个没迁走并给出上面的命令。
 
 ---
 
