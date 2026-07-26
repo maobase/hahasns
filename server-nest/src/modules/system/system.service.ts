@@ -117,7 +117,8 @@ export class SystemService {
       allowInsecureJwt: process.env.ALLOW_INSECURE_JWT_SECRET,
       storageDriver: storage.driver,
       storageWarnings: storage.warnings.length,
-      localFilesLeftBehind: storage.localFiles,
+      localReferencedFiles: storage.localReferenced,
+      localOrphanFiles: storage.localOrphans,
       uploadsWritable,
       redisOk,
     });

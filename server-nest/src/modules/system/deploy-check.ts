@@ -35,8 +35,13 @@ export interface DeployFacts {
   storageDriver: 'local' | 's3';
   /** 存储页那份配置预警的条数 */
   storageWarnings: number;
-  /** 本地上传目录还剩多少存量文件（切了对象存储才有意义） */
-  localFilesLeftBehind: number;
+  /**
+   * 本地上传目录里「还被内容引用」的文件数（切了对象存储才有意义）。
+   * 只数文件个数会把孤儿也算成待迁——env2 实测报「还剩 2 个」，迁移脚本 dry-run 待重写 0 个。
+   */
+  localReferencedFiles: number;
+  /** 本地上传目录里没人引用的残留文件数。不需要迁，只作为附注提一句。 */
+  localOrphanFiles: number;
   /** 本地上传目录可写；s3 驱动下不适用，传 null */
   uploadsWritable: boolean | null;
   /** Redis 读写往返是否通 */
@@ -190,14 +195,23 @@ export function buildDeployChecks(f: DeployFacts): DeployCheck[] {
     });
   }
 
-  // 切了对象存储但存量没搬走：老图仍走本地目录，换机器/重建容器就全丢
-  if (f.storageDriver === 's3' && f.localFilesLeftBehind > 0) {
+  // 切了对象存储但存量没搬走：老图仍走本地目录，换机器/重建容器就全丢。
+  // 只报「还被内容引用」的那部分——没人引用的残留迁过去只是往桶里添孤儿，迁移脚本本来也不碰。
+  if (f.storageDriver === 's3' && f.localReferencedFiles > 0) {
+    const orphanNote = f.localOrphanFiles > 0 ? `（另有 ${f.localOrphanFiles} 个无引用残留，不用管）` : '';
     checks.push({
       id: 'storage-migrate',
       level: 'warn',
       title: '存量文件迁移',
-      detail: `已切到对象存储，但本地上传目录还剩 ${f.localFilesLeftBehind} 个旧文件。它们仍从本机 /uploads 提供，换机器或重建容器（未挂卷）就会丢。`,
-      fix: '运行 node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes 把存量搬到桶里。',
+      detail: `已切到对象存储，但本地上传目录里还有 ${f.localReferencedFiles} 个文件仍被内容引用${orphanNote}。它们还从本机 /uploads 提供，换机器或重建容器（未挂卷）这些图就裂。`,
+      fix: '运行 node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes 把被引用的存量搬到桶里。',
+    });
+  } else if (f.storageDriver === 's3' && f.localOrphanFiles > 0) {
+    checks.push({
+      id: 'storage-migrate',
+      level: 'ok',
+      title: '存量文件迁移',
+      detail: `本地上传目录还剩 ${f.localOrphanFiles} 个文件，但库里已经没有内容引用它们（删过的帖子、测试残留）。不用迁，迁过去也只是给桶里添孤儿。`,
     });
   }
 

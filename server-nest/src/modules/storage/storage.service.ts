@@ -8,7 +8,14 @@ import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'node:crypto';
 import { extname, join } from 'node:path';
 import * as fs from 'node:fs';
+import { DataSource } from 'typeorm';
 import { SiteService } from '../site/site.service';
+import {
+  MEDIA_REF_COLUMNS,
+  extractUploadKeys,
+  splitLocalFiles,
+  type LocalFileSplit,
+} from './uploads-refs';
 import {
   resolveStorageConfig,
   storageConfigHash,
@@ -54,6 +61,7 @@ export class StorageService implements OnModuleInit {
   constructor(
     private readonly config: ConfigService,
     private readonly site: SiteService,
+    private readonly dataSource: DataSource,
   ) {
     this.uploadsDir =
       process.env.UPLOADS_DIR || join(__dirname, '..', '..', '..', 'uploads');
@@ -216,16 +224,46 @@ export class StorageService implements OnModuleInit {
     );
   }
 
-  /** 本地上传目录里的文件数。切到 S3 后这个数 > 0 就说明存量还没迁走。 */
-  private async countLocalFiles(cap = 10000): Promise<{ count: number; capped: boolean }> {
+  /** 本地上传目录里的文件名。切到 S3 后这里非空就说明磁盘上还躺着东西。 */
+  private async listLocalFiles(cap = 10000): Promise<{ names: string[]; capped: boolean }> {
     try {
       const entries = await fs.promises.readdir(this.uploadsDir, { withFileTypes: true });
       // 跳过点开头的（探针残留、.gitkeep）与子目录
       const files = entries.filter((e) => e.isFile() && !e.name.startsWith('.'));
-      return { count: Math.min(files.length, cap), capped: files.length > cap };
+      return { names: files.slice(0, cap).map((e) => e.name), capped: files.length > cap };
     } catch {
-      return { count: 0, capped: false }; // 目录不存在 = 没有存量文件
+      return { names: [], capped: false }; // 目录不存在 = 没有存量文件
     }
+  }
+
+  /**
+   * 库里还有多少内容引用着本地 /uploads 路径，逐文件对上。
+   *
+   * 只数文件个数会把孤儿也算成「待迁移」（删过的帖子、测试残留），线上实际遇到过：
+   * 报「还剩 2 个」，迁移脚本 dry-run 一看待重写路径 0 个。迁它们只是往桶里添孤儿。
+   * 所以这里把磁盘上的文件按「有没有人引用」分成两堆，前端只对被引用的那堆报警。
+   *
+   * 扫库失败（表不存在、权限不足）时退化成「全都算被引用」——宁可多提醒，不能漏。
+   */
+  private async splitLocalByReference(names: string[]): Promise<LocalFileSplit & { scanned: boolean }> {
+    if (names.length === 0) return { referenced: 0, orphans: 0, scanned: true };
+    const referenced = new Set<string>();
+    let anyScanned = false;
+    for (const t of MEDIA_REF_COLUMNS) {
+      const where = t.where ? ` AND ${t.where}` : '';
+      try {
+        const rows: Array<Record<string, unknown>> = await this.dataSource.query(
+          `SELECT \`${t.column}\` AS val FROM \`${t.table}\` WHERE \`${t.column}\` IS NOT NULL AND \`${t.column}\` != ''${where}`,
+        );
+        anyScanned = true;
+        for (const r of rows) for (const k of extractUploadKeys(r.val)) referenced.add(k);
+      } catch (e: any) {
+        // 单表失败不放弃整次扫描：老库可能缺表，其余列的结论仍然有用
+        this.logger.warn(`引用扫描跳过 ${t.table}.${t.column}：${e?.message || e}`);
+      }
+    }
+    if (!anyScanned) return { referenced: names.length, orphans: 0, scanned: false };
+    return { ...splitLocalFiles(names, referenced), scanned: true };
   }
 
   /**
@@ -246,12 +284,20 @@ export class StorageService implements OnModuleInit {
     sampleUrl: string;
     localFiles: number;
     localFilesCapped: boolean;
+    localReferenced: number;
+    localOrphans: number;
+    localRefScanned: boolean;
     hasSiteConfig: boolean;
     warnings: string[];
   }> {
     const cfg = await this.refreshFromSite(true);
     const sources = resolveStorageSources(this.lastSite, this.lastEnv);
-    const local = await this.countLocalFiles();
+    const local = await this.listLocalFiles();
+    // 只有切到对象存储才需要区分引用/孤儿；本地驱动下所有文件都在正常服务，扫库纯属浪费
+    const split =
+      cfg.driver === 's3'
+        ? await this.splitLocalByReference(local.names)
+        : { referenced: local.names.length, orphans: 0, scanned: true };
     return {
       driver: cfg.driver,
       sources,
@@ -265,8 +311,11 @@ export class StorageService implements OnModuleInit {
       uploadsDir: this.uploadsDir,
       sampleUrl:
         cfg.driver === 'local' ? '/uploads/example.jpg' : this.publicUrlFor('example.jpg'),
-      localFiles: local.count,
+      localFiles: local.names.length,
       localFilesCapped: local.capped,
+      localReferenced: split.referenced,
+      localOrphans: split.orphans,
+      localRefScanned: split.scanned,
       // 后台是否存过任何一项——决定「清除后台设置」按钮显不显示
       hasSiteConfig: Object.values(sources).some((s) => s === 'site'),
       warnings: storageConfigWarnings(this.lastSite, this.lastEnv),

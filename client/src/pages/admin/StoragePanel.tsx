@@ -22,6 +22,9 @@ type Status = {
   sampleUrl: string;
   localFiles: number;
   localFilesCapped: boolean;
+  localReferenced: number;
+  localOrphans: number;
+  localRefScanned: boolean;
   hasSiteConfig: boolean;
   warnings: string[];
 };
@@ -152,8 +155,12 @@ export default function StoragePanel() {
     src[key] === 'env' && value ? `${value}（来自环境变量）` : undefined;
   // 测过之后一律以本次结果为准：status 里那份是进页面时算的，可能已经过期
   const warnings = testResult ? testWarnings : status?.warnings || [];
-  // 已切到对象存储、但本地目录还有存量文件 = 需要跑一次迁移脚本
-  const pendingLocal = status?.driver === 's3' && status.localFiles > 0;
+  // 已切到对象存储、且本地目录里还有「被内容引用」的文件 = 需要跑一次迁移脚本。
+  // 光看文件数会把孤儿（删过的帖子、测试残留）也算成待迁，对着无害残留喊迁移。
+  const pendingLocal = status?.driver === 's3' && status.localReferenced > 0;
+  // 切了 S3、磁盘上还有东西，但库里已经没人引用了：说清「不用管」，别让站长白跑一趟
+  const onlyOrphans =
+    status?.driver === 's3' && status.localReferenced === 0 && status.localOrphans > 0;
   return (
     <div className="flex flex-col gap-4">
       {status && (
@@ -251,18 +258,36 @@ export default function StoragePanel() {
           </label>
         </div>
         {/* 切到 S3 后本地目录里还躺着老文件——不提示的话站长会以为「切完就完事了」，
-            直到某天删了 uploads 卷才发现老图全裂。有存量才升级成醒目提示。 */}
+            直到某天删了 uploads 卷才发现老图全裂。有被引用的存量才升级成醒目提示。 */}
         {pendingLocal ? (
           <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: 'var(--gold-soft)', color: 'var(--gold-deep)' }}>
             <div style={{ fontWeight: 700, fontSize: 13 }}>
-              本地还有 {status!.localFiles}{status!.localFilesCapped ? '+' : ''} 个旧文件没迁走
+              本地还有 {status!.localReferenced}{status!.localFilesCapped ? '+' : ''} 个在用的旧文件没迁走
             </div>
             <div style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.6 }}>
-              新上传已走对象存储，之前存在磁盘上的文件仍从本地读。在服务器上跑一次迁移脚本（先 dry-run 看清单，再加 --execute 真迁）：
+              新上传已走对象存储，这些文件仍从本机磁盘读，换机器或重建容器就会裂图。在服务器上跑一次迁移脚本（先 dry-run 看清单，再加 --execute 真迁）：
+              {status!.localOrphans > 0 && (
+                <>
+                  {' '}目录里另有 {status!.localOrphans} 个没人引用的残留，脚本不会动，也不用管。
+                </>
+              )}
+              {!status!.localRefScanned && (
+                <>
+                  {' '}（这次没能扫库对引用，上面是目录里的全部文件数，其中可能有已经没人用的残留。）
+                </>
+              )}
             </div>
             <code style={{ display: 'block', marginTop: 8, padding: 8, background: 'var(--surface)', color: 'var(--ink-2)', borderRadius: 6, fontSize: 12, whiteSpace: 'pre-wrap' }}>
               node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
               node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
+            </code>
+          </div>
+        ) : onlyOrphans ? (
+          <div className="faint" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.6 }}>
+            存量已迁完：本地目录还剩 {status!.localOrphans} 个文件，但库里已经没有内容引用它们（删过的帖子、测试残留），
+            迁移脚本不会动，也不影响换机器。要清理可以直接删 uploads 目录里这些文件。
+            <code style={{ display: 'block', marginTop: 6, padding: 8, background: 'var(--surface-2)', borderRadius: 6, whiteSpace: 'pre-wrap' }}>
+              node server-nest/scripts/migrate-uploads-to-s3.mjs
             </code>
           </div>
         ) : (

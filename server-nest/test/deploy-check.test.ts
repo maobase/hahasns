@@ -15,7 +15,8 @@ const CLEAN: DeployFacts = {
   allowInsecureJwt: undefined,
   storageDriver: 'local',
   storageWarnings: 0,
-  localFilesLeftBehind: 0,
+  localReferencedFiles: 0,
+  localOrphanFiles: 0,
   uploadsWritable: true,
   redisOk: true,
 };
@@ -128,9 +129,9 @@ describe('buildDeployChecks — 媒体存储', () => {
     expect(byId({ storageDriver: 's3', uploadsWritable: null }, 'storage').level).toBe('ok');
   });
 
-  it('切了 s3 但本地还有存量 → 多一条迁移提醒，并给出脚本命令', () => {
+  it('切了 s3 且存量还被引用 → 多一条迁移提醒，并给出脚本命令', () => {
     const c = byId(
-      { storageDriver: 's3', uploadsWritable: null, localFilesLeftBehind: 42 },
+      { storageDriver: 's3', uploadsWritable: null, localReferencedFiles: 42 },
       'storage-migrate',
     );
     expect(c.level).toBe('warn');
@@ -138,8 +139,33 @@ describe('buildDeployChecks — 媒体存储', () => {
     expect(c.fix).toContain('migrate-uploads-to-s3.mjs');
   });
 
+  it('被引用与孤儿同时存在 → 报被引用的数量，孤儿只作附注', () => {
+    const c = byId(
+      { storageDriver: 's3', uploadsWritable: null, localReferencedFiles: 3, localOrphanFiles: 7 },
+      'storage-migrate',
+    );
+    expect(c.level).toBe('warn');
+    expect(c.detail).toContain('3');
+    expect(c.detail).toContain('7');
+    expect(c.detail).toContain('不用管');
+  });
+
+  it('存量全是孤儿 → 报 ok 并说明不用迁（env2 实测就是这个形状）', () => {
+    const c = byId(
+      { storageDriver: 's3', uploadsWritable: null, localReferencedFiles: 0, localOrphanFiles: 2 },
+      'storage-migrate',
+    );
+    expect(c.level).toBe('ok');
+    expect(c.detail).toContain('2');
+    expect(c.fix).toBeUndefined(); // 没问题就没有「改法」
+  });
+
   it('本地驱动下有存量文件是常态，不提示迁移', () => {
-    const checks = buildDeployChecks({ ...CLEAN, localFilesLeftBehind: 99 });
+    const checks = buildDeployChecks({
+      ...CLEAN,
+      localReferencedFiles: 99,
+      localOrphanFiles: 99,
+    });
     expect(checks.find((c) => c.id === 'storage-migrate')).toBeUndefined();
   });
 });
@@ -172,7 +198,7 @@ describe('buildDeployChecks — 结构约定', () => {
       ...CLEAN,
       storageDriver: 's3',
       uploadsWritable: null,
-      localFilesLeftBehind: 5,
+      localReferencedFiles: 5,
     });
     const ids = checks.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);

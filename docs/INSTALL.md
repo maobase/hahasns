@@ -104,7 +104,8 @@ node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁�
 # docker 部署：docker compose exec app node scripts/migrate-uploads-to-s3.mjs
 ```
 
-忘了这一步也不至于翻车：只要本地上传目录还有存量文件，后台「存储」页会直接提示还剩几个没迁走并给出上面的命令。
+忘了这一步也不至于翻车：只要本地上传目录里还有**仍被内容引用**的文件，后台「存储」页会直接提示还剩几个没迁走并给出上面的命令。
+目录里那些已经没人引用的残留（删过的帖子、早期测试）会单独标成「不用管」——迁它们只是往桶里添孤儿，脚本本来也不碰。
 
 ---
 
