@@ -27,6 +27,15 @@ export interface StorageEnvLike {
   S3_SECRET_KEY?: string;
 }
 
+/**
+ * 存储相关的 site_config 键全集——读配置、判来源、清空后台设置三处共用同一份，
+ * 避免各自维护一份列表后漂移（漏一个键就会出现「清了还生效」的幽灵配置）。
+ */
+export const STORAGE_SITE_KEYS = [
+  'storage_driver', 's3_endpoint', 's3_bucket', 's3_region',
+  's3_public_url', 's3_force_path_style', 's3_access_key', 's3_secret_key',
+] as const;
+
 /** 掩码占位：后台 GET 不回显原密钥；PUT 提交此值视为「未改动」 */
 export const SECRET_PLACEHOLDER = '••••';
 

@@ -14,6 +14,7 @@ import {
   storageConfigHash,
   storageConfigWarnings,
   resolveStorageSources,
+  STORAGE_SITE_KEYS,
   type StorageEnvLike,
   type StorageResolvedConfig,
   type StorageSourceMap,
@@ -95,12 +96,8 @@ export class StorageService implements OnModuleInit {
     if (!force && this.resolved && now - this.cfgAt < StorageService.CONFIG_TTL_MS) {
       return this.resolved;
     }
-    const keys = [
-      'storage_driver', 's3_endpoint', 's3_bucket', 's3_region',
-      's3_public_url', 's3_force_path_style', 's3_access_key', 's3_secret_key',
-    ];
     const site: Record<string, string | null> = {};
-    for (const k of keys) site[k] = await this.site.getConfig(k);
+    for (const k of STORAGE_SITE_KEYS) site[k] = await this.site.getConfig(k);
     const envS3 = this.config.get('s3') || {};
     const env: StorageEnvLike = {
       STORAGE_DRIVER: process.env.STORAGE_DRIVER,
@@ -204,8 +201,20 @@ export class StorageService implements OnModuleInit {
     );
   }
 
+  /** 本地上传目录里的文件数。切到 S3 后这个数 > 0 就说明存量还没迁走。 */
+  private async countLocalFiles(cap = 10000): Promise<{ count: number; capped: boolean }> {
+    try {
+      const entries = await fs.promises.readdir(this.uploadsDir, { withFileTypes: true });
+      // 跳过点开头的（探针残留、.gitkeep）与子目录
+      const files = entries.filter((e) => e.isFile() && !e.name.startsWith('.'));
+      return { count: Math.min(files.length, cap), capped: files.length > cap };
+    } catch {
+      return { count: 0, capped: false }; // 目录不存在 = 没有存量文件
+    }
+  }
+
   /**
-   * 当前生效的存储配置（含逐项来源、密钥只报有无、示例文件地址）。
+   * 当前生效的存储配置（含逐项来源、密钥只报有无、示例文件地址、本地存量文件数）。
    * 密钥本身不出网关，只回 hasAccessKey / hasSecretKey。
    */
   async status(): Promise<{
@@ -220,12 +229,17 @@ export class StorageService implements OnModuleInit {
     hasSecretKey: boolean;
     uploadsDir: string;
     sampleUrl: string;
+    localFiles: number;
+    localFilesCapped: boolean;
+    hasSiteConfig: boolean;
     warnings: string[];
   }> {
     const cfg = await this.refreshFromSite(true);
+    const sources = resolveStorageSources(this.lastSite, this.lastEnv);
+    const local = await this.countLocalFiles();
     return {
       driver: cfg.driver,
-      sources: resolveStorageSources(this.lastSite, this.lastEnv),
+      sources,
       endpoint: cfg.endpoint,
       bucket: cfg.bucket,
       region: cfg.region,
@@ -236,6 +250,10 @@ export class StorageService implements OnModuleInit {
       uploadsDir: this.uploadsDir,
       sampleUrl:
         cfg.driver === 'local' ? '/uploads/example.jpg' : this.publicUrlFor('example.jpg'),
+      localFiles: local.count,
+      localFilesCapped: local.capped,
+      // 后台是否存过任何一项——决定「清除后台设置」按钮显不显示
+      hasSiteConfig: Object.values(sources).some((s) => s === 'site'),
       warnings: storageConfigWarnings(this.lastSite, this.lastEnv),
     };
   }

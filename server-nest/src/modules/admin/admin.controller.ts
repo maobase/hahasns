@@ -70,6 +70,12 @@ export class AdminController {
     return this.storage.testConnection();
   }
 
+  /** 清掉后台存的存储配置（含密钥），退回环境变量 / 内置默认 */
+  @Delete('storage/site-config')
+  clearStorageSiteConfig(@CurrentUser() user: User) {
+    return this.admin.clearStorageSiteConfig(user.id);
+  }
+
   @Get('users')
   listUsers(@Query('q') q: string, @Query('filter') filter: string, @Query('offset') offset: string) {
     return this.admin.listUsers(q, filter, Number(offset) || 0);

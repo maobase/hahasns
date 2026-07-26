@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest';
 import {
   resolveStorageConfig,
   resolveStorageSources,
+  STORAGE_SITE_KEYS,
 } from '../src/modules/storage/storage-config';
 
 // 纯函数测试：逐项配置来源判定。口径必须与 resolveStorageConfig 一致——
@@ -74,5 +75,49 @@ describe('resolveStorageSources 配置来源判定', () => {
         .forcePathStyle,
     ).toBe('site');
     expect(resolveStorageSources({ s3_force_path_style: '' }, {}).forcePathStyle).toBe('default');
+  });
+});
+
+// 「清除后台设置」删的就是 STORAGE_SITE_KEYS 这几行。这份清单一旦漏键，
+// 就会出现「点了清除但配置还生效」的幽灵配置，所以拿全量覆盖场景钉死。
+describe('STORAGE_SITE_KEYS 覆盖全部可后台配置项', () => {
+  const FULL_SITE: Record<string, string> = {
+    storage_driver: 's3',
+    s3_endpoint: 'https://site.example.com',
+    s3_bucket: 'site-bucket',
+    s3_region: 'site-region',
+    s3_public_url: 'https://site-cdn.example.com',
+    s3_force_path_style: '0',
+    s3_access_key: 'site-ak',
+    s3_secret_key: 'site-sk',
+  };
+  const ENV = {
+    STORAGE_DRIVER: 'local',
+    S3_ENDPOINT: 'https://env.example.com',
+    S3_BUCKET: 'env-bucket',
+    S3_REGION: 'env-region',
+    S3_PUBLIC_URL: 'https://env-cdn.example.com',
+    S3_FORCE_PATH_STYLE: 'true',
+    S3_ACCESS_KEY: 'env-ak',
+    S3_SECRET_KEY: 'env-sk',
+  };
+
+  test('清单里的键正好能让每一项都变成 site', () => {
+    const sources = resolveStorageSources(FULL_SITE, ENV);
+    expect(Object.values(sources).every((s) => s === 'site')).toBe(true);
+    // 反向：构造用例的键不能多于清单，否则测试会掩盖清单漏键
+    expect(Object.keys(FULL_SITE).sort()).toEqual([...STORAGE_SITE_KEYS].sort());
+  });
+
+  test('删掉清单里的全部键 → 逐项退回 env，一项不留', () => {
+    const cleared: Record<string, string> = { ...FULL_SITE };
+    for (const k of STORAGE_SITE_KEYS) delete cleared[k];
+    const sources = resolveStorageSources(cleared, ENV);
+    expect(Object.values(sources).some((s) => s === 'site')).toBe(false);
+    const cfg = resolveStorageConfig(cleared, ENV);
+    expect(cfg.driver).toBe('local'); // env 的 STORAGE_DRIVER 重新说了算
+    expect(cfg.endpoint).toBe('https://env.example.com');
+    expect(cfg.accessKey).toBe('env-ak');
+    expect(cfg.forcePathStyle).toBe(true);
   });
 });

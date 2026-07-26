@@ -22,6 +22,7 @@ import {
 import { HelpersService } from '../../common/helpers.service';
 import { SensitiveService } from '../../common/sensitive.service';
 import { MODULE_KEYS, LAYOUT_PAGES, LAYOUT_VALUES, SiteService } from '../site/site.service';
+import { STORAGE_SITE_KEYS } from '../storage/storage-config';
 import {
   AddModeratorDto,
   CreateBoardDto,
@@ -284,6 +285,23 @@ export class AdminService {
       detail: `站点设置更新：${changed.join('、') || '无改动'}`,
     });
     return { ok: true, changed };
+  }
+
+  // ---- DELETE /api/admin/storage/site-config —— 清掉后台存的存储配置，退回环境变量 ----
+  /**
+   * 后台改过存储配置后想回到 .env 的那份，此前只能手动改库：
+   * PUT 留空是「保留原值」（防误清密钥），没有任何入口能删掉已存的行。
+   */
+  async clearStorageSiteConfig(adminId: number) {
+    const cleared: string[] = [];
+    for (const k of STORAGE_SITE_KEYS) {
+      if (await this.site.deleteConfig(k)) cleared.push(k);
+    }
+    await this.helpers.logAdmin(adminId, 'config.update', {
+      targetType: 'config',
+      detail: `清除后台存储配置，退回环境变量：${cleared.join('、') || '无改动'}`,
+    });
+    return { ok: true, cleared };
   }
 
   private dayCount(repo: Repository<any>, day: string) {

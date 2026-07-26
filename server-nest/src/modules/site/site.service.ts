@@ -36,6 +36,12 @@ export class SiteService {
     await this.repo.save(this.repo.create({ key, value: String(value) }));
   }
 
+  /** 删除一个配置键（回退到 env / 内置默认）。返回是否真的删掉了行。 */
+  async deleteConfig(key: string): Promise<boolean> {
+    const res = await this.repo.delete({ key });
+    return (res.affected || 0) > 0;
+  }
+
   async moduleStates(): Promise<Record<string, boolean>> {
     const rows = await this.repo.find();
     const map = new Map(rows.map((r) => [r.key, r.value]));
