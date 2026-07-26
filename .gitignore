@@ -30,6 +30,7 @@ upgrade.log
 
 # 存储迁移脚本的回滚清单（运行时产物）
 migrate-rollback-*.json
+.migrate-manifests/
 
 # Claude Code local model routing / secrets
 .claude/settings.local.json

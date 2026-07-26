@@ -20,14 +20,18 @@
  * 选项：
  *   --execute          真正上传并改库（默认 dry-run，只预览不写）
  *   --yes              配合 --execute，跳过确认
+ *   --manifest-dir <d> 回滚清单写到哪个目录（默认当前目录）。容器里跑务必指一个挂载卷，
+ *                      否则清单随容器重建消失（脚本会提醒）
  *   --rewrite-missing  库中引用了但本地 uploads 里没有的文件，也按 publicUrlFor 重写到桶
  *                      （默认跳过并打印 missing 警告汇总；重写后这些对象在桶里 404，慎用）
  */
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { collectManifestFacts, resolveManifestTarget } from './lib/manifest-target.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -43,6 +47,8 @@ if (args.has('--help') || args.has('-h')) {
 用法: node server-nest/scripts/migrate-uploads-to-s3.mjs [选项]
   --execute          真正上传并改库（默认 dry-run，只预览不写）
   --yes              配合 --execute，跳过确认
+  --manifest-dir <d> 回滚清单写到哪个目录（默认当前目录）。容器里跑务必指一个挂载卷，
+                     否则清单随容器重建消失（脚本会提醒并给出 docker cp 命令）
   --rewrite-missing  库中引用了但本地 uploads 里没有的文件，也按 publicUrlFor 重写到桶
                      （默认跳过并打印 missing 警告汇总；重写后这些对象在桶里 404，慎用）
   --rollback <file>  按回滚清单（执行时自动生成）还原库中路径
@@ -115,13 +121,29 @@ function connectDb() {
   });
 }
 
-// 解析 `--rollback <file>` 或 `--rollback=<file>`
-function getRollbackArg() {
+// 解析 `--name <value>` 或 `--name=<value>`
+function getValueArg(name) {
   const argv = process.argv.slice(2);
-  const i = argv.indexOf('--rollback');
+  const i = argv.indexOf(`--${name}`);
   if (i >= 0 && argv[i + 1] && !argv[i + 1].startsWith('--')) return argv[i + 1];
-  const eq = argv.find((a) => a.startsWith('--rollback='));
-  return eq ? eq.slice('--rollback='.length) : null;
+  const eq = argv.find((a) => a.startsWith(`--${name}=`));
+  return eq ? eq.slice(`--${name}=`.length) : null;
+}
+
+/**
+ * 回滚清单落点。容器里 cwd 是可写层不是卷，写进去下次重建就没了——
+ * 这事得在 dry-run 阶段就说，等到 --execute 跑完才发现清单没了就晚了。
+ */
+function manifestTarget() {
+  return resolveManifestTarget(
+    collectManifestFacts({
+      fs,
+      os,
+      cwd: process.cwd(),
+      explicitDir: getValueArg('manifest-dir'),
+      uploadsDir: UPLOADS_DIR,
+    }),
+  );
 }
 
 // 用回滚清单把库中媒体路径还原为迁移前的值
@@ -144,10 +166,13 @@ async function runRollback(file) {
 
 async function main() {
   loadEnvFiles();
-  const rollbackFile = getRollbackArg();
+  const rollbackFile = getValueArg('rollback');
   if (rollbackFile) { await runRollback(rollbackFile); return; }
   console.log(`[migrate-uploads] mode=${DRY_RUN ? 'DRY-RUN (default)' : 'EXECUTE'}`);
   console.log(`[migrate-uploads] uploadsDir=${UPLOADS_DIR}`);
+  const manifest = manifestTarget();
+  console.log(`[migrate-uploads] 回滚清单目录=${manifest.dir}${manifest.persistent ? '' : '（非持久！见下）'}`);
+  for (const w of manifest.warnings) console.warn(`[migrate-uploads] ${w}`);
 
   const cfg = {
     endpoint: process.env.S3_ENDPOINT || 'http://127.0.0.1:9000',
@@ -329,11 +354,17 @@ async function main() {
   if (!DRY_RUN && db) {
     // 改库前先落回滚清单（记录每行改前的值），出问题可 --rollback 还原
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const manifestPath = path.resolve(process.cwd(), `migrate-rollback-${stamp}.json`);
+    const manifestPath = path.resolve(manifest.dir, `migrate-rollback-${stamp}.json`);
     try {
+      fs.mkdirSync(manifest.dir, { recursive: true });
       fs.writeFileSync(manifestPath, JSON.stringify(rewrites.map((r) => ({ table: r.table, pk: r.pk, pkCol: r.pkCol, column: r.column, from: r.from })), null, 2));
       console.log(`[migrate-uploads] 回滚清单已写: ${manifestPath}`);
       console.log(`[migrate-uploads] 如需还原: node server-nest/scripts/migrate-uploads-to-s3.mjs --rollback ${manifestPath}`);
+      // 非持久落点在 dry-run 阶段已经警告过一次，这里再贴一次带真实文件名的命令：
+      // 这行是操作者改完库、正在看输出的那一刻，最后一次把清单救出来的机会。
+      if (!manifest.persistent) {
+        console.warn(`[migrate-uploads] ⚠ 这个清单在容器可写层，容器重建即消失。现在就拷出来: docker cp ${manifest.containerHint || '<容器名>'}:${manifestPath} ./`);
+      }
     } catch (e) {
       console.warn(`[migrate-uploads] 回滚清单写入失败（仍将继续改库）: ${e.message}`);
     }

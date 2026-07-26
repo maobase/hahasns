@@ -281,6 +281,10 @@ export default function StoragePanel() {
               node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
               node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
             </code>
+            <div style={{ fontSize: 12, marginTop: 6, lineHeight: 1.6, color: 'var(--ink-2)' }}>
+              docker 部署换成 <code>docker compose exec app node scripts/migrate-uploads-to-s3.mjs …</code>，并给实际迁移那条多加
+              {' '}<code>--manifest-dir /app/manifests</code>：改库前的回滚清单默认写在容器可写层，容器一重建就没了。
+            </div>
           </div>
         ) : onlyOrphans ? (
           <div className="faint" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.6 }}>

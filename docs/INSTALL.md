@@ -101,8 +101,13 @@ FLUSH PRIVILEGES;
 ```bash
 node server-nest/scripts/migrate-uploads-to-s3.mjs                 # 预演
 node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁移
-# docker 部署：docker compose exec app node scripts/migrate-uploads-to-s3.mjs
+
+# docker 部署：脚本已在镜像里，但要多带一个 --manifest-dir（原因见下）
+docker compose exec app node scripts/migrate-uploads-to-s3.mjs
+docker compose exec app node scripts/migrate-uploads-to-s3.mjs --execute --yes --manifest-dir /app/manifests
 ```
+
+真正改库前，脚本会把每一行的原值存成**回滚清单**，出问题用 `--rollback <清单文件>` 一键还原。清单默认写在当前目录——宿主机直跑没问题，但在容器里当前目录是**可写层不是卷**，写进去看着成功，下次 `docker compose up -d --build` 就一起没了，等于最需要它的时候才发现兜底没了。所以 docker 路径请加 `--manifest-dir /app/manifests`：仓库自带的 `docker-compose.yml` 已把这个目录挂到宿主机的 `.migrate-manifests/`。自己写的 compose 就换成你挂进来的目录；指到没挂载的地方脚本会当场警告，并给出把清单捞出来的 `docker cp` 命令。
 
 忘了这一步也不至于翻车：只要本地上传目录里还有**仍被内容引用**的文件，后台「存储」页会直接提示还剩几个没迁走并给出上面的命令。
 目录里那些已经没人引用的残留（删过的帖子、早期测试）会单独标成「不用管」——迁它们只是往桶里添孤儿，脚本本来也不碰。
