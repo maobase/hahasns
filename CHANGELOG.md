@@ -2,6 +2,11 @@
 
 > 本文件由 `npm run changelog:gen` 从 `client/src/pages/Changelog.tsx` 自动生成，请勿手动编辑。
 
+## v5.73 — 2026-07-26 18:12:40
+
+- **[改进]** 后台「系统 → 存储」新增「当前生效」卡片：直接显示实际在用的驱动、Endpoint / Bucket / Region / Public URL / Path style / 密钥有无，以及一条示例文件地址；每项后面标出这个值取自「后台设置」「环境变量」还是「默认值」。此前用 .env 注入 S3_* 部署的站点，后台字段全是空的、驱动还显示「本地磁盘」，站长无从判断对象存储到底有没有生效——现在驱动按实际生效值显示，输入框的 placeholder 也会带上环境变量里的值并注明「留空即沿用」。配置预警（缺 Endpoint / 缺 Public URL）改为进页面即展示，不必先点「测试连接」。新增接口 GET /api/admin/storage/status（管理员限定，密钥只回有无、不出网关）。
+- **[改进]** 对象存储的安装与部署说明补齐：INSTALL.md 写清「后台配置（推荐，不用重启）」与「环境变量」两条路径、二者按字段优先级混用的规则，以及切换驱动后存量本地文件需要用 migrate-uploads-to-s3.mjs 迁移；.env.example 把 S3_* 展开成逐项带注释的可复制块（含 Public URL 私有桶不填会图裂、七牛通常关 path style 两个坑）；CONFIGURATION.md 同步补充运行时配置一段。
+
 ## v5.72 — 2026-07-20 06:27:16
 
 - **[重构]** 前台组件拆分（第 3 刀）：动态卡片 PostCard 的三张内嵌弹窗抽离为独立组件 components/postcard/ShareModal.tsx（转发：可选评论 + 原动态摘要 + 发布，shareText 随迁为弹窗局部 state、组件常驻挂载跨开关保留）、components/postcard/EditModal.tsx（编辑：纯受控 value / onChange / onSave 下传，editText 因操作菜单打开前需重置为当前正文而留在 PostCard）与 components/postcard/TipModal.tsx（打赏：预设金额 / 自定义积分 / 确认打赏，rewardAmt 随迁为弹窗局部 state，api 与积分补丁经 useAuth / useToast 自取），JSX 逐字搬移、公开 props 签名零变化（9 个页面调用点不受影响），PostCard.tsx 由 354 行瘦至 305 行，功能与外观保持不变。

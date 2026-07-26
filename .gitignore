@@ -12,6 +12,7 @@ deploy.sh
 
 # internal research / planning notes (not part of the public project)
 docs/research/
+docs/2607plan/
 spec/
 *技术审计报告*.html
 
@@ -29,3 +30,6 @@ upgrade.log
 
 # 存储迁移脚本的回滚清单（运行时产物）
 migrate-rollback-*.json
+
+# Claude Code local model routing / secrets
+.claude/settings.local.json
