@@ -7,7 +7,74 @@ import api from '../../api/client';
 import { confirmDialog } from '../../components/confirm';
 import { APP_VERSION } from '../../version';
 
-// 系统更新：检测新版 + 半自动一键升级（详见 UPGRADE.md）。
+type CheckLevel = 'ok' | 'warn' | 'fail';
+type DeployCheck = { id: string; level: CheckLevel; title: string; detail: string; fix?: string };
+
+// 三态配色与存储页「测试连接」一致：绿=过、黄=能跑但有隐患、红=会出事
+const LEVEL: Record<CheckLevel, { dot: string; fg: string; bg: string }> = {
+  ok: { dot: '●', fg: 'var(--good-deep)', bg: 'var(--good-soft)' },
+  warn: { dot: '●', fg: 'var(--gold-deep)', bg: 'var(--gold-soft)' },
+  fail: { dot: '●', fg: 'var(--like)', bg: 'var(--like-soft)' },
+};
+
+/**
+ * 部署自检卡片：把启动时只写进 stdout 的部署级问题摆到页面上。
+ * 面板部署的站长不看容器日志，反代漏配、建表开关忘关这类问题原本无人察觉。
+ */
+function DeployCheckCard() {
+  const [data, setData] = useState<{ level: CheckLevel; fails: number; warns: number; checks: DeployCheck[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const load = async (manual?: boolean) => {
+    if (manual) setLoading(true);
+    try { const { data } = await api.get('/admin/system/deploy-check'); setData(data); }
+    catch { setData(null); }
+    finally { if (manual) setLoading(false); }
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  if (!data) return null;
+  const summary =
+    data.level === 'ok'
+      ? '全部通过'
+      : [data.fails && `${data.fails} 项需要处理`, data.warns && `${data.warns} 项建议优化`].filter(Boolean).join('，');
+  return (
+    <div className="ui-card" style={{ padding: 18 }}>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>部署自检</div>
+          <div className="faint" style={{ fontSize: 12.5, marginTop: 4 }}>
+            <span style={{ color: LEVEL[data.level].fg, fontWeight: 700 }}>{summary}</span>
+            {' · '}反代、建表开关、缓存、媒体存储——这些原本只写进服务器日志
+          </div>
+        </div>
+        <Button size="sm" variant="flat" className="haha-btn-app" isDisabled={loading} onClick={() => load(true)}>
+          {loading ? '检查中…' : '重新检查'}
+        </Button>
+      </div>
+      <div className="flex flex-col gap-2" style={{ marginTop: 14 }}>
+        {data.checks.map((c) => (
+          <div
+            key={c.id}
+            style={{
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: c.level === 'ok' ? 'var(--surface-2)' : LEVEL[c.level].bg,
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 13, color: LEVEL[c.level].fg }}>
+              {LEVEL[c.level].dot} {c.title}
+            </div>
+            <div style={{ fontSize: 12.5, marginTop: 3, lineHeight: 1.7, color: 'var(--ink-2)', wordBreak: 'break-word' }}>
+              {c.detail}
+              {c.fix && <><br /><b style={{ color: 'var(--ink)' }}>改法：</b>{c.fix}</>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 系统更新：部署自检 + 检测新版 + 半自动一键升级（详见 UPGRADE.md）。
 export default function SystemPanel() {
   const toast = useToast();
   const [st, setSt] = useState<any>(null);
@@ -69,6 +136,7 @@ export default function SystemPanel() {
           )}
         </div>
       </div>
+      <DeployCheckCard />
       <div className="ui-card" style={{ padding: 18 }}>
         <div style={{ fontWeight: 700, fontSize: 14.5 }}>升级说明</div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 6, lineHeight: 1.85 }}>

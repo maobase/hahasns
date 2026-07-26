@@ -127,6 +127,7 @@ node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁�
 | `CLIENT_DIST` | 内置默认 | 前端构建产物目录，指向 `client/dist`，由后端托管 |
 | `UPLOADS_DIR` | 内置默认 | 本地媒体存储目录（`STORAGE_DRIVER=local` 时生效） |
 | `STORAGE_DRIVER` | `local` | 媒体存储驱动：`local`（本地磁盘）或 `s3`（对象存储） |
+| `TRUST_PROXY` | 空 | 挂在 Nginx / 宝塔 / 1Panel / Cloudflare 后面时设 `1`。不设的话后端看到的访客 IP 全是反代 IP，按 IP 的注册与发帖限流会失效（详见第八节） |
 | `ANTHROPIC_API_KEY` | 空 | （可选）启用 AI 相关能力时填写 |
 
 启用对象存储（`STORAGE_DRIVER=s3`）时再补充：`S3_ENDPOINT`、`S3_BUCKET`、`S3_ACCESS_KEY`、`S3_SECRET_KEY`、`S3_REGION`、`S3_PUBLIC_URL`、`S3_FORCE_PATH_STYLE`。
@@ -286,6 +287,8 @@ sudo certbot --nginx -d <你的域名>      # 申请并自动配置 HTTPS
 
 记得在云主机安全组 / 防火墙放行 **80 / 443** 端口（后端的 4000 端口只对本机开放即可，不要直接暴露公网）。
 
+> **配了反代就要设 `TRUST_PROXY=1`**（然后重启后端）。否则每个请求在后端看来都来自反代自己的 IP，按 IP 的注册与发帖限流会全部作废，而且不会报错，站被批量注册时才发现。配好之后可以到「后台 → 系统 → 系统更新 → 部署自检」确认这一项是绿的。
+
 ---
 
 ## 九、数据与备份
@@ -302,6 +305,8 @@ sudo certbot --nginx -d <你的域名>      # 申请并自动配置 HTTPS
 ---
 
 ## 十、常见问题
+
+> 部署完先去「**后台 → 系统 → 系统更新 → 部署自检**」看一眼。它逐项检查登录令牌密钥、访客真实 IP（反代）、表结构自动同步开关、首启管理员种子密码、运行模式、Redis 与媒体存储，每条写明现状与该改哪个变量。这些判断原本只写在服务器日志里，用面板部署时基本看不到。
 
 - **数据库连不上 / 启动报连接错误** —— 检查 `DB_HOST`、`DB_PORT`、`DB_USER`、`DB_PASSWORD`、`DB_NAME` 是否正确，账号是否有权访问该库；MySQL/MariaDB 是否允许该来源 IP 连接。
 - **首次启动表没建出来** —— 确认首次运行设置了 `DB_SYNCHRONIZE=true`；建表完成后再改回 `false`。

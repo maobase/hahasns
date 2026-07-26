@@ -1,8 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import { join } from 'path';
+import { StorageService } from '../storage/storage.service';
+import { sawForwardedFor } from '../../common/proxy-signal';
+import { buildDeployChecks, summarizeDeployChecks } from './deploy-check';
 
 const pexec = promisify(exec);
 
@@ -23,9 +28,14 @@ const UPGRADE_ENABLED = process.env.ALLOW_ADMIN_UPGRADE === 'true';
 export class SystemService {
   private readonly logger = new Logger('System');
   // 缓存 GitHub 上的最新版本号（从 raw version.ts 解析）。按版本号比对，docker/裸机通用（不依赖容器内 .git）。
-  private cache: { at: number; version: string | null } = { at: 0, version: null };
+  private versionCache: { at: number; version: string | null } = { at: 0, version: null };
   private refreshing = false;
   private upgrading = false;
+
+  constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly storage: StorageService,
+  ) {}
 
   private async localCommit(): Promise<string | null> {
     try {
@@ -38,8 +48,8 @@ export class SystemService {
 
   /** 非阻塞取最新版本号：立即返回缓存（可能 null），空/过期时后台异步刷新，GitHub 不可达也不卡住页面。 */
   private latestVersionCached(): string | null {
-    if (!this.cache.version || Date.now() - this.cache.at > 5 * 60 * 1000) void this.refreshLatest();
-    return this.cache.version;
+    if (!this.versionCache.version || Date.now() - this.versionCache.at > 5 * 60 * 1000) void this.refreshLatest();
+    return this.versionCache.version;
   }
 
   private async refreshLatest(): Promise<void> {
@@ -54,7 +64,7 @@ export class SystemService {
       if (resp.ok) {
         const txt = await resp.text();
         const v = (txt.match(/APP_VERSION\s*=\s*['"]([^'"]+)['"]/) || [])[1];
-        if (v) this.cache = { at: Date.now(), version: v };
+        if (v) this.versionCache = { at: Date.now(), version: v };
       }
     } catch {
       // 网络不通（如服务器无法访问 GitHub）→ 保持 version=null，页面显示"检测暂不可用"
@@ -76,6 +86,42 @@ export class SystemService {
       upgrading: this.upgrading,
       repo: REPO,
     };
+  }
+
+  /** Redis 是否真的能读能写。只连上不算数——密码错、库满都是连得上但写不进。 */
+  private async redisOk(): Promise<boolean> {
+    try {
+      const key = `__deploy_check_${process.pid}`;
+      await this.cache.set(key, 'ok', 5000);
+      const got = await this.cache.get(key);
+      await this.cache.del(key).catch(() => undefined);
+      return got === 'ok';
+    } catch {
+      return false;
+    }
+  }
+
+  /** 部署自检：采集运行时事实 → 交给纯函数判定。逐项给出现状与改法。 */
+  async deployCheck() {
+    const [storage, uploadsWritable, redisOk] = await Promise.all([
+      this.storage.status(),
+      this.storage.localWritable(),
+      this.redisOk(),
+    ]);
+    const checks = buildDeployChecks({
+      nodeEnv: process.env.NODE_ENV,
+      dbSynchronize: process.env.DB_SYNCHRONIZE === 'true',
+      trustProxy: process.env.TRUST_PROXY,
+      sawForwardedFor: sawForwardedFor(),
+      seedAdminPassword: process.env.SEED_ADMIN_PASSWORD,
+      allowInsecureJwt: process.env.ALLOW_INSECURE_JWT_SECRET,
+      storageDriver: storage.driver,
+      storageWarnings: storage.warnings.length,
+      localFilesLeftBehind: storage.localFiles,
+      uploadsWritable,
+      redisOk,
+    });
+    return { ...summarizeDeployChecks(checks), checks };
   }
 
   async upgrade() {

@@ -273,6 +273,26 @@ export class StorageService implements OnModuleInit {
     };
   }
 
+  /** 本地上传目录真写一次再删掉。写权限只有实际写过才算数——stat 出来的模式位在容器里经常骗人。 */
+  private async probeLocalWrite(): Promise<{ ok: boolean; error?: string }> {
+    try {
+      fs.mkdirSync(this.uploadsDir, { recursive: true });
+      const probe = join(this.uploadsDir, `.probe-${Date.now()}`);
+      await fs.promises.writeFile(probe, 'ok');
+      await fs.promises.unlink(probe);
+      return { ok: true };
+    } catch (e: any) {
+      return { ok: false, error: e?.message || '未知错误' };
+    }
+  }
+
+  /** 本地上传目录可写与否，供部署自检用；s3 驱动下不适用，返回 null。 */
+  async localWritable(): Promise<boolean | null> {
+    const cfg = await this.refreshFromSite();
+    if (cfg.driver !== 'local') return null;
+    return (await this.probeLocalWrite()).ok;
+  }
+
   /** 探针对象能否被公开读到。只报结果，不抛错——网络层失败也是一种结论。 */
   private async probePublicRead(url: string): Promise<{ status?: number; error?: string }> {
     try {
@@ -292,21 +312,16 @@ export class StorageService implements OnModuleInit {
     const cfg = await this.refreshFromSite(true);
     const warnings = storageConfigWarnings(this.lastSite, this.lastEnv);
     if (cfg.driver === 'local') {
-      try {
-        fs.mkdirSync(this.uploadsDir, { recursive: true });
-        const probe = join(this.uploadsDir, `.probe-${Date.now()}`);
-        await fs.promises.writeFile(probe, 'ok');
-        await fs.promises.unlink(probe);
-        return { ok: true, level: 'ok', message: `本地存储可写（${this.uploadsDir}）`, driver: 'local', warnings };
-      } catch (e: any) {
-        return {
-          ok: false,
-          level: 'fail',
-          message: `本地上传目录写不进去：${e?.message || '未知错误'}。请检查 UPLOADS_DIR 是否存在、进程有没有写权限（docker 部署多半是卷挂载权限问题）。`,
-          driver: 'local',
-          warnings,
-        };
-      }
+      const probe = await this.probeLocalWrite();
+      return probe.ok
+        ? { ok: true, level: 'ok', message: `本地存储可写（${this.uploadsDir}）`, driver: 'local', warnings }
+        : {
+            ok: false,
+            level: 'fail',
+            message: `本地上传目录写不进去：${probe.error}。请检查 UPLOADS_DIR 是否存在、进程有没有写权限（docker 部署多半是卷挂载权限问题）。`,
+            driver: 'local',
+            warnings,
+          };
     }
     const key = `._probe_${Date.now()}.txt`;
     try {

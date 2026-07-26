@@ -53,6 +53,22 @@ After that, log in and use the admin panel for site operation and moderation. Th
 
 > **Security:** choose a strong password for the admin account, since it has full control over the site. Because there is no shipped default credential, an instance is not "open" out of the box — but never give admin to an account whose password you wouldn't trust on a public service.
 
+## Deployment self-check（部署自检）
+
+The admin panel's「系统 → 系统更新」page runs a **deployment self-check** (`GET /api/admin/system/deploy-check`) covering the environment-level mistakes that otherwise only ever appear in the server's stdout — where an operator deploying through 1Panel or 宝塔 will never see them. Each item reports what was observed and which variable to change:
+
+| Check | Flags |
+| --- | --- |
+| 登录令牌密钥 | `ALLOW_INSECURE_JWT_SECRET=true` — the public placeholder secret is in use, so anyone can forge an admin token. |
+| 访客真实 IP | Requests arrived carrying `X-Forwarded-For` but `TRUST_PROXY` is unset, so every visitor looks like the proxy and per-IP rate limiting is inert. The process records whether it has *actually seen* a forwarded request, so this is an observation, not a guess. |
+| 表结构自动同步 | `DB_SYNCHRONIZE` is still `true` — TypeORM re-shapes the schema on every start. |
+| 首启管理员种子 | `SEED_ADMIN_PASSWORD` is still in the environment after the admin exists (the value itself is never echoed back). |
+| 运行模式 | `NODE_ENV` is not `production`. |
+| 缓存（Redis） | A set/get/del round-trip through the cache failed. |
+| 媒体存储 | Local uploads directory not writable, or the storage panel has pending warnings; plus a separate item when the driver is `s3` but local files still haven't been migrated. |
+
+The overall verdict is the most severe single item (`ok` / `warn` / `fail`).
+
 ## Admin site settings（站点设置）
 
 A number of site-wide settings are configurable at runtime from the admin panel — no code change or restart needed. They are persisted in the generic `site_config` key/value table, so **adding or changing a setting needs no DB migration**. Admins read/write them via `GET /api/admin/config` and `PUT /api/admin/config`; the public-facing values are exposed through `GET /api/site`.

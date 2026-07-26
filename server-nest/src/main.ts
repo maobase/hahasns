@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { isInsecureJwtSecret } from './common/jwt-secret.guard';
 import { shouldBlockForUninitializedDb, DB_UNINITIALIZED_MESSAGE } from './common/db-init.guard';
+import { markForwardedFor } from './common/proxy-signal';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -78,16 +79,19 @@ async function bootstrap() {
     app.getHttpAdapter().getInstance().set('trust proxy', v);
   } else {
     // 反代防呆（spec 03 §3.4）：未设 TRUST_PROXY 却收到带 X-Forwarded-For 的请求（说明在反代后面）
-    // → 打一次 warning。否则按 IP 的注册/发帖限流会全部看成来自反代 IP 而失效，且无人察觉。
+    // → 打一次 warning，并记进进程级信号，让后台「部署自检」也能报——面板部署的站长不看容器日志。
     let xffWarned = false;
     app.use((req: any, _res: any, next: any) => {
-      if (!xffWarned && req.headers['x-forwarded-for']) {
-        xffWarned = true;
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[TRUST_PROXY] 检测到 X-Forwarded-For 但未设置 TRUST_PROXY：按 IP 的注册/发帖限流将失效' +
-            '（所有请求看似来自反代 IP）。若部署在 Nginx / 宝塔 / 1Panel / Cloudflare 后面，请设 TRUST_PROXY=1 后重启。',
-        );
+      if (req.headers['x-forwarded-for']) {
+        markForwardedFor();
+        if (!xffWarned) {
+          xffWarned = true;
+          // eslint-disable-next-line no-console
+          console.warn(
+            '[TRUST_PROXY] 检测到 X-Forwarded-For 但未设置 TRUST_PROXY：按 IP 的注册/发帖限流将失效' +
+              '（所有请求看似来自反代 IP）。若部署在 Nginx / 宝塔 / 1Panel / Cloudflare 后面，请设 TRUST_PROXY=1 后重启。',
+          );
+        }
       }
       next();
     });

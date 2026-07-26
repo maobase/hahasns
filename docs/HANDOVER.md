@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-26 · v5.75）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.76）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,10 +9,10 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.75**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.76**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 222 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **28 文件 / 246 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -56,6 +56,20 @@
   密钥不全、publicUrl 缺失/漏协议头共 6 类。**加预警时改的是测试 fixture 的输入（补键），
   不是放宽断言**——`storage-warnings.test.ts` 有多处 `toHaveLength` 精确钉数。
 - 细节见 `server-nest/src/modules/storage/`（storage.service.ts / storage-config.ts）。
+
+### 2.1b 部署自检（v5.76）
+
+- **在哪**：后台 系统 → 系统更新 页第二张卡；接口 `GET /api/admin/system/deploy-check`。
+- **为什么**：本项目所有部署级防呆此前都只写进 stdout（JWT fail-fast 除外，那个直接拒启动）。
+  面板部署（1Panel / 宝塔）的站长不看容器日志，等于没报。自检把同一批事实搬到页面上。
+- **判定是纯函数**：`src/modules/system/deploy-check.ts` 的 `buildDeployChecks(facts)`
+  不读 `process.env`，事实由 `SystemService.deployCheck()` 采集后整体传入。
+  **加检查项就在这里加，并在 `test/deploy-check.test.ts` 补用例**（该文件有一条
+  「非 ok 的项一律带 `fix`」的结构性断言，别写只报问题不给出路的条目）。
+- **反代那一项是观察不是猜**：`src/common/proxy-signal.ts` 是进程级布尔，`main.ts` 最外层
+  中间件在收到带 `X-Forwarded-For` 的请求时打标。所以进程刚起、还没有真实流量时，
+  这一项显示「没观察到反向代理」属正常，来一个请求后才会翻红。
+- **三态与存储页一致**：`ok` / `warn`（能跑但有隐患）/ `fail`（会出事），整体取最严重一项。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
 四条自研轨道全部收敛 HeroUI 单轨（经 `client/src/components/heroui.jsx` shim）：
@@ -120,12 +134,17 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 3. **HeroUI Select 收敛**：Mall 等原生 `<select>` 现以 `select.haha-inp` 过渡，
    换 HeroUI Select 会改下拉外观，需专项评估。
 4. **对象删除不清理存储对象**：`StorageService.delete` 目前无调用方（预留），
-   删帖/删用户时桶内对象会累积；接入时注意幂等与本地/S3 双驱动。
+   删帖/删用户时桶内对象会累积；接入时注意幂等与本地/S3 双驱动。**已挂四轮**——
+   难点是没有 upload 归属表，只能从正文 URL 反推 key，同一 URL 被转发/引用时会误删，
+   稳妥做法是先做「孤儿对象扫描 + 人工确认后删」，别在删帖路径上直接硬删。
 5. **存量迁移仍是手工跑脚本**：v5.74 起会提示「还剩 N 个没迁走」，但迁移本身要 SSH 上服务器执行；
    后台一键迁移需要长任务 + 进度回传（当前没有任务队列），属较大改动。
    同理「测试连接」只验探针对象，不校验存量文件是否真的都能读到。
 6. **`localFiles` 只数 uploads 顶层文件**：够用于「有没有存量」的判断，子目录不递归、上限 10000
    （超出显示 `N+`）；真要精确统计以迁移脚本的 dry-run 输出为准。
+7. **部署自检只覆盖「进程自己看得见」的事实**（v5.76）：磁盘余量、数据库连接池、证书到期、
+   备份有没有在跑，这些都还没测。加项前先想清楚「这条要不要连网/连磁盘」——
+   `deployCheck()` 是同步串在页面加载上的，慢检查得另走异步。
 
 ## 6. 故障速查
 
@@ -143,6 +162,8 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 | 后台改了存储配置想撤销 | 「清除后台设置」按钮（只在后台存过配置时出现）退回 env；密钥留空保存不会清值 |
 | 测试连接显示「部分通过」 | 写入没问题，公开读没过——桶不是公开读，或 Public URL 没绑到这个桶；卡片正文写了具体状态码 |
 | 切到 S3 后老图仍走本地 | 正常——改驱动只影响新上传；面板提示的 `migrate-uploads-to-s3.mjs` 跑完才算迁完 |
+| 「部署到底哪儿没配对」 | 后台 系统 → 系统更新 → 部署自检；每条都写了该改哪个变量、要不要重启 |
+| 限流像是没生效 / 被批量注册 | 自检「访客真实 IP」那项；挂反代却没设 `TRUST_PROXY=1` 时限流全落在代理 IP 上 |
 
 ## 7. 本地开发环境（视觉门要用）
 
