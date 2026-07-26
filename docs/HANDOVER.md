@@ -28,7 +28,10 @@
   点「测试连接」即验证；缺 endpoint / Public URL 会出中文「配置预警」（v5.44）。
 - 存量迁移：`node server-nest/scripts/migrate-uploads-to-s3.mjs`（默认 dry-run，
   先核对输出再 `--execute --yes`；`--rollback <file>` 回滚；`--rewrite-missing` 为显式放行开关）。
-  docker 部署下脚本已在镜像内：`docker compose exec app node scripts/migrate-uploads-to-s3.mjs`。
+  docker 部署下脚本已在镜像内：`docker compose exec app node scripts/migrate-uploads-to-s3.mjs`，
+  **实际迁移那条要加 `--manifest-dir /app/manifests`**（v5.79）——回滚清单默认写 cwd，
+  容器里 cwd 是可写层不是卷，重建即丢；compose 已把 `/app/manifests` 挂到宿主机 `.migrate-manifests/`。
+  落点判断是纯函数 `scripts/lib/manifest-target.mjs`，指到没挂载的目录会当场警告并给出 `docker cp`。
 - **配置来源可视化（v5.73）**：后台存储页顶部「当前生效」卡片直接显示实际在用的驱动与各项值，
   每项标出取自「后台设置 / 环境变量 / 默认值」，并给一条示例文件地址（图裂在上传前就看得出来）。
   数据来自 `GET /api/admin/storage/status`（管理员限定，密钥只回有无）；来源判定在
@@ -190,7 +193,7 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
    `UPGRADE_REPO` / `UPGRADE_BRANCH` / `REPO_DIR` **有意没进 compose 白名单**——容器里既没有 git
    仓库也没有 docker socket，给个开关等于承诺做不到的事。要么在 `UPGRADE.md` 里写清「compose 部署
    请用 `git pull && docker compose up -d --build`」，要么真做成挂 socket 的容器内升级（较大改动）。
-   见 [[upgrade-solution]] 与 `test/docker-env-passthrough.test.ts` 的豁免原因。
+   见 `UPGRADE.md` §一 的说明与 `test/docker-env-passthrough.test.ts` 里的豁免原因。
 9. **两环境自检剩两条黄（v5.76 起可见，都是有意先不动的）**：
    - `DB_SYNCHRONIZE` 在 env2 仍是 `true`（`docker-compose.prod.yml` 默认值）。关掉才安全，
      但关掉就必须有迁移链路接手——**即上面第 1 条，需用户拍板**，别单独关。
