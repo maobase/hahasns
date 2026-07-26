@@ -11,6 +11,7 @@
 |---|---|
 | 线上版本 | **v5.76**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
+| 环境变量在哪 | env1：`/home/tt/hahasns/.nest-env` + unit 内 `Environment=`（`systemctl --user cat hahasns`）；env2：`/opt/haha-apps/hahasns-nest/.nest-prod.env`（`docker-compose.prod.yml` 的 `env_file`，**不是仓库里的 `docker-compose.yml`**） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
 | 测试基线 | `cd server-nest && npx vitest run` → **28 文件 / 246 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
@@ -70,6 +71,14 @@
   中间件在收到带 `X-Forwarded-For` 的请求时打标。所以进程刚起、还没有真实流量时，
   这一项显示「没观察到反向代理」属正常，来一个请求后才会翻红。
 - **三态与存储页一致**：`ok` / `warn`（能跑但有隐患）/ `fail`（会出事），整体取最严重一项。
+- **上线第一天就抓到两处线上真问题**（说明这类问题确实只靠日志抓不住）：
+  env2 挂在 Cloudflare Tunnel 后面但从未设 `TRUST_PROXY`，按 IP 的限流静默失效了三周多；
+  env1 的 systemd unit 里没有 `NODE_ENV`。两处已在各自 env 文件补齐并重启，
+  改前都留了 `.bak-20260726` 备份（env2: `/opt/haha-apps/hahasns-nest/.nest-prod.env`，
+  env1: `/home/tt/hahasns/.nest-env`）。**两环境的环境变量不同源，改配置要分别改，别以为一处覆盖两处。**
+- **「存量文件没迁走」这条偏保守**：它数的是 uploads 目录里的文件数，不看有没有 DB 行引用它。
+  env2 报「还剩 2 个」，跑 dry-run 一看「待重写路径 0」——是早期测试残留的孤儿文件。
+  迁移脚本从不删本地文件，硬迁只会往桶里再加两个孤儿，所以这种情况**有意不迁**。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
 四条自研轨道全部收敛 HeroUI 单轨（经 `client/src/components/heroui.jsx` shim）：
@@ -145,6 +154,12 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 7. **部署自检只覆盖「进程自己看得见」的事实**（v5.76）：磁盘余量、数据库连接池、证书到期、
    备份有没有在跑，这些都还没测。加项前先想清楚「这条要不要连网/连磁盘」——
    `deployCheck()` 是同步串在页面加载上的，慢检查得另走异步。
+8. **两环境自检剩两条黄（v5.76 起可见，都是有意先不动的）**：
+   - `DB_SYNCHRONIZE` 在 env2 仍是 `true`（`docker-compose.prod.yml` 默认值）。关掉才安全，
+     但关掉就必须有迁移链路接手——**即上面第 1 条，需用户拍板**，别单独关。
+   - `SEED_ADMIN_USER` / `SEED_ADMIN_PASSWORD` 两环境都还留在配置里（env2 有）。删掉不影响
+     已建好的管理员账号，但那是目前唯一还写下来的后台密码（视觉门的无头登录也用它），
+     删之前先把密码转移到密码管理器——属人工动作，不进自动循环。
 
 ## 6. 故障速查
 
