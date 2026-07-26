@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-26 · v5.78）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.79）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,11 +9,11 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.78**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.79**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 环境变量在哪 | env1：`/home/tt/hahasns/.nest-env` + unit 内 `Environment=`（`systemctl --user cat hahasns`）；env2：`/opt/haha-apps/hahasns-nest/.nest-prod.env`（`docker-compose.prod.yml` 的 `env_file`，**不是仓库里的 `docker-compose.yml`**） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **30 文件 / 273 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **31 文件 / 289 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -110,6 +110,24 @@
   ——哪天真给它加了 `env_file:`，白名单模型就不成立，那两条会提醒你回来重想。
 - **加环境变量的标准动作**：改代码 → compose `environment:` 加一行 → `.env.example` 加注释行
   → `docs/CONFIGURATION.md` 变量表补一行（`docs/INSTALL.md` 的表按需）→ 跑 vitest 让对账过。
+
+### 2.1d 容器里写文件默认写进可写层（v5.79 · 部署易用性红线）
+
+- **事实**：容器的当前目录（`/app/server-nest`，Dockerfile 的 WORKDIR）是镜像可写层。
+  往那儿写文件**会成功、宿主机看不到、`docker compose up -d --build` 一重建就没了**。
+  v5.79 修的就是迁移脚本的回滚清单落在这里 —— 「迁错了能一键还原」这个承诺恰好在
+  需要它的时候失效。**以后任何「脚本写一份文件出来给人留着」的功能都要先想落点。**
+- **落点判断是纯函数** `server-nest/scripts/lib/manifest-target.mjs`：
+  `/.dockerenv`（退化查 `/proc/1/cgroup`）判断在不在容器里，`/proc/mounts` 列出持久挂载点，
+  目录不在任何挂载点下就当场警告并给出 `docker cp <容器>:<路径> ./`。
+  **有意不自动改写落点** —— 容器里最可能存在的挂载恰恰是 `/app/uploads`，
+  而那整个目录经 `/uploads` 对外伺服，自动选中等于把清单（含库中媒体路径与行号）
+  变成公网可下载文件。所以默认仍是 cwd，只警告 + 给显式开关 `--manifest-dir`。
+- **为什么用命令行参数而不是环境变量**：加环境变量要连仓库 compose 白名单一起改（见 2.1c），
+  而这个开关只有跑脚本时用得到，走参数完全绕开那层。
+- 和 2.1c 同一个坑：`docker-compose.yml` 那个 `/app/manifests` 绑定挂载**两环境都验不出来**
+  （env1 systemd 直部、env2 用自己的 compose）。验证靠的是真容器实测四种落点
+  （可写层 / uploads 目录 / 具名卷 / 绑定挂载）+ `test/manifest-target.test.ts` 两条源码对账用例。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
 四条自研轨道全部收敛 HeroUI 单轨（经 `client/src/components/heroui.jsx` shim）：
