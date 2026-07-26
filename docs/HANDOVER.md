@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-26 · v5.74）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.75）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,10 +9,10 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.74**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.75**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 203 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 222 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -44,6 +44,17 @@
 - **存量文件提示（v5.74）**：`storage status` 多返回 `localFiles` / `localFilesCapped`
   （数 uploads 目录里的文件，跳过点开头的探针残留与子目录，上限 10000）；驱动是 s3 且本地还有文件时，
   面板把原本低调的「存量迁移」说明升级成醒目提示，写明还剩几个没迁走 + 迁移命令。
+- **「测试连接」是三步（v5.75）**：写探针对象 → 按 `publicUrlFor(key)` 回读（`fetch`，4 秒超时）→ 删除。
+  返回多一个 `level: 'ok' | 'warn' | 'fail'`：写入失败才是 `fail`；写得进但读不出/删不掉是 `warn`
+  （**故意不判失败**——CDN 刚配好有回源延迟，判死会误伤），`ok` 保留为「写入成功」的旧语义不破坏调用方。
+  回读通过且没填 Public URL 时，会把 `WARN_NO_PUBLIC_URL` 那条静态预警撤掉（实测比猜准）。
+- **错误翻译（v5.75）**：`describeStorageError(err)` 把 NoSuchBucket / InvalidAccessKeyId /
+  SignatureDoesNotMatch / AccessDenied / PermanentRedirect / ENOTFOUND / ECONNREFUSED / 超时 /
+  自签证书等映射成「改哪个字段」的中文，**原始报错必须保留在括号里**（排查最终要靠它）；
+  认不出的错误原样返回，不硬编故事。已用真 MinIO 跑过四种真实失败验证过映射。
+- **预警函数是唯一入口**：`storageConfigWarnings` 现含 endpoint 缺省/漏协议头/带桶名路径、
+  密钥不全、publicUrl 缺失/漏协议头共 6 类。**加预警时改的是测试 fixture 的输入（补键），
+  不是放宽断言**——`storage-warnings.test.ts` 有多处 `toHaveLength` 精确钉数。
 - 细节见 `server-nest/src/modules/storage/`（storage.service.ts / storage-config.ts）。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
@@ -110,8 +121,9 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
    换 HeroUI Select 会改下拉外观，需专项评估。
 4. **对象删除不清理存储对象**：`StorageService.delete` 目前无调用方（预留），
    删帖/删用户时桶内对象会累积；接入时注意幂等与本地/S3 双驱动。
-5. **存量迁移仍是手工跑脚本**：v5.74 会提示「还剩 N 个没迁走」，但迁移本身要 SSH 上服务器执行；
+5. **存量迁移仍是手工跑脚本**：v5.74 起会提示「还剩 N 个没迁走」，但迁移本身要 SSH 上服务器执行；
    后台一键迁移需要长任务 + 进度回传（当前没有任务队列），属较大改动。
+   同理「测试连接」只验探针对象，不校验存量文件是否真的都能读到。
 6. **`localFiles` 只数 uploads 顶层文件**：够用于「有没有存量」的判断，子目录不递归、上限 10000
    （超出显示 `N+`）；真要精确统计以迁移脚本的 dry-run 输出为准。
 
@@ -123,12 +135,13 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 | 本地 curl 426/异常 | 忘记 `--noproxy '*'`（本机代理） |
 | vite 起不来 | 5173 被 stale 进程占用，`lsof -i :5173` 查杀 |
 | 上传 413/格式被拒 | `uploads.controller.ts` 的 25MB/9 张硬顶与 mimetype 双拦 |
-| 七牛图裂 | 多半没填 Public URL，或桶私有但用了裸 S3 域名 |
+| 七牛图裂 | 多半没填 Public URL，或桶私有但用了裸 S3 域名；点「测试连接」看是不是「部分通过」 |
 | 「对象存储到底生效没有」 | 后台 系统 → 存储 顶部「当前生效」卡片；命令行 `GET /api/admin/storage/status`（带管理员 token） |
 | 后台白卡上出现暗色底纹 | 用到的 token 没在 `.admin-shell` 块里钉浅色版（见 §4 末条） |
 | 测试在未改动区域变红 | 停——这是 LOOP-PROMPT 停止条件，别绕，查清楚再继续 |
 | 本地后端起不来（DB 连不上） | 3306 常被别的项目占；本地库另起一个容器即可，见 §7 |
 | 后台改了存储配置想撤销 | 「清除后台设置」按钮（只在后台存过配置时出现）退回 env；密钥留空保存不会清值 |
+| 测试连接显示「部分通过」 | 写入没问题，公开读没过——桶不是公开读，或 Public URL 没绑到这个桶；卡片正文写了具体状态码 |
 | 切到 S3 后老图仍走本地 | 正常——改驱动只影响新上传；面板提示的 `migrate-uploads-to-s3.mjs` 跑完才算迁完 |
 
 ## 7. 本地开发环境（视觉门要用）
