@@ -6,6 +6,8 @@ import { confirmDialog } from '../../components/confirm';
 import api from '../../api/client';
 
 type Source = 'site' | 'env' | 'default';
+/** 测试结论三态：写不进去 / 写进去了但读不出来 / 三项全过 */
+type TestLevel = 'ok' | 'warn' | 'fail';
 type Status = {
   driver: 'local' | 's3';
   sources: Record<string, Source>;
@@ -28,6 +30,12 @@ const SOURCE_TEXT: Record<Source, string> = {
   site: '后台设置',
   env: '环境变量',
   default: '默认值',
+};
+
+const TEST_STYLE: Record<TestLevel, { title: string; bg: string; fg: string }> = {
+  ok: { title: '测试通过', bg: 'var(--good-soft)', fg: 'var(--good-deep)' },
+  warn: { title: '部分通过', bg: 'var(--gold-soft)', fg: 'var(--gold-deep)' },
+  fail: { title: '测试没过', bg: 'var(--like-soft)', fg: 'var(--like)' },
 };
 
 /** 来源徽标：让站长一眼看出这个值是自己填的、.env 带进来的，还是内置兜底 */
@@ -72,6 +80,7 @@ export default function StoragePanel() {
   const [testing, setTesting] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [testWarnings, setTestWarnings] = useState<string[]>([]);
+  const [testResult, setTestResult] = useState<{ level: TestLevel; message: string } | null>(null);
   const loadStatus = () =>
     api.get('/admin/storage/status').then(({ data }) => setStatus(data)).catch(() => undefined);
   useEffect(() => {
@@ -91,6 +100,7 @@ export default function StoragePanel() {
       setCfg(data.config || {});
       setSecrets(data.secretsSet || {});
       setTestWarnings([]);
+      setTestResult(null);
       await loadStatus();
     } catch (e: any) { toast.err(e.message); }
     finally { setSaving(false); }
@@ -111,19 +121,26 @@ export default function StoragePanel() {
       setCfg(res.data.config || {});
       setSecrets(res.data.secretsSet || {});
       setTestWarnings([]);
+      setTestResult(null);
       await loadStatus();
     } catch (e: any) { toast.err(e.message); }
     finally { setClearing(false); }
   };
+  // 结论留在页面上，不只弹一下 toast：失败信息现在长到需要照着改配置
   const test = async () => {
     setTesting(true);
     setTestWarnings([]);
+    setTestResult(null);
     try {
       const { data } = await api.post('/admin/storage/test');
-      if (data.ok) toast.ok(data.message || '连接成功');
-      else toast.err(data.message || '连接失败');
-      if (Array.isArray(data.warnings) && data.warnings.length) setTestWarnings(data.warnings);
-    } catch (e: any) { toast.err(e.message); }
+      setTestResult({
+        level: (data.level as TestLevel) || (data.ok ? 'ok' : 'fail'),
+        message: data.message || (data.ok ? '连接成功' : '连接失败'),
+      });
+      setTestWarnings(Array.isArray(data.warnings) ? data.warnings : []);
+    } catch (e: any) {
+      setTestResult({ level: 'fail', message: e.message || '请求失败' });
+    }
     finally { setTesting(false); }
   };
   if (cfg === null) return <RowSkeleton rows={6} />;
@@ -133,7 +150,8 @@ export default function StoragePanel() {
   // env 带进来的值填进 placeholder：留空即沿用，填了才覆盖
   const envHint = (key: string, value?: string) =>
     src[key] === 'env' && value ? `${value}（来自环境变量）` : undefined;
-  const warnings = testWarnings.length ? testWarnings : status?.warnings || [];
+  // 测过之后一律以本次结果为准：status 里那份是进页面时算的，可能已经过期
+  const warnings = testResult ? testWarnings : status?.warnings || [];
   // 已切到对象存储、但本地目录还有存量文件 = 需要跑一次迁移脚本
   const pendingLocal = status?.driver === 's3' && status.localFiles > 0;
   return (
@@ -257,6 +275,19 @@ export default function StoragePanel() {
           </div>
         )}
       </div>
+      {testResult && (
+        <div
+          className="ui-card"
+          style={{ padding: '12px 18px', background: TEST_STYLE[testResult.level].bg }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 13, color: TEST_STYLE[testResult.level].fg }}>
+            {TEST_STYLE[testResult.level].title}
+          </div>
+          <div style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.7, color: 'var(--ink-2)', wordBreak: 'break-word' }}>
+            {testResult.message}
+          </div>
+        </div>
+      )}
       {warnings.length > 0 && (
         <div className="ui-card" style={{ padding: '12px 18px', background: 'var(--gold-soft)' }}>
           <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--gold-deep)' }}>配置预警</div>
