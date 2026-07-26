@@ -1,4 +1,4 @@
-# HahaSNS 迭代交接手册（2026-07-26 · v5.73）
+# HahaSNS 迭代交接手册（2026-07-26 · v5.74）
 
 > 写给下一位接手迭代的人（人类或 agent）。本手册只含可操作事实；凭据一律不在册，
 > 部署脚本（`deploy-nest.sh` / `deploy-sns.sh`，均 gitignored、内含 SSH 凭据）在仓库根。
@@ -9,10 +9,10 @@
 
 | 项 | 值 |
 |---|---|
-| 线上版本 | **v5.73**（唯一版本源：`client/src/version.ts`） |
+| 线上版本 | **v5.74**（唯一版本源：`client/src/version.ts`） |
 | 环境 | env1 = systemd 直部（`./deploy-nest.sh`）；env2 = docker compose（`./deploy-sns.sh`，sns.hahaha.chat） |
 | 代码形态 | React 19 + HeroUI v3 前端；NestJS + MariaDB + Redis 后端（`server-nest/`） |
-| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 201 用例全绿**（只增不减） |
+| 测试基线 | `cd server-nest && npx vitest run` → **27 文件 / 203 用例全绿**（只增不减） |
 | 主分支 | `main`，两环境部署均以其为准；env2 靠 `git pull` 取码 |
 
 **健康自查**：`curl --noproxy '*' -fsS <环境>/api/health` 应返回 `{"ok":true}`；
@@ -34,7 +34,16 @@
   `storage-config.ts` 的 `resolveStorageSources`，**改 `resolveStorageConfig` 的优先级必须同步改它**
   （两者口径必须一致，已有 6 个单测钉住，含 `s3_force_path_style='0'` 仍算「后台设置」的 falsy 坑）。
 - 优先级口径（一句话）：**后台设置 > 环境变量 > 内置默认，逐字段独立**。后台留空 = 沿用 env，
-  不是「清空」；想从后台退回 env 目前只能改库（见 §5.5）。
+  不是「清空」——这是防误清密钥的有意设计。
+- **退回环境变量（v5.74）**：存储页的「清除后台设置」按钮 = `DELETE /api/admin/storage/site-config`，
+  逐键删掉 `site_config` 里的存储配置（含密钥）后按 env / 默认生效，返回实际清掉了哪几项并写管理日志，
+  重复调用无副作用；按钮仅在 `status.hasSiteConfig` 为真时出现。删哪些键由
+  `storage-config.ts` 的 **`STORAGE_SITE_KEYS`** 定义——读配置、判来源、清除三处共用这一份，
+  **新增可后台配置的存储字段必须同时加进这个数组**，否则会出现「点了清除但配置还生效」的幽灵配置
+  （已有两个全量覆盖用例钉死：全填→逐项 site，全删→逐项退回 env）。
+- **存量文件提示（v5.74）**：`storage status` 多返回 `localFiles` / `localFilesCapped`
+  （数 uploads 目录里的文件，跳过点开头的探针残留与子目录，上限 10000）；驱动是 s3 且本地还有文件时，
+  面板把原本低调的「存量迁移」说明升级成醒目提示，写明还剩几个没迁走 + 迁移命令。
 - 细节见 `server-nest/src/modules/storage/`（storage.service.ts / storage-config.ts）。
 
 ### 2.2 组件双轨收敛（spec/01 §1.2，v5.47–v5.59）
@@ -101,10 +110,10 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
    换 HeroUI Select 会改下拉外观，需专项评估。
 4. **对象删除不清理存储对象**：`StorageService.delete` 目前无调用方（预留），
    删帖/删用户时桶内对象会累积；接入时注意幂等与本地/S3 双驱动。
-5. **Admin「清空已存密钥」**：PUT 留空=保留原值，想回退 env 只能改库（体验项）。
-   v5.73 的「当前生效」卡片至少让人看清现在用的是哪一份，但「清掉后台值、退回 env」仍缺入口。
-6. **本地存储切 S3 后无迁移提示**：后台把驱动从 local 改成 s3、存量图片仍在磁盘上，
-   页面不会提醒去跑 `migrate-uploads-to-s3.mjs`（现在只在文档和面板底部的说明里写着）。
+5. **存量迁移仍是手工跑脚本**：v5.74 会提示「还剩 N 个没迁走」，但迁移本身要 SSH 上服务器执行；
+   后台一键迁移需要长任务 + 进度回传（当前没有任务队列），属较大改动。
+6. **`localFiles` 只数 uploads 顶层文件**：够用于「有没有存量」的判断，子目录不递归、上限 10000
+   （超出显示 `N+`）；真要精确统计以迁移脚本的 dry-run 输出为准。
 
 ## 6. 故障速查
 
@@ -119,6 +128,8 @@ Spinner / Tabs / Modal / 输入框 124 处 / 按钮 194 处；`.ui-spinner`、`.
 | 后台白卡上出现暗色底纹 | 用到的 token 没在 `.admin-shell` 块里钉浅色版（见 §4 末条） |
 | 测试在未改动区域变红 | 停——这是 LOOP-PROMPT 停止条件，别绕，查清楚再继续 |
 | 本地后端起不来（DB 连不上） | 3306 常被别的项目占；本地库另起一个容器即可，见 §7 |
+| 后台改了存储配置想撤销 | 「清除后台设置」按钮（只在后台存过配置时出现）退回 env；密钥留空保存不会清值 |
+| 切到 S3 后老图仍走本地 | 正常——改驱动只影响新上传；面板提示的 `migrate-uploads-to-s3.mjs` 跑完才算迁完 |
 
 ## 7. 本地开发环境（视觉门要用）
 
