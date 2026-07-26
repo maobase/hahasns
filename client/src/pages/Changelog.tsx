@@ -27,6 +27,12 @@ const FB_STATUS: Record<string, { label: string; color: string }> = {
 
 const RELEASES = [
   {
+    ver: 'v5.74', date: '2026-07-26 19:29:41', items: [
+      ['new', '后台「系统 → 存储」新增「清除后台设置」：一键删掉后台存的那份存储配置（含 Access Key / Secret Key），改回环境变量或内置默认。此前保存密钥时留空表示「保留原值」（防止误清），于是一旦在后台填过，就再没有任何入口能退回 .env 的配置，只能手工改库；现在仅在后台确实存过配置时才出现这个按钮，点击有二次确认并写管理日志，已上传的文件不受影响。对应新接口 DELETE /api/admin/storage/site-config。'],
+      ['improve', '切到对象存储后，存储页会直接显示「本地还有 N 个旧文件没迁走」并给出迁移命令。改驱动只对新上传生效，之前落在磁盘上的图仍从本地读，不提示的话容易在清理 uploads 卷时才发现老图全裂；本地目录为空或仍用本地磁盘时，这段保持原来的低调说明样式。'],
+    ],
+  },
+  {
     ver: 'v5.73', date: '2026-07-26 18:12:40', items: [
       ['improve', '后台「系统 → 存储」新增「当前生效」卡片：直接显示实际在用的驱动、Endpoint / Bucket / Region / Public URL / Path style / 密钥有无，以及一条示例文件地址；每项后面标出这个值取自「后台设置」「环境变量」还是「默认值」。此前用 .env 注入 S3_* 部署的站点，后台字段全是空的、驱动还显示「本地磁盘」，站长无从判断对象存储到底有没有生效——现在驱动按实际生效值显示，输入框的 placeholder 也会带上环境变量里的值并注明「留空即沿用」。配置预警（缺 Endpoint / 缺 Public URL）改为进页面即展示，不必先点「测试连接」。新增接口 GET /api/admin/storage/status（管理员限定，密钥只回有无、不出网关）。'],
       ['improve', '对象存储的安装与部署说明补齐：INSTALL.md 写清「后台配置（推荐，不用重启）」与「环境变量」两条路径、二者按字段优先级混用的规则，以及切换驱动后存量本地文件需要用 migrate-uploads-to-s3.mjs 迁移；.env.example 把 S3_* 展开成逐项带注释的可复制块（含 Public URL 私有桶不填会图裂、七牛通常关 path style 两个坑）；CONFIGURATION.md 同步补充运行时配置一段。'],
