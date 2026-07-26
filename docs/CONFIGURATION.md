@@ -87,6 +87,8 @@ Image/file uploads are handled by the storage driver selected with `STORAGE_DRIV
 
 The database stores references (URLs) to these files, not the file contents themselves. With the `local` driver, treat `UPLOADS_DIR` as part of your data when backing up or migrating (see below); with `s3`, the bucket holds the media.
 
+Storage can also be configured **at runtime from the admin「系统 → 存储」panel** (stored in `site_config`, applied without a restart). Per field, the admin value wins and a blank field falls back to the environment variable, so a deployment that ships `S3_*` in `.env` keeps working while individual values are overridden from the UI. The panel's「当前生效」card labels every value with where it came from (后台设置 / 环境变量 / 默认值), shows a sample file URL, and「测试连接」round-trips a probe object through the bucket. Existing local files do not move on their own — run `server-nest/scripts/migrate-uploads-to-s3.mjs` (dry-run by default, `--execute --yes` to apply, `--rollback <file>` to revert).
+
 ## Database & backup
 
 HahaSNS stores its data in a **MySQL/MariaDB** database (configured by the `DB_*` variables). On the first run with `DB_SYNCHRONIZE=true`, TypeORM creates and updates the tables from the entity definitions — there is no separate migration step for a fresh install. Set `DB_SYNCHRONIZE=false` afterwards so the schema isn't auto-altered in production.

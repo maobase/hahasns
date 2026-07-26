@@ -85,7 +85,20 @@ FLUSH PRIVILEGES;
 
 ### 3.（可选）准备对象存储
 
-如果要把上传媒体放到 S3 兼容存储，先建好 Bucket 与访问密钥，稍后通过 `STORAGE_DRIVER=s3` 与一组 `S3_*` 环境变量注入；不配置则默认用本地磁盘（`UPLOADS_DIR`）。
+不配置就默认存本地磁盘（`UPLOADS_DIR`），部署阶段可以先跳过这一节。要把上传媒体放到 S3 兼容存储（AWS S3、MinIO、七牛 Kodo、阿里云 OSS、腾讯云 COS 等），先建好 Bucket 与访问密钥，然后二选一：
+
+- **后台配置（推荐，不用重启）**：站点跑起来后进「管理后台 → 系统 → 存储」，填 Endpoint / Bucket / Region / Access Key / Secret Key，再填 **Public URL**（CDN 或桶绑定域名——私有桶不填这项，图片地址打不开），点「测试连接」验证。保存即时生效。
+- **环境变量**：注入 `STORAGE_DRIVER=s3` 与一组 `S3_*`（见下一节），适合用 `.env` 统一管理配置的场景。
+
+两者可以混用：**后台填了的字段优先，留空的沿用环境变量**。后台「存储」页顶部的「当前生效」会逐项标出每个值来自后台还是环境变量，并给出一个示例文件地址，便于核对。
+
+切换到对象存储时，此前存在本地磁盘的媒体不会自动搬家，用仓库自带脚本迁移（默认 dry-run，先看输出再执行）：
+
+```bash
+node server-nest/scripts/migrate-uploads-to-s3.mjs                 # 预演
+node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes # 实际迁移
+# docker 部署：docker compose exec app node scripts/migrate-uploads-to-s3.mjs
+```
 
 ---
 
