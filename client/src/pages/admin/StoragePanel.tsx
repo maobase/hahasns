@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input, Button } from '../../components/heroui';
 import { RowSkeleton } from '../../components/States';
 import { useToast } from '../../context/ToastContext';
+import { confirmDialog } from '../../components/confirm';
 import api from '../../api/client';
 
 type Source = 'site' | 'env' | 'default';
@@ -17,6 +18,9 @@ type Status = {
   hasSecretKey: boolean;
   uploadsDir: string;
   sampleUrl: string;
+  localFiles: number;
+  localFilesCapped: boolean;
+  hasSiteConfig: boolean;
   warnings: string[];
 };
 
@@ -66,6 +70,7 @@ export default function StoragePanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [testWarnings, setTestWarnings] = useState<string[]>([]);
   const loadStatus = () =>
     api.get('/admin/storage/status').then(({ data }) => setStatus(data)).catch(() => undefined);
@@ -90,6 +95,26 @@ export default function StoragePanel() {
     } catch (e: any) { toast.err(e.message); }
     finally { setSaving(false); }
   };
+  // 清掉后台存的存储配置，退回 .env / 内置默认。PUT 留空是「保留原值」，
+  // 所以不给这个入口就只能改库才能回退。
+  const clearSite = async () => {
+    const ok = await confirmDialog(
+      '会删掉后台存的存储配置（含 Access Key / Secret Key），之后按环境变量或内置默认生效。\n上传中的文件不受影响，已上传的文件也不会动。',
+      { title: '清除后台存储设置？', confirmText: '清除' },
+    );
+    if (!ok) return;
+    setClearing(true);
+    try {
+      const { data } = await api.delete('/admin/storage/site-config');
+      toast.ok(data.cleared?.length ? `已清除 ${data.cleared.length} 项，改按环境变量生效` : '后台本来就没存配置');
+      const res = await api.get('/admin/config');
+      setCfg(res.data.config || {});
+      setSecrets(res.data.secretsSet || {});
+      setTestWarnings([]);
+      await loadStatus();
+    } catch (e: any) { toast.err(e.message); }
+    finally { setClearing(false); }
+  };
   const test = async () => {
     setTesting(true);
     setTestWarnings([]);
@@ -109,6 +134,8 @@ export default function StoragePanel() {
   const envHint = (key: string, value?: string) =>
     src[key] === 'env' && value ? `${value}（来自环境变量）` : undefined;
   const warnings = testWarnings.length ? testWarnings : status?.warnings || [];
+  // 已切到对象存储、但本地目录还有存量文件 = 需要跑一次迁移脚本
+  const pendingLocal = status?.driver === 's3' && status.localFiles > 0;
   return (
     <div className="flex flex-col gap-4">
       {status && (
@@ -205,13 +232,30 @@ export default function StoragePanel() {
               placeholder={secrets.s3_secret_key ? '••••（留空保留）' : src.secretKey === 'env' ? '已由环境变量提供' : 'Secret Key'} />
           </label>
         </div>
-        <div className="faint" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.6 }}>
-          存量迁移（默认 dry-run）：
-          <code style={{ display: 'block', marginTop: 6, padding: 8, background: 'var(--surface-2)', borderRadius: 6, whiteSpace: 'pre-wrap' }}>
-            node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
-            node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
-          </code>
-        </div>
+        {/* 切到 S3 后本地目录里还躺着老文件——不提示的话站长会以为「切完就完事了」，
+            直到某天删了 uploads 卷才发现老图全裂。有存量才升级成醒目提示。 */}
+        {pendingLocal ? (
+          <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: 'var(--gold-soft)', color: 'var(--gold-deep)' }}>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>
+              本地还有 {status!.localFiles}{status!.localFilesCapped ? '+' : ''} 个旧文件没迁走
+            </div>
+            <div style={{ fontSize: 12.5, marginTop: 4, lineHeight: 1.6 }}>
+              新上传已走对象存储，之前存在磁盘上的文件仍从本地读。在服务器上跑一次迁移脚本（先 dry-run 看清单，再加 --execute 真迁）：
+            </div>
+            <code style={{ display: 'block', marginTop: 8, padding: 8, background: 'var(--surface)', color: 'var(--ink-2)', borderRadius: 6, fontSize: 12, whiteSpace: 'pre-wrap' }}>
+              node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
+              node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
+            </code>
+          </div>
+        ) : (
+          <div className="faint" style={{ fontSize: 12.5, marginTop: 14, lineHeight: 1.6 }}>
+            存量迁移（默认 dry-run）：
+            <code style={{ display: 'block', marginTop: 6, padding: 8, background: 'var(--surface-2)', borderRadius: 6, whiteSpace: 'pre-wrap' }}>
+              node server-nest/scripts/migrate-uploads-to-s3.mjs{'\n'}
+              node server-nest/scripts/migrate-uploads-to-s3.mjs --execute --yes
+            </code>
+          </div>
+        )}
       </div>
       {warnings.length > 0 && (
         <div className="ui-card" style={{ padding: '12px 18px', background: 'var(--gold-soft)' }}>
@@ -221,7 +265,10 @@ export default function StoragePanel() {
           ))}
         </div>
       )}
-      <div className="row gap-8" style={{ justifyContent: 'flex-end' }}>
+      <div className="row gap-8" style={{ justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        {status?.hasSiteConfig && (
+          <Button color="danger" variant="light" className="haha-btn-app" onClick={clearSite} isDisabled={clearing}>{clearing ? '清除中…' : '清除后台设置'}</Button>
+        )}
         <Button variant="bordered" className="haha-btn-app" onClick={test} isDisabled={testing}>{testing ? '测试中…' : '测试连接'}</Button>
         <Button color="primary" className="haha-btn-app" onClick={save} isDisabled={saving}>{saving ? '保存中…' : '保存存储配置'}</Button>
       </div>
