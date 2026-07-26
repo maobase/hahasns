@@ -101,7 +101,7 @@ export default function AppearancePanel() {
           </div>
         </label>
         <div className="sec-grid" style={{ marginTop: 12 }}>
-          <label className="sec-field row gap-8" style={{ alignItems: 'center' }}>
+          <label className="sec-field row gap-8" style={{ flexDirection: 'row', alignItems: 'center' }}>
             <input type="checkbox" checked={cfg.site_logo_only === '1'} onChange={(e) => setK('site_logo_only', e.target.checked ? '1' : '0')} />
             <span className="sec-label" style={{ margin: 0 }}>仅显示 Logo（隐藏站名文字；需已设 Logo）</span>
           </label>

@@ -536,6 +536,16 @@ h3.aimd-h { font-size: 16px; } h4.aimd-h { font-size: 15px; } h5.aimd-h, h6.aimd
   --page: #f5f6f8; --surface: #ffffff; --surface-2: #f7f8fa; --surface-3: #f0f1f4;
   --line: #e5e6eb; --line-2: #d9dce2;
   --ink: #1d2129; --ink-2: #4e5969; --ink-3: #86909c; --ink-4: #a9aeb8;
+  /* 状态色 / 骨架屏 / 遮罩也锁浅色版（取值 = tokens.css 的 :root 原值，浅色下像素不变）：
+     后台面板用了 130+ 处 --gold/--good/--like 系底纹，前台一切暗色它们就会换成暗色版
+     落在这里的白卡上（暗金底、暗绿底、深色骨架块）。B 端既然不随明暗，这些也一并钉住。 */
+  --gold: #ef9f1e; --gold-deep: #b9770a; --gold-soft: #fff2d6;
+  --good: #14b269; --good-deep: #0f7a47; --good-soft: #e3f8ee;
+  --like: #f5455f; --like-soft: #ffe9ec;
+  --coral: #ff6a5a; --coral-soft: #fff0ed;
+  --verify: #2e8fff;
+  --skeleton-base: #eef0f3; --skeleton-shine: #f7f8fa;
+  --scrim: rgba(15, 18, 22, .46); --glass: rgba(255, 255, 255, .82);
   /* 圆角 4/6/8 */
   --r-xs: 4px; --r-sm: 4px; --r-md: 6px; --r-lg: 8px;
   /* 克制阴影 */
